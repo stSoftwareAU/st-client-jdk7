@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.9.79  (Win32)">
+	<META NAME="CREATED" CONTENT="20050601;10045489">
+	<META NAME="CHANGED" CONTENT="16010101;0">
+	<STYLE>
+	<!--
+		@page { size: 21cm 29.7cm; margin: 2cm }
+		P { margin-bottom: 0.21cm }
+		H1.western { font-family: "Times New Roman", serif }
+		H1.cjk { font-family: "Arial Unicode MS" }
+		H1.ctl { font-family: "Tahoma" }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 CLASS="western" ALIGN=CENTER>Client Side File Handling Design</H1>
+<PRE><FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">FILE</FONT></B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[INFO      [[PATH path_name] | [KEY file_key]] [VERSION&nbsp;version_nr]]&nbsp;|</FONT></B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[PLACE   [[path path_name] | [key file_key]] [VERSION version_nr] LOCATION file_store]</FONT>|</B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[STORE file[[PATH path_name] | [KEY file_key]] [GZIP] [CLIPPER key] MIME type |</FONT></B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[READ      [[PATH path_name] | [KEY file_key]]] |</FONT></B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[CHECKOUT  [[PATH path_name] | [KEY file_key]]] |</FONT></B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[CHECKIN   [[PATH path_name] | [KEY file_key]]] |</FONT></B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[UPLOAD data] |</FONT></B></FONT>
+ <FONT FACE="Courier New, monospace"><B><FONT SIZE=2 STYLE="font-size: 9pt">[CLOSE]</FONT></B></FONT></PRE><H2>
+Open a file from a regional file server</H2>
+<OL>
+	<LI><P STYLE="margin-bottom: 0cm">Determine the user's preferred
+	file store. 
+	</P>
+	<OL TYPE=a>
+		<LI><P STYLE="margin-bottom: 0cm">When the SOAP client logs into
+		the system the current preferred file store code will be returned.
+		Bugzilla #4405</P>
+		<LI><P STYLE="margin-bottom: 0cm">If no local file store is defined
+		for the user then the files will be fetched/sent directly to the
+		main web server. Bugzilla #4404</P>
+		<LI><P STYLE="margin-bottom: 0cm">SELECT the connection details
+		from DBFileStore the remote and local file access details for the
+		file store code provided. Bugzilla #4406, #4189</P>
+	</OL>
+	<LI><P>Request the server to place the file raw file on the
+	preferred file store will the FILE PLACE command. <B><FONT FACE="Courier New, monospace">FILE
+	PLACE PATH /docs/web/index.html LOCATION syd</FONT> </B>
+	</P>
+	<LI><P> The <B><FONT FACE="Courier New, monospace">FILE PLACE</FONT></B>
+	command will return if successful a record set with :-</P>
+	<OL TYPE=a>
+		<LI><P>file key - The global key of the file accessed</P>
+		<LI><P>encryption type &ndash; The type of enc<SPAN LANG="en-US">ryption
+		used: AES, NONE</SPAN></P>
+		<LI><P>encryption clipper - The encryption clipper used to decode
+		the file</P>
+		<LI><P>compression type &ndash; GZIP, NONE</P>
+		<LI><P>local path &ndash; The path to the raw file on the preferred
+		file store.</P>
+		<LI><P>Remote path - The path to the raw file using ftp</P>
+		<LI><P>file name - the human name of the file.</P>
+	</OL>
+</OL>
+<UL>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0cm; line-height: 0.25cm"><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 5pt">+-------------+------------+---------+-------------+--------------------------------------+------------------------------------------------------+-----------+</FONT></FONT></P>
+		<LI><P STYLE="margin-bottom: 0cm; line-height: 0.25cm"><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 5pt">|key
+		         | encryption | clipper | com<SPAN LANG="en-US">pression |</SPAN>
+		local_path                           | remote_path                 
+		                        | name      |</FONT></FONT></P>
+		<LI><P STYLE="margin-bottom: 0cm; line-height: 0.25cm"><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 5pt">+-------------+------------+---------+-------------+--------------------------------------+------------------------------------------------------+-----------+</FONT></FONT></P>
+		<LI><P STYLE="margin-bottom: 0cm; line-height: 0.25cm"><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 5pt">|
+		122@10~12@1 |  AES       |qwersdfgs| GZIP        |
+		//server1/docs/10/10/122/122_3.aes.gz|ftp://guest:guest@server1/docs/10/10/122/122_3.aes.gz
+		| index.tml |</FONT></FONT></P>
+		<LI><P STYLE="margin-bottom: 0cm; line-height: 0.25cm"><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 5pt">+-------------+------------+---------+-------------+--------------------------------------+------------------------------------------------------+-----------+</FONT></FONT></P>
+	</UL>
+</UL>
+<UL>
+	<UL>
+		<P ALIGN=LEFT STYLE="margin-bottom: 0cm"></P>
+	</UL>
+</UL>
+<OL START=4>
+	<LI><P><SPAN STYLE="font-weight: medium">The raw file which the user
+	only has read access to is the dec<SPAN LANG="en-US">ypted to the
+	user's local drive into a user cache directory. Using the encryption
+	type and clipper</SPAN></SPAN></P>
+	<LI><P><SPAN STYLE="font-weight: medium"><SPAN LANG="en-US">The
+	decrypted file is decompressed using the compression type returned.</SPAN></SPAN></P>
+	<LI><P STYLE="font-weight: medium">Rename the user's file to the
+	name given from the server</P>
+	<LI><P STYLE="font-weight: medium">open the file into the preferred
+	application.</P>
+</OL>
+<UL>
+	<UL>
+		<LI><P ALIGN=CENTER STYLE="margin-bottom: 0cm"></P>
+	</UL>
+</UL>
+<H2><FONT FACE="Times New Roman, serif">Open a file from a remote
+file server</FONT></H2>
+<P><FONT FACE="Times New Roman, serif">Is the same as ope<SPAN LANG="en-US">ning
+a file from the regional server but the field &ldquo;remote_path&rdquo;
+is used to get the server name, user and password and the relative
+path on that server. This information is used to connected via FTP
+and download the file in binary mode. </SPAN></FONT>
+</P>
+<H2>Submit a file to a file server via soap</H2>
+<OL>
+	<LI><P>The client program will com<SPAN LANG="en-US">press the file
+	to be submitted</SPAN></P>
+	<LI><P>The client program will encrypt the file 
+	</P>
+	<LI><P>The client program will place the compressed and encrypted
+	file as on to the file server into a temporary directory. Using a
+	randomly generated file name to avoid conflicts. This is done
+	locally or remotely using ftp</P>
+	<LI><P>The SOAP command FILE STORE will be called 
+	</P>
+	<LI><P>Any other database changes are made. 
+	</P>
+	<LI><P>The SOAP command COMMIT is called. All database validations
+	are done at this time and the raw file is renamed at this time.</P>
+</OL>
+<UL>
+	<UL>
+		<LI><P> 
+		</P>
+		<LI><P></P>
+		<LI><P><FONT FACE="Times New Roman, serif"><BR><BR><BR><BR><BR><BR><BR></FONT><BR><BR>
+		</P>
+	</UL>
+</UL>
+<DIV TYPE=FOOTER>
+	<P STYLE="margin-top: 0.5cm"><FONT SIZE=1>original file:
+	com/aspc/remote/soap/doc-files/client_side_file_handling_design.doc</FONT></P>
+</DIV>
+</BODY>
+</HTML>

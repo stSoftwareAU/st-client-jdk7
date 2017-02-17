@@ -1,0 +1,10 @@
+<BENCHMARK>
+
+   <IMPORT file="import_1.xml"/>
+   
+   <CLIENT name="normal" >
+        <TASK name="log" varying="people,pets">      
+            LOG WRITE "%people% and %pets%"
+        </TASK>
+   </CLIENT>
+</BENCHMARK>

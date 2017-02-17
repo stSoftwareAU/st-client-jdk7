@@ -1,0 +1,8 @@
+<BENCHMARK>
+
+   <CLIENT name="stagger clients over a minute" stagger="30 secs" clone="10">
+        <TASK name="log">      
+            LOG WRITE "start "%CLIENT_NAME%";
+        </TASK>
+   </CLIENT>
+</BENCHMARK>

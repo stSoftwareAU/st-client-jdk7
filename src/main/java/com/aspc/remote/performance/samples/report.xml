@@ -1,0 +1,16 @@
+<BENCHMARK>
+
+   <CLIENT name="simple">
+      <TASK name="a task">
+         LOG WRITE "%CLIENT_NAME%"
+      </TASK>
+      
+      <TASK name="finish" >
+         MEMORY LOG;
+      </TASK>      
+   </CLIENT>
+   
+   <REPORT>
+      MEMORY;
+   </REPORT>
+</BENCHMARK>

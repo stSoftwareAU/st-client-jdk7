@@ -1,0 +1,779 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>CacheEntry.java</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.1  (Unix)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Nigel Leck">
+	<META NAME="CHANGED" CONTENT="20090811;14062600">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+	<STYLE TYPE="text/css">
+	<!--
+		TD P { color: #000000; font-family: "Monospaced" }
+		H1 { color: #000000 }
+		P { color: #000000; font-family: "Monospaced" }
+		H2 { color: #000000 }
+		H2.ctl { font-family: "Lohit Hindi" }
+		H3 { color: #000000 }
+		H3.ctl { font-family: "Lohit Hindi" }
+		PRE { color: #000000 }
+		BLOCKQUOTE { color: #000000 }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" TEXT="#000000" BGCOLOR="#ffffff" DIR="LTR">
+<H1>Memory Management</H1>
+<OL START=2>
+	<OL>
+		<OL>
+			<P>Web applications long pauses matter, GC pauses of 10-20 seconds
+			are a issue.</P>
+			<P>Background batch processing applications and more tolerant of
+			long GC pauses.</P>
+			<P>We have a back ground thread that creates a series of byte
+			arrays ( rainy day fund in one hundred segments) that fills the
+			memory up to our threshold of say 40% then the data is loaded from
+			the database which takes a number of hours. The rainy day fund is
+			incrementally decreased as the data is loaded from the database.
+			That'll be all the red/pink activity for the first few hours.</P>
+			<P>Memory manager monitors memory usage by polling every second
+			via JMX to see if we are over our next threshold of say 50% if we
+			are we release the hard links to the &quot;rainy day fund&quot;
+			and wait for the weak links to the &quot;rainy day fund&quot; to
+			be reclaimed. When the weak links to the &quot;rainy day fund&quot;
+			return null and we are over the upper limit we know we need to
+			release some real cache, which we do by clearing the hard links to
+			these elements. The background Java GC process tries to reclaim
+			this memory, as long as the background process finishes ( no
+			memory is reclaimed before the process finishes) before we get to
+			95% full we avoid a stop the world GC</P>
+			<P>You should see the memory usage being held to ~50% which we do.
+			The red line looks like real objects being loaded from the
+			database during the cache load process. Once these objects are
+			loaded from the database we hold them in memory until we are
+			forced to clear cache</P>
+			<P>When we are over our threshold we wish to release enough
+			references so that we go back just under our threshold. We try to
+			release the objects that haven't been used for a while first (
+			reverse of last used).</P>
+		</OL>
+	</OL>
+</OL>
+<P><IMG SRC="doc-files/old_gen.png" NAME="graphics1" ALIGN=LEFT WIDTH=702 HEIGHT=519 BORDER=0><BR CLEAR=LEFT><BR><BR>
+</P>
+<H2 CLASS="western">Current Outstanding JVM Bugs</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><FONT FACE="Times New Roman, serif">CR
+	6787254 Work queue capacity can be increased substantially on some
+	platforms</FONT></P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><FONT FACE="Times New Roman, serif">CR
+	6786503 Overflow list performance can be improved</FONT></P>
+</UL>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+With the full GC we aren't so fused about that in the sense that we
+had</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+them before when we used the throughput collector. Now we get the
+full</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+GC very infrequently, the issue is in production (we can't
+consistently</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+reproduce in staging) we have had some extremely long pauses with CMS</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+far longer than what we got with the throughput collector. These</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+extremely long pauses are infrequent too ( about two weeks since the</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+last one in production) but they occur when the &quot;work queue
+overflow&quot;</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+occurs. </I></FONT></FONT>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+</I></FONT></FONT>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+We will try the parallel processing of references but will that not</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+just improve the well behaved cases thus making the good case better
+(</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>&gt;
+which are pretty good already) and not effect the bad overflow case ?
+</I></FONT></FONT>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>That
+is indeed true. Note that the really bad cases will</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>also
+now become more infrequent (because you have gone to</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>CMS
+from iCMS). But you are right that the parallel reference</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>processing
+will not affect those pauses (when they happen)</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>in
+any manner.</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>We
+_will_ fix those in a next iteration with the fixes for</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>the
+following CR's (bugs) that we have opened:-</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>CR
+6787254 Work queue capacity can be increased substantially on some
+platforms</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>CR
+6786503 Overflow list performance can be improved</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>Of
+these I have a fix for the latter, which we will</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>call
+Expt(3), once Expt(2) has concluded.</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>I
+hope to do the former (6787254) in the next few days</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>so
+we can call that Expt(4).</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>My
+hope is that at the end of Expt(4) (each subsequent</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>expt
+here is cumulative wrt earlier ones), we will</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>have
+satisfactorily resolved the issue from a product</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>standpoint
+and what will remain at that stage is</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>associating
+these CR's/fixes with the appropriate</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>Service/Case#
+(which hopefully someone in the list</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>will
+come up with) and have the service/support</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>staff
+provide you with a suitable delivery vehicle</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>for
+those fixes (after suitable internal QA and release</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>processes).</I></FONT></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Times New Roman, serif"><FONT SIZE=2><I>--
+ramki</I></FONT></FONT></P>
+<H2 CLASS="western">Concurrent Mark Sweep Garbage Collection</H2>
+<H3 CLASS="western" STYLE="margin-left: 0.79in">LONG PAUSES</H3>
+<OL>
+	<OL>
+		<LI><P STYLE="font-weight: normal">Can stem from long weak refs
+		processing times. 
+		</P>
+		<LI><P STYLE="font-weight: normal">Work queue overflow. The extent
+		of the pause is roughly in proportion to the square of the number
+		of overflows reported. This is in line with the computed cost of
+		overflow handling that we noticed in current code which Sun is in
+		the process of fixing. Sun is hopeful that the modifications Sun
+		have made for reducing that cost might pay off in this case and
+		reduce those pauses.</P>
+		<LI><P STYLE="font-weight: normal">New option in jdk1.5.0_16 of
+		-XX:+CMSScavengeBeforeRemark can reduce the number of objects that
+		go into the overflow queue</P>
+	</OL>
+</OL>
+<H3 CLASS="western" STYLE="margin-left: 0.79in">Incremental GC
+options</H3>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif">According
+to the tuning guide, i-cms is more for 1 - 2 processor system. It's
+taking longer time to run as it tries to give cpu time back to the
+application while doing gc.</FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif">Ramki
+Says:-</FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in">“<FONT FACE="Nimbus Roman No9 L, serif"><I>The
+largest component of the long(er) CMS-remark pauses in the log file</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>you
+attached stem from reference object processing. This can indeed</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>be
+exacerbated at least in 5uXX from the way iCMS runs. iCMS has</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>other
+disadvantages chief among which is that it causes a lot more of</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>what
+is called &quot;floating garbage&quot; (effectively the longer a
+collection</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>cycle
+lasts the greater the volume of floating garbage).</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>The
+higher bit here is that iCMS brings disadvantages as above</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>and
+while in a 1-2 processor situation iCMS can lead to more</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>consistent
+mutator operation, the large number of cores you</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>have
+ensures that there is no advantage (at least none that</I></FONT></P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>i
+can see) of running with iCMS.”</I></FONT></P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in"><BR>
+</P>
+<UL>
+	<UL>
+		<UL>
+			<LI><P>Incremental is intended for Machines with only a few CPUs</P>
+			<LI><P>Is not compatible with CMSInitiatingOccupancyFraction
+			option</P>
+		</UL>
+	</UL>
+</UL>
+<H2 CLASS="western">Estimating Memory Used</H2>
+<P STYLE="margin-left: 0.79in">Since the memory for Objects is not
+return until some time after the object is no longer referenced it
+can be quite challenging to work out how much memory is actually
+being used. 
+</P>
+<P STYLE="margin-left: 0.79in">We use JMX and predefined threshold
+notification APIs to do such harvesting more accurately, which
+attempt a minor clean up before return that we are over the
+threshold.</P>
+<H2 CLASS="western">Cache Entry</H2>
+<P STYLE="margin-left: 0.79in">we use a lot of weak references (
+millions) generally the design pattern is to have a hard and weak
+reference for each object in cache. When we detect that we are low on
+memory we null out the hard references and continue to use the weak
+references. We have a weak reference to a large block of memory which
+we null out the hard reference to when we go over the threshold, this
+is used to tell us when the GC has done it's job and we need to clear
+out more cache. <BR><BR>This is one of the main classes that uses
+weak references... we will have many millions of these in memory.
+This class is sub-classed depending on the type of key used.</P>
+<TABLE WIDTH=100% CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD>
+			<P ALIGN=CENTER>CacheEntry.java</P>
+		</TD>
+	</TR>
+</TABLE>
+<PRE><SPAN STYLE="background: #e9e8e2"> 27</SPAN> <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">abstract</FONT> <FONT COLOR="#0a0a7c">class</FONT> CacheEntry <FONT COLOR="#0a0a7c">extends</FONT> WeakReference <FONT COLOR="#0a0a7c">implements</FONT> InterfaceEntry
+<SPAN STYLE="background: #e9e8e2"> 28</SPAN> {
+<SPAN STYLE="background: #e9e8e2"> 29</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2"> 30</SPAN> <FONT COLOR="#748ab0">     * creates</FONT> <FONT COLOR="#748ab0">a</FONT> <FONT COLOR="#748ab0">new</FONT> <FONT COLOR="#748ab0">Cache</FONT> <FONT COLOR="#748ab0">Entry</FONT>
+<SPAN STYLE="background: #e9e8e2"> 31</SPAN> <FONT COLOR="#748ab0">     *</FONT>
+<SPAN STYLE="background: #e9e8e2"> 32</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@param</B></FONT></FONT> <FONT COLOR="#748ab0">hash</FONT> <FONT COLOR="#748ab0">The</FONT> <FONT COLOR="#748ab0">hash</FONT> <FONT COLOR="#748ab0">id</FONT>
+<SPAN STYLE="background: #e9e8e2"> 33</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@param</B></FONT></FONT> <FONT COLOR="#748ab0">referent</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">object</FONT>
+<SPAN STYLE="background: #e9e8e2"> 34</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@param</B></FONT></FONT> <FONT COLOR="#748ab0">next</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">next</FONT> <FONT COLOR="#748ab0">element</FONT>
+<SPAN STYLE="background: #e9e8e2"> 35</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 36</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> CacheEntry(<FONT COLOR="#0a0a7c">final</FONT> <FONT COLOR="#0a0a7c">int</FONT> hash, <FONT COLOR="#0a0a7c">final</FONT> Object referent, <FONT COLOR="#0a0a7c">final</FONT> InterfaceEntry next)
+<SPAN STYLE="background: #e9e8e2"> 37</SPAN>     {
+<SPAN STYLE="background: #e9e8e2"> 38</SPAN>         <FONT COLOR="#0a0a7c">super</FONT>( referent);
+<SPAN STYLE="background: #e9e8e2"> 39</SPAN> 
+<SPAN STYLE="background: #e9e8e2"> 40</SPAN>         <FONT COLOR="#0a0a7c">this</FONT>.hash = hash;
+<SPAN STYLE="background: #e9e8e2"> 41</SPAN>         <FONT COLOR="#0a0a7c">this</FONT>.nextEntry = next;
+<SPAN STYLE="background: #e9e8e2"> 42</SPAN>         hardReference = referent;
+<SPAN STYLE="background: #e9e8e2"> 43</SPAN>     }
+<SPAN STYLE="background: #e9e8e2"> 44</SPAN> 
+<SPAN STYLE="background: #e9e8e2"> 45</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2"> 46</SPAN> <FONT COLOR="#748ab0">     * the</FONT> <FONT COLOR="#748ab0">next</FONT> <FONT COLOR="#748ab0">entry</FONT>
+<SPAN STYLE="background: #e9e8e2"> 47</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 48</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> InterfaceEntry nextEntry;
+<SPAN STYLE="background: #e9e8e2"> 49</SPAN> 
+<SPAN STYLE="background: #e9e8e2"> 50</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2"> 51</SPAN> <FONT COLOR="#748ab0">     * the</FONT> <FONT COLOR="#748ab0">hash</FONT>
+<SPAN STYLE="background: #e9e8e2"> 52</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 53</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">final</FONT> <FONT COLOR="#0a0a7c">int</FONT> hash;
+<SPAN STYLE="background: #e9e8e2"> 54</SPAN> 
+<SPAN STYLE="background: #e9e8e2"> 55</SPAN>     <FONT COLOR="#748ab0">/**</FONT> <FONT COLOR="#748ab0">The</FONT> <FONT COLOR="#748ab0">last</FONT> <FONT COLOR="#748ab0">time</FONT> <FONT COLOR="#748ab0">this</FONT> <FONT COLOR="#748ab0">entry</FONT> <FONT COLOR="#748ab0">was</FONT> <FONT COLOR="#748ab0">fetched</FONT> <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 56</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">int</FONT> data;
+<SPAN STYLE="background: #e9e8e2"> 57</SPAN>     
+<SPAN STYLE="background: #e9e8e2"> 58</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2"> 59</SPAN> <FONT COLOR="#748ab0">     * set</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">data</FONT>
+<SPAN STYLE="background: #e9e8e2"> 60</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@param</B></FONT></FONT> <FONT COLOR="#748ab0">temp</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">value</FONT>
+<SPAN STYLE="background: #e9e8e2"> 61</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 62</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">void</FONT> setData( <FONT COLOR="#0a0a7c">final</FONT> <FONT COLOR="#0a0a7c">int</FONT> temp)
+<SPAN STYLE="background: #e9e8e2"> 63</SPAN>     {
+<SPAN STYLE="background: #e9e8e2"> 64</SPAN>         data = temp;
+<SPAN STYLE="background: #e9e8e2"> 65</SPAN>     }
+<SPAN STYLE="background: #e9e8e2"> 66</SPAN>     
+<SPAN STYLE="background: #e9e8e2"> 67</SPAN>     <FONT COLOR="#748ab0">/**</FONT> <FONT COLOR="#748ab0">Don't</FONT> <FONT COLOR="#748ab0">allow</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">object</FONT> <FONT COLOR="#748ab0">pointed</FONT> <FONT COLOR="#748ab0">to</FONT> <FONT COLOR="#748ab0">by</FONT> <FONT COLOR="#748ab0">this</FONT> <FONT COLOR="#748ab0">entry</FONT> <FONT COLOR="#748ab0">to</FONT> <FONT COLOR="#748ab0">be</FONT> <FONT COLOR="#748ab0">deallocated</FONT> <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 68</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> Object hardReference;
+<SPAN STYLE="background: #e9e8e2"> 69</SPAN>     
+<SPAN STYLE="background: #e9e8e2"> 70</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2"> 71</SPAN> <FONT COLOR="#748ab0">     * clear</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">hard</FONT> <FONT COLOR="#748ab0">reference</FONT>
+<SPAN STYLE="background: #e9e8e2"> 72</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 73</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">void</FONT> clearHardReference()
+<SPAN STYLE="background: #e9e8e2"> 74</SPAN>     {
+<SPAN STYLE="background: #e9e8e2"> 75</SPAN>         hardReference=<FONT COLOR="#0a0a7c">null</FONT>;
+<SPAN STYLE="background: #e9e8e2"> 76</SPAN>     }
+<SPAN STYLE="background: #e9e8e2"> 77</SPAN>     
+<SPAN STYLE="background: #e9e8e2"> 78</SPAN>     <FONT COLOR="#748ab0">/**</FONT> 
+<SPAN STYLE="background: #e9e8e2"> 79</SPAN> <FONT COLOR="#748ab0">     * has</FONT> <FONT COLOR="#748ab0">this</FONT> <FONT COLOR="#748ab0">entry</FONT> <FONT COLOR="#748ab0">got</FONT> <FONT COLOR="#748ab0">a</FONT> <FONT COLOR="#748ab0">hard</FONT> <FONT COLOR="#748ab0">reference.</FONT> 
+<SPAN STYLE="background: #e9e8e2"> 80</SPAN> <FONT COLOR="#748ab0">     * </FONT>
+<SPAN STYLE="background: #e9e8e2"> 81</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@return</B></FONT></FONT> <FONT COLOR="#748ab0">true</FONT> <FONT COLOR="#748ab0">if</FONT> <FONT COLOR="#748ab0">there</FONT> <FONT COLOR="#748ab0">is</FONT> <FONT COLOR="#748ab0">a</FONT> <FONT COLOR="#748ab0">hard</FONT> <FONT COLOR="#748ab0">reference.</FONT> 
+<SPAN STYLE="background: #e9e8e2"> 82</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 83</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">boolean</FONT> hasHardReference()
+<SPAN STYLE="background: #e9e8e2"> 84</SPAN>     {
+<SPAN STYLE="background: #e9e8e2"> 85</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> hardReference != <FONT COLOR="#0a0a7c">null</FONT>;
+<SPAN STYLE="background: #e9e8e2"> 86</SPAN>     }
+<SPAN STYLE="background: #e9e8e2"> 87</SPAN>     
+<SPAN STYLE="background: #e9e8e2"> 88</SPAN>     <FONT COLOR="#748ab0">/**</FONT> 
+<SPAN STYLE="background: #e9e8e2"> 89</SPAN> <FONT COLOR="#748ab0">     * set</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">next</FONT> <FONT COLOR="#748ab0">entry</FONT>
+<SPAN STYLE="background: #e9e8e2"> 90</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@param</B></FONT></FONT> <FONT COLOR="#748ab0">entry</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">next</FONT> <FONT COLOR="#748ab0">entry</FONT>
+<SPAN STYLE="background: #e9e8e2"> 91</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2"> 92</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">void</FONT> setNext( <FONT COLOR="#0a0a7c">final</FONT> InterfaceEntry entry)
+<SPAN STYLE="background: #e9e8e2"> 93</SPAN>     {
+<SPAN STYLE="background: #e9e8e2"> 94</SPAN>         nextEntry = entry;
+<SPAN STYLE="background: #e9e8e2"> 95</SPAN>     }
+<SPAN STYLE="background: #e9e8e2"> 96</SPAN>     
+<SPAN STYLE="background: #e9e8e2"> 97</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2"> 98</SPAN> <FONT COLOR="#748ab0">     * </FONT>
+<SPAN STYLE="background: #e9e8e2"> 99</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@return</B></FONT></FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">next</FONT> <FONT COLOR="#748ab0">one</FONT>
+<SPAN STYLE="background: #e9e8e2">100</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2">101</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> InterfaceEntry next() 
+<SPAN STYLE="background: #e9e8e2">102</SPAN>     {
+<SPAN STYLE="background: #e9e8e2">103</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> nextEntry;
+<SPAN STYLE="background: #e9e8e2">104</SPAN>     }
+<SPAN STYLE="background: #e9e8e2">105</SPAN> 
+<SPAN STYLE="background: #e9e8e2">106</SPAN>     <FONT COLOR="#748ab0">/**</FONT> 
+<SPAN STYLE="background: #e9e8e2">107</SPAN> <FONT COLOR="#748ab0">     * </FONT>
+<SPAN STYLE="background: #e9e8e2">108</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@return</B></FONT></FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">hash</FONT> <FONT COLOR="#748ab0">code</FONT>
+<SPAN STYLE="background: #e9e8e2">109</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2">110</SPAN>     @Override
+<SPAN STYLE="background: #e9e8e2">111</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">int</FONT> hashCode() 
+<SPAN STYLE="background: #e9e8e2">112</SPAN>     {
+<SPAN STYLE="background: #e9e8e2">113</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> hash;
+<SPAN STYLE="background: #e9e8e2">114</SPAN>     }
+<SPAN STYLE="background: #e9e8e2">115</SPAN> 
+<SPAN STYLE="background: #e9e8e2">116</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2">117</SPAN> <FONT COLOR="#748ab0">     * </FONT>
+<SPAN STYLE="background: #e9e8e2">118</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@param</B></FONT></FONT> <FONT COLOR="#748ab0">obj</FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">object</FONT> <FONT COLOR="#748ab0">to</FONT> <FONT COLOR="#748ab0">check</FONT>
+<SPAN STYLE="background: #e9e8e2">119</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@return</B></FONT></FONT> <FONT COLOR="#748ab0">true</FONT> <FONT COLOR="#748ab0">if</FONT> <FONT COLOR="#748ab0">equals</FONT>
+<SPAN STYLE="background: #e9e8e2">120</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2">121</SPAN>     @Override
+<SPAN STYLE="background: #e9e8e2">122</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">boolean</FONT> equals(<FONT COLOR="#0a0a7c">final</FONT> Object obj) 
+<SPAN STYLE="background: #e9e8e2">123</SPAN>     {
+<SPAN STYLE="background: #e9e8e2">124</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>if</B></FONT></FONT> (obj == <FONT COLOR="#0a0a7c">null</FONT>) 
+<SPAN STYLE="background: #e9e8e2">125</SPAN>         {
+<SPAN STYLE="background: #e9e8e2">126</SPAN>             <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> <FONT COLOR="#0a0a7c">false</FONT>;
+<SPAN STYLE="background: #e9e8e2">127</SPAN>         }
+<SPAN STYLE="background: #e9e8e2">128</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>if</B></FONT></FONT> (getClass() != obj.getClass()) 
+<SPAN STYLE="background: #e9e8e2">129</SPAN>         {
+<SPAN STYLE="background: #e9e8e2">130</SPAN>             <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> <FONT COLOR="#0a0a7c">false</FONT>;
+<SPAN STYLE="background: #e9e8e2">131</SPAN>         }
+<SPAN STYLE="background: #e9e8e2">132</SPAN>         
+<SPAN STYLE="background: #e9e8e2">133</SPAN>         <FONT COLOR="#0a0a7c">final</FONT> CacheEntry other = (CacheEntry) obj;
+<SPAN STYLE="background: #e9e8e2">134</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>if</B></FONT></FONT> (<FONT COLOR="#0a0a7c">this</FONT>.get() != other.get() ) 
+<SPAN STYLE="background: #e9e8e2">135</SPAN>         {
+<SPAN STYLE="background: #e9e8e2">136</SPAN>             <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> <FONT COLOR="#0a0a7c">false</FONT>;
+<SPAN STYLE="background: #e9e8e2">137</SPAN>         }
+<SPAN STYLE="background: #e9e8e2">138</SPAN>         
+<SPAN STYLE="background: #e9e8e2">139</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>if</B></FONT></FONT> (<FONT COLOR="#0a0a7c">this</FONT>.hash != other.hash) 
+<SPAN STYLE="background: #e9e8e2">140</SPAN>         {
+<SPAN STYLE="background: #e9e8e2">141</SPAN>             <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> <FONT COLOR="#0a0a7c">false</FONT>;
+<SPAN STYLE="background: #e9e8e2">142</SPAN>         }
+<SPAN STYLE="background: #e9e8e2">143</SPAN> 
+<SPAN STYLE="background: #e9e8e2">144</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> <FONT COLOR="#0a0a7c">true</FONT>;
+<SPAN STYLE="background: #e9e8e2">145</SPAN>     }
+<SPAN STYLE="background: #e9e8e2">146</SPAN> 
+<SPAN STYLE="background: #e9e8e2">147</SPAN>     <FONT COLOR="#748ab0">/**</FONT>
+<SPAN STYLE="background: #e9e8e2">148</SPAN> <FONT COLOR="#748ab0">     * </FONT>
+<SPAN STYLE="background: #e9e8e2">149</SPAN> <FONT COLOR="#748ab0">     * </FONT><FONT COLOR="#748ab0"><FONT FACE="Monospaced"><B>@return</B></FONT></FONT> <FONT COLOR="#748ab0">the</FONT> <FONT COLOR="#748ab0">data</FONT>
+<SPAN STYLE="background: #e9e8e2">150</SPAN>      <FONT COLOR="#748ab0">*/</FONT>
+<SPAN STYLE="background: #e9e8e2">151</SPAN>     <FONT COLOR="#0a0a7c">public</FONT> <FONT COLOR="#0a0a7c">int</FONT> getData() 
+<SPAN STYLE="background: #e9e8e2">152</SPAN>     {
+<SPAN STYLE="background: #e9e8e2">153</SPAN>         <FONT COLOR="#0a0a7c"><FONT FACE="Monospaced"><B>return</B></FONT></FONT> data;
+<SPAN STYLE="background: #e9e8e2">154</SPAN>     }
+<SPAN STYLE="background: #e9e8e2">155</SPAN> }</PRE><H3 CLASS="western">
+GC Options</H3>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><B>Name</B></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><B>Summary</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-verbose:gc</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #00ff00">-XX:+CMSScavengeBeforeRemark</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><A HREF="http://www.javaperformancetuning.com/news/newtips083.shtml"><FONT FACE="Nimbus Roman No9 L, serif">http://www.javaperformancetuning.com/news/newtips083.shtml</FONT></A></P>
+			<BLOCKQUOTE><I>setting CMSScavengeBeforeRemark to true will force
+			a minor collection to occur just before the re-mark - which may be
+			better (makes the re-mark more parallel so shorter) or worse (if
+			the minor GC itself is long enough, it looks like one long pause)</I></BLOCKQUOTE>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #00ff00">-XX:+CMSPrecleanRefLists1</SPAN></FONT></P>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #00ff00">-XX:+CMSPrecleanRefLists2</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal"><FONT FACE="Nimbus Roman No9 L, serif">From
+			Sun support:-</FONT></P>
+			<P STYLE="margin-left: 0.48in"><FONT FACE="Nimbus Roman No9 L, serif"><I>In
+			particular, if the long reference processing times persist, we can
+			use -XX:+CMSPrecleanRefLists{1,2} as well as
+			-XX:+ParallelRefProcEnabled.</I></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #00ff00">-XX:+ParallelRefProcEnabled</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal"><FONT FACE="Nimbus Roman No9 L, serif">From
+			Sun support:-</FONT></P>
+			<P STYLE="margin-left: 0.48in"><FONT FACE="Nimbus Roman No9 L, serif"><I>In
+			particular, if the long reference processing times persist, we can
+			use -XX:+CMSPrecleanReflists{1,2} as well as
+			-XX:+ParallelRefProcEnabled.</I></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #7da647">-XX:ParGCDesiredObjsFromOverflowList=20k</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><A HREF="http://forums.sun.com/thread.jspa?threadID=5353614">&lt;</A><A HREF="http://forums.sun.com/thread.jspa?threadID=5353614">http://forums.sun.com/thread.jspa?threadID=5353614</A><A HREF="http://forums.sun.com/thread.jspa?threadID=5353614">&gt;</A></FONT></P>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">We have tried values
+			ranging from</FONT></P>
+			<PRE STYLE="margin-bottom: 0.2in"><CODE>-XX:ParGCDesiredObjsFromOverflowList=20k</CODE></PRE><P>
+			<BR>This didn't help so we tried again with :-</P>
+			<PRE STYLE="margin-bottom: 0.2in"><CODE>-XX:ParGCDesiredObjsFromOverflowList=1G</CODE></PRE><P>
+			<BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #ff0000"><I>-XX:+UseMembar</I>
+			</SPAN></FONT>
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">We also tried
+			<I>-XX:+UseMembar</I> but this didn't seem to have any effect, see
+			bugs below.</FONT></P>
+			<UL>
+				<LI><P STYLE="margin-bottom: 0in"><A HREF="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5075546">http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5075546</A>
+				<I>&quot;remove memory barrier on native transitions&quot;</I> 
+				</P>
+				<LI><P><A HREF="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6279018">http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6279018</A>
+				<I>&quot;Remove diagnostic -XX:+UseMembar flag&quot; </I>
+				</P>
+			</UL>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:+PrintGCDetails</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:+PrintGCTimeStamps</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:PrintCMSStatistics=<SPAN STYLE="background: #00ff00">2</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">as requested by sun
+			support ( maybe only in staging) </FONT>
+			</P>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:+UseCMSInitiatingOccupancyOnly</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:CMSMarkStackSize=256m</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:CMSMarkStackSizeMax=5012m</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif">Increasing
+			the max size will <B>not</B> improve the “work queue overflow”</FONT></P>
+			<P STYLE="margin-bottom: 0in"><BR>
+			</P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>This
+			is not going to help with the pause you are experiencing. You are
+			right that</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>work
+			queue overflow can prolong the remark-pause (although something
+			this</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>long
+			is previously unheard of, at least in my experience).
+			Unfortunately, the</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>setting
+			of CMSMarkStackSizeMax or CMSMarkStackSize is not going to</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>benefit
+			you here because that stack is not used for this phase of the
+			CMS-remark.</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><BR>
+			</P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>Please
+			file a bug with Sun (either through your existing support contract</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>or
+			through bugs.sun.com if you do not have a support contract), with
+			full</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>details
+			of your platform and complete GC logs (that include the option</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>-XX:PrintCMSStatistics=2).</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><BR>
+			</P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>You
+			are almost certainly right that the overflow handling might be a
+			main</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>culprit
+			here (although the extent of the slow down leaves me dissatisfied</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>with
+			that as the sole explanation of the pause).</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>--------------------------------------------------------------</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><BR>
+			</P>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif"><I>To
+			respond to this post, please click the following link:</I></FONT></P>
+			<P STYLE="margin-bottom: 0in"><A HREF="http://forums.sun.com/thread.jspa?messageID=10543393"><FONT FACE="Nimbus Roman No9 L, serif"><I>&lt;http://forums.sun.com/thread.jspa?messageID=10543393&gt;</I></FONT></A></P>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:+UseParNewGC</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:NewSize=256m</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:MaxNewSize=256m</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:SurvivorRatio=3</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:+UseConcMarkSweepGC</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:+CMSClassUnloadingEnabled</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #00ff00">-XX:+CMSClassUnloadingEnabled</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="margin-bottom: 0in"><FONT FACE="Nimbus Roman No9 L, serif">Sun
+			notice that we have +CMSPermGenSweepingEnabled. I recommend</FONT></P>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">adding
+			=CMSClassUnloadingEnabled to actually get the classes from perm
+			gen unloaded which might help clear unnecessary static cruft from
+			the old gen as well.</FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #ff0000">-XX:+CMSIncrementalMode</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #ff0000">-XX:CMSIncrementalDutyCycleMin=40</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #ff0000">-XX:CMSInitiatingOccupancyFraction=40</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #ff0000">-XX:+CMSIncrementalPacing</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif"><SPAN STYLE="background: #ff0000">-XX:CMSIncrementalSafetyFactor=50</SPAN></FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-XX:+PrintGCApplicationStoppedTime
+			</FONT>
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-Dsun.rmi.dgc.server.gcInterval=0x36EE8000</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><FONT FACE="Nimbus Roman No9 L, serif">-Dsun.rmi.dgc.client.gcInterval=0x36EE8000</FONT></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<PRE>           
+                    
+                </PRE><P>
+<BR><BR>
+</P>
+</BODY>
+</HTML>

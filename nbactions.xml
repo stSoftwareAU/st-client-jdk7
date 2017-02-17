@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>run.single.main</actionName>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+            </goals>
+            <properties>
+                <run.class>${packageClassName}</run.class>
+                <target>run-selected-file</target>
+                <netbeans.home>netbeans</netbeans.home>
+                <jpda.address>run</jpda.address>
+                
+                
+                
+                
+            </properties>
+        </action>
+        <action>
+            <actionName>debug.single.main</actionName>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+            </goals>
+            <properties>
+                
+                
+                <target>debug-selected-file</target>
+                <run.class>${packageClassName}</run.class>
+                <netbeans.home>netbeans</netbeans.home>
+                <jpda.address>${jpda.address}</jpda.address>
+                <jpda.listen>true</jpda.listen>
+                
+                
+            </properties>
+        </action>
+    </actions>

@@ -1,0 +1,101 @@
+<BENCHMARK>
+	<TITLE name="Baseline JMS Scenario"/>
+	<CLIENT name="Subscriber1" clone="1">
+            <TASK 
+                name="Subscriber1" 
+                java_class="com.aspc.remote.performance.tasks.SubscriberTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"  
+                receive_delay="0"
+            />
+	</CLIENT>
+	<CLIENT name="Subscriber2" clone="1">
+            <TASK 
+                name="Subscriber2" 
+                java_class="com.aspc.remote.performance.tasks.SubscriberTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"  
+                receive_delay="0"
+            />
+	</CLIENT>
+	<CLIENT name="Subscriber3" clone="1">
+            <TASK 
+                name="Subscriber3" 
+                java_class="com.aspc.remote.performance.tasks.SubscriberTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"  
+                receive_delay="0"
+            />
+	</CLIENT>
+	<CLIENT name="Subscriber4" clone="1">
+            <TASK 
+                name="Subscriber4" 
+                java_class="com.aspc.remote.performance.tasks.SubscriberTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"  
+                receive_delay="0"
+            />
+	</CLIENT>
+	<CLIENT name="slow consumer" clone="1">
+            <TASK 
+                name="slow consumer" 
+                java_class="com.aspc.remote.performance.tasks.SubscriberTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"  
+                receive_delay="100"
+            />
+	</CLIENT>
+	<CLIENT name="Publisher1" clone="1">
+            <TASK 
+                name="Publisher1" 
+                java_class="com.aspc.remote.performance.tasks.PublisherTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"   
+                message_count="10000"
+                message_size="1"
+            />
+	</CLIENT>
+	<CLIENT name="Publisher2" clone="1">
+            <TASK 
+                name="Publisher2" 
+                java_class="com.aspc.remote.performance.tasks.PublisherTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"   
+                message_count="10000"
+                message_size="25"
+            />
+	</CLIENT>
+	<CLIENT name="Publisher3" clone="1">
+            <TASK 
+                name="Publisher3" 
+                java_class="com.aspc.remote.performance.tasks.PublisherTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"   
+                message_count="10000"
+                message_size="50"
+            />
+	</CLIENT>
+	<CLIENT name="Publisher4" clone="1">
+            <TASK 
+                name="Publisher4" 
+                java_class="com.aspc.remote.performance.tasks.PublisherTask"
+                context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" 
+                provider_url="tcp://localhost:61616" 
+                destination="BenchmarkTopic1"   
+                message_count="10000"
+                message_size="100"
+            />
+	</CLIENT>
+        
+	<CLIENT name="Shutdown" clone="1" depends="Publisher1,Publisher2,Publisher3,Publisher4">
+		<TASK name="ShutdownSubsriber(s)" java_class="com.aspc.remote.performance.tasks.ShutdownSubscriberTask" context_factory="org.activemq.jndi.ActiveMQInitialContextFactory" provider_url="tcp://localhost:61616" destination="BenchmarkTopic1"  ></TASK>
+	</CLIENT>
+</BENCHMARK>

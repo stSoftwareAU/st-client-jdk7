@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : file_multiple_read_update.xml
+    Created on : March 2, 2006, 12:21 PM
+    Author     : alex
+    Description:
+        Scenario: 
+        One client submits small file, 
+        multiple clients are reading and updating the same small file from the same location.
+-->
+
+<BENCHMARK>
+    <TITLE name="Test multiple read and update"/>
+    <CLIENT name ="setup">
+        <TASK name="clean">      
+            LOG WRITE "clear out old file."
+        </TASK>
+        <FILE name="cleanup task" type="cleanup"
+             file_target="/docs/test2.txt"/>
+        <TASK name="create">      
+                LOG WRITE "create new file."
+        </TASK>
+        <FILE name="create task" type="create" 
+              file_target="/docs/test2.txt"
+              file_key_prop_name="key2"
+              file_size="2000"/>     
+    </CLIENT>
+    <CLIENT name ="read" clone="10" loop="1 min" depends="setup">
+        <TASK name="read">      
+                LOG WRITE "read the file from server"
+        </TASK>
+        <FILE name="read task" type="read" 
+              file_target="/docs/test2.txt"/>
+    </CLIENT>
+    
+    <CLIENT name ="update" clone="10" loop="1 min" depends="setup">
+        <TASK name="update">      
+                LOG WRITE "update the file on server"
+        </TASK>
+        <FILE name="update task" type="update" 
+              file_target="/docs/test2.txt"
+              file_key_prop_name="key2"/>
+    </CLIENT>
+       
+</BENCHMARK>
+

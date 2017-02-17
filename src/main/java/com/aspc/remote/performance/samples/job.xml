@@ -1,0 +1,15 @@
+<BENCHMARK disable="TASK_RESET">
+
+   <CLIENT name="execute jobs" >
+        <!--TASK name="sleep 0" execute="Y" >
+            SLEEP 0;
+        </TASK-->
+        <TASK name="echo" execute="Y" reset="Y" validate="[0-9\.]*">
+            LOG echo '192982.202';
+        </TASK>
+
+        <!--TASK name="sleep to long" job="Y" jobcancel="10 secs" >
+            SLEEP 60;
+        </TASK-->
+   </CLIENT>
+</BENCHMARK>

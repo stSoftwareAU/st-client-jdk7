@@ -1,0 +1,12 @@
+/target/
+/dev/*/target/
+/webapps/
+/tmp/
+/temp/
+/test/
+/tests/
+/dev/*/tmp/
+/dev/*/temp/
+/dev/*/test/
+/bin/
+/logs/

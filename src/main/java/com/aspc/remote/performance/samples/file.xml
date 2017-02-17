@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : file.xml
+    Created on : February 20, 2006, 10:41 AM
+    Author     : alex
+    Description:
+        Update: 1 client Read: 10 clients.
+        
+-->
+<BENCHMARK>
+    <TITLE name="Update: 1 client Read: 10 clients"/>
+    <CLIENT name ="setup">
+        <TASK name="clean">      
+            LOG WRITE "clear out old file."
+        </TASK>
+        <FILE name="cleanup task" type="cleanup"
+             file_target="/docs/perf.txt"/>
+        <TASK name="create">      
+                LOG WRITE "create new file."
+        </TASK>
+        <FILE name="create task" type="create" 
+              file_target="/docs/perf.txt"
+              file_key_prop_name="key1"/>     
+    </CLIENT>
+    
+    <CLIENT name ="update" clone="1" loop="2 min" depends="setup">
+        <TASK name="update">      
+                LOG WRITE "update the file on server"
+        </TASK>
+        <FILE name="update task" type="update" 
+              file_target="/docs/perf.txt"
+              file_key_prop_name="key1"/>
+    </CLIENT>
+    <CLIENT name ="read" clone="10" loop="1 min" depends="setup">
+        <TASK name="read">      
+                LOG WRITE "read the file from server"
+        </TASK>
+        <FILE name="read task" type="read" 
+              file_target="/docs/perf.txt" location="tstlocation"/>
+   </CLIENT>
+<!--       
+       <FILE name="enable file store task" type="enable"
+             fs_volume_name="MEI">
+          LOG WRITE "Enable file store task";
+       </FILE>
+
+       <FILE name="disable file store task" type="disable" 
+             fs_volume_name="MEI">
+          LOG WRITE "Disable file store task";
+       </FILE>
+       
+   </CLIENT>
+-->       
+</BENCHMARK>

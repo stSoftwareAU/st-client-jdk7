@@ -1,0 +1,123 @@
+<BENCHMARK>
+
+    <TITLE name="all tasks"/>
+    
+   <LIST name="year">
+       1990
+       1991
+       1992
+       1993
+       1994
+       1995
+       1996
+       1997
+       1998
+       1999
+       2000
+       2001
+       2002
+       2003
+       2004
+       2005
+       2006
+       2007
+       2008
+       2009
+       2010
+   </LIST>
+   
+   <LIST name="stock">
+       BHP.AU
+       MSFT.US
+       APPL.US
+       ASPC.AU
+   </LIST>
+   
+   <CLIENT name="setup">
+      LOG WRITE "start up";
+   </CLIENT>
+   
+   
+   <!-- 
+        A Client 
+           - Single threaded.
+           - Maybe cloned to make duplicate clients
+           - Wait an amount of time before starting.
+           - Loop for an amount of time or number of loops.
+           - depends on another client to finish
+           - stagger the start time of each client over a period.
+   -->
+   <CLIENT name ="my client" clone="5" wait="5 secs" loop="5" stagger="1 min" depends="setup">
+      
+      <!--
+          basic bench mark task requires a name and the commands as text.
+       -->   
+       <TASK name="step 1">
+          LOG WRITE "Step 1";
+       </TASK>
+
+       <TASK name="step 2" loop="10" varying="stock, year">
+          LOG WRITE "%CLIENT_NAME% stock=%stock% year=%year%";
+       </TASK>
+   </CLIENT>
+       
+   <CLIENT name="other features">
+       <!--
+          java_class - allows you to specify a class that extends com.aspc.remote.performance.Task
+       -->
+       <TASK name="SCAN ALL contacts" java_class="com.aspc.remote.performance.tasks.ScanTask">
+          Contact
+       </TASK>
+
+       <!--
+          Loop the test a few times.
+       -->
+       <TASK name="Loop 5 times" loop="5">
+          Select * from person where name like 'nigel*';
+          delete from person where name like 'nigel*';
+          insert into person ( name ) values ( 'nigel');
+          rollback;
+       </TASK>
+
+       <!--
+          Loop the test for a while.
+       -->
+       <TASK name="Loop for 30 secs" loop="30 secs">
+          Select * from person where name like 'nigel*';
+          delete from person where name like 'nigel*';
+          insert into person ( name ) values ( 'nigel');
+          rollback;
+       </TASK>
+
+       <!--
+          Wait a while before starting
+       -->  
+       <TASK name="Wait for 15 secs" loop="10 secs" >
+          Select * from person where name like 'nigel*';
+          delete from person where name like 'nigel*';
+          insert into person ( name ) values ( 'nigel');
+          rollback;
+       </TASK>
+
+      <!--
+          pause at the begining of each loop.
+         -->
+       <TASK name="Pause each loop" loop="10" pause="1 secs">
+          sleep 1
+       </TASK>
+
+      <!--
+          Set the maximum time for a loop. 
+       -->  
+       <TASK name="Slow command" max_tm="3 secs">
+          sleep 5
+       </TASK>
+
+   </CLIENT>
+   
+    <REPORT>
+        MEMORY;
+        SELECT * FROM Person;
+    </REPORT>
+   
+</BENCHMARK>

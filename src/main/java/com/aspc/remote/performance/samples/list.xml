@@ -1,0 +1,14 @@
+<BENCHMARK>
+
+   <LIST name="people">
+   nigel
+   tina
+   </LIST>
+   <LIST name="pets" file="samples/pets.txt"/>
+   
+   <CLIENT name="sample" >
+        <TASK name="log" varying="people,pets">      
+            LOG WRITE "%people% and %pets%"
+        </TASK>
+   </CLIENT>
+</BENCHMARK>

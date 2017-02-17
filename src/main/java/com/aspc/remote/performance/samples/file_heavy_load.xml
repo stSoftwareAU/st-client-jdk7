@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : file_heavy_load.xml
+    Created on : March 2, 2006, 1:11 PM
+    Author     : alex
+    Description:
+        One client submits a large file, 
+        multiple clients are updating the same large file from one location while multiple clients
+        are reading the same file from different location for a long period of time.
+-->
+
+<BENCHMARK>
+    <TITLE name="Test Heavy Load"/>
+    <CLIENT name ="setup">
+        <TASK name="clean">      
+            LOG WRITE "clear out old file."
+        </TASK>
+        <FILE name="cleanup task" type="cleanup"
+             file_target="/docs/test4.txt"/>
+        <TASK name="create">      
+                LOG WRITE "create new file."
+        </TASK>
+        <FILE name="create task" type="create" 
+              file_target="/docs/test4.txt"
+              file_key_prop_name="key4"
+              file_size="2000000"
+              location="MEI"/>     
+    </CLIENT>
+    <CLIENT name ="read" clone="100" loop="10 min" depends="setup">
+        <TASK name="read">      
+                LOG WRITE "read the file from server"
+        </TASK>
+        <FILE name="read task" type="read" 
+              file_target="/docs/test4.txt"
+              location="LUKE"/>
+    </CLIENT>
+    
+     <CLIENT name ="update" clone="100" loop="10 min" depends="setup">
+        <TASK name="update">      
+                LOG WRITE "update the file on server"
+        </TASK>
+        <FILE name="update task" type="update" 
+              file_target="/docs/test4.txt"
+              file_key_prop_name="key4"/>
+    </CLIENT>
+       
+</BENCHMARK>

@@ -1,0 +1,12 @@
+<BENCHMARK>
+   
+   <CLIENT name="sample" >
+        <TASK name="log" varying="people,pets">      
+            LOG WRITE "TEST"
+        </TASK>
+   </CLIENT>
+   
+   <ATTACHMENT name="test.html" java_class="com.aspc.remote.performance.samples.SampleAttachment">
+       Some Data.
+   </ATTACHMENT>
+</BENCHMARK>

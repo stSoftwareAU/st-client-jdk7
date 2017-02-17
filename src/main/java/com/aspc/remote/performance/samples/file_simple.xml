@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : file_simple.xml
+    Created on : March 2, 2006, 11:56 AM
+    Author     : alex
+    Description:
+        The simpliest scenario: 
+        One client submits a small file, one client is reading the same small file from the same location.
+-->
+<BENCHMARK>
+    <TITLE name="Test Simple"/>
+    <CLIENT name ="setup">
+        <TASK name="clean">      
+            LOG WRITE "clear out old file."
+        </TASK>
+        <FILE name="cleanup task" type="cleanup"
+             file_target="/docs/test1.txt"/>
+        <TASK name="create">      
+                LOG WRITE "create new file."
+        </TASK>
+        <FILE name="create task" type="create" 
+              file_target="/docs/test1.txt"
+              file_key_prop_name="key1"
+              file_size="2000"/>     
+    </CLIENT>
+    <CLIENT name ="read" clone="1" loop="1 min" depends="setup">
+        <TASK name="read">      
+                LOG WRITE "read the file from server"
+        </TASK>
+        <FILE name="read task" type="read" 
+              file_target="/docs/test1.txt"/>
+    </CLIENT>
+       
+</BENCHMARK>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : screen_load.xml
+    Created on : 26 September, 2006
+    Author     : Jason McGrath
+    Description: Loads a report screen with list of DBCommands
+        
+-->
+<BENCHMARK>
+    <TITLE name="Loads a report screen with list of DBCommands"/>
+    <WEB_CLIENT name ="setup">
+        <TASK name="Clear Memory">
+              MEMORY CLEAR 10;
+              MEMORY GC;
+              MEMoRY 
+        </TASK>
+        <TASK name="Initial Load" java_class="com.aspc.remote.performance.tasks.ScreenLoadTask"
+                                  class_name="Person"
+                                  screen_type="REPORT"/> 
+    </WEB_CLIENT> 
+    <WEB_CLIENT name ="Refresh" depends="setup" >
+        <TASK name="Refresh Test" java_class="com.aspc.remote.performance.tasks.ScreenLoadTask"
+                                  loop="10" 
+                                  pause="1 secs"
+                                  class_name="Person"
+                                  screen_type="REPORT"/>
+    </WEB_CLIENT>        
+</BENCHMARK>

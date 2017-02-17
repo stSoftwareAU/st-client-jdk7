@@ -1,0 +1,16 @@
+<BENCHMARK disable="TASK_RESET">
+
+   <CLIENT name="execute jobs" until_isset="validation_error" loop="10 min">
+        <!--TASK name="sleep 0" execute="Y" >
+            SLEEP 0;
+        </TASK-->
+        <TASK name="greater" validate_formula="gt( value, 600)" on_error_set="validation_error">
+            SELECT count( class_id)
+            FROM DBClass
+        </TASK>
+
+        <!--TASK name="sleep to long" job="Y" jobcancel="10 secs" >
+            SLEEP 60;
+        </TASK-->
+   </CLIENT>
+</BENCHMARK>

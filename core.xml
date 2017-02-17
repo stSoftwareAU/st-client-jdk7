@@ -1,0 +1,314 @@
+<project name="core">
+
+    <target name="-init">
+    </target>
+
+    <target name="-init_core" depends="-init">
+        <property name="log.dir" value="${ST_HOME}/logs"/>
+        <property name="APP_NAME" value="st"/>                
+    </target>
+    
+    <target name="jvm-args" depends="-init_core">
+
+        <condition property="MAX_MEMORY" value="${default.max.memory}">
+            <isset property="default.max.memory"/>
+        </condition>
+
+        <property name="MAX_MEMORY" value="300m"/>
+        <!-- 
+        http://blog.sokolenko.me/2014/11/javavm-options-production.html
+        -->
+        <property name="LOG_DIR" value="${log.dir}"/>
+        <!-- Memory over 4 gigs requires 64 bit mode -->
+        <condition property="MEM_MODE" value="-d64 ">
+            <or>
+                <matches pattern="[4-9]G" string="${MAX_MEMORY}" casesensitive="false"/>
+                <matches pattern="[0-9]+[0-9]G" string="${MAX_MEMORY}" casesensitive="false"/>
+                <matches pattern="[4-9][0-9][0-9][0-9]M" string="${MAX_MEMORY}" casesensitive="false"/>
+                <matches pattern="[0-9]+[0-9][0-9][0-9][0-9]M" string="${MAX_MEMORY}" casesensitive="false"/>
+            </or>
+        </condition>
+        <property name="MEM_MODE" value=""/>
+
+         <!-- 
+            http://www.infoq.com/articles/tuning-tips-G1-GC
+            default to 256m for -d64 bit 
+        -->
+
+        <!--
+            New Size limits, not recommended to set
+            
+            http://blog.mgm-tp.com/2013/12/benchmarking-g1-and-other-java-7-garbage-collectors/
+
+            The G1 collector has good default settings and, as outlined in the official best practice guidelines, 
+            there is little to gain and much to lose from setting the new generation size explicitly.
+        -->
+        <condition property="_new_size" value="-XX:NewSize=${NewSize} " >
+            <and>
+                <isset property="NewSize"/>
+            </and>
+        </condition>
+        <property name="_new_size" value=""/>
+
+        <condition property="_max_new_size" value="-XX:MaxNewSize=${MaxNewSize} " >
+            <isset property="MaxNewSize"/>
+        </condition>
+        
+        <property name="_max_new_size" value=""/>
+        
+        <condition property="_private.db.dir" value="-Dprivate.db.dir=${private.db.dir} " >
+            <and>
+                <isset property="private.db.dir"/>
+                <or>
+                    <istrue value="${private.db.use}"/>
+                    <not>
+                        <isset property="private.db.use"/>
+                    </not>
+                </or>
+            </and>
+        </condition>
+
+        <property name="_private.db.dir" value=""/>
+
+        <condition property="_private.db.layers" value="-Dprivate.db.layers=${private.db.layers} " >
+            <and>
+                <isset property="private.db.layers"/>                
+                <or>
+                    <istrue value="${private.db.use}"/>
+                    <not>
+                        <isset property="private.db.use"/>
+                    </not>
+                </or>
+            </and>
+        </condition>
+
+        <property name="_private.db.layers" value=""/>
+        <!--
+        default value is -XX:InitialTenuringThreshold=7 no longer needed.
+        -->
+        <property name="YOUNG_GEN" value="${_new_size}${_max_new_size}"/>
+
+        <!--
+            NUMA Collector Enhancements
+            http://download.oracle.com/javase/7/docs/technotes/guides/vm/performance-enhancements-7.html
+        
+        <property name="_mem_numa" value="-XX:+UseNUMA "/>
+        ${_mem_numa}
+        -->
+
+        <property name="GC_CALL" value="-XX:+ExplicitGCInvokesConcurrent "/>
+
+        <!--        
+         it seems that we need this option for G1 
+        <property name="_gc_cms" value="-XX:+CMSClassUnloadingEnabled "/>
+        -->
+        <property name="gc_max_pause" value="1000"/>
+
+        <!--
+            http://www.oracle.com/technetwork/java/javase/tech/g1-intro-jsp-135488.html
+
+            NOT WORKING
+            ===========
+                -XX:+G1ParallelRSetUpdatingEnabled
+                -XX:+G1ParallelRSetScanningEnabled
+                -XX:+UnlockExperimentalVMOptions
+        -->
+        <property name="_gc_g1" value="-XX:+UseG1GC -XX:MaxGCPauseMillis=${gc_max_pause} -XX:+ParallelRefProcEnabled "/>
+        
+        <!--
+            http://www.thegeekyway.com/java-autoboxing-xxautoboxcachemax/
+        -->
+        <property name="AutoBoxCacheMax" value="40000"/>
+        <condition property="_auto_box_cache_max" value="-XX:AutoBoxCacheMax=${AutoBoxCacheMax} " >
+            <matches pattern="[1-9]+" string="${AutoBoxCacheMax}"/>            
+        </condition>
+        <property name="_auto_box_cache_max" value=""/>
+        <!--
+            http://www.thegeekyway.com/java-autoboxing-xxautoboxcachemax/
+        -->
+        <property name="StringTableSize" value=""/>
+        <condition property="_string_cache" value="-XX:+UseStringCache -XX:StringTableSize=${StringTableSize} " >
+            <matches pattern="[1-9]+" string="${StringTableSize}"/>            
+        </condition>
+        <property name="_string_cache" value=""/>
+        
+        <!--
+             OptimizeStringConcat default as of 2012
+        -->
+        <!--<property name="MEMORY_OPTIMIZATION" value="${_auto_box_cache_max}${_string_cache}"/>-->
+        <property name="MEMORY_OPTIMIZATION" value="${_auto_box_cache_max}${_string_cache}-XX:+UseStringDeduplication "/>
+        
+        <!--        
+            By default as of JDK1.6_45
+            -Dsun.rmi.dgc.server.gcInterval=3600000 and -Dsun.rmi.dgc.client.gcInterval=3600000
+        -->
+        <property name="GC_ARGS" value="${_gc_g1}${GC_CALL}"/>
+
+        <!-- MEMORY ARGUMENTS -->
+        <condition property="_start_memory" value="-Xms${START_MEMORY} " >
+            <isset property="START_MEMORY"/>
+        </condition>
+        <property name="_start_memory" value=""/>
+
+        <condition property="_max_memory" value="-Xmx${MAX_MEMORY} " >
+            <isset property="MAX_MEMORY"/>
+        </condition>
+        <property name="_max_memory" value=""/>
+        <property name="_error_file" value="${LOG_DIR}/${APP_NAME}.hotspot"/>
+        <property name="_hprof_file" value="${LOG_DIR}/${APP_NAME}.hprof"/>
+        <property name="MEM_OOME" value="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${_hprof_file} -XX:ErrorFile=${_error_file} "/>
+        <property name="MEM_ARGS" value="${MEM_MODE}${_max_memory}${_start_memory}${MEM_OOME}"/>
+
+        <!--
+            SERVER ARGUMENTS
+        -->
+        <condition property="_headless" value="-Djava.awt.headless=true ">
+            <not>
+                <isset property="netbeans.home"/>
+            </not>
+        </condition>
+        <property name="_headless" value=""/>
+
+        <!--
+            DATA_RESULT_SCROLLER_VERSION
+        -->
+        <condition property="_scroller_version" value="-DDATA_RESULT_SCROLLER_VERSION=${DATA_RESULT_SCROLLER_VERSION} ">
+            <isset property="DATA_RESULT_SCROLLER_VERSION"/>
+        </condition>
+        <property name="_scroller_version" value=""/>
+
+        <!--
+            STATEMENT_BATCH_VERSION
+        -->
+        <condition property="_statement_version" value="-DSTATEMENT_BATCH_VERSION=${STATEMENT_BATCH_VERSION} ">
+            <isset property="STATEMENT_BATCH_VERSION"/>
+        </condition>
+        <property name="_statement_version" value=""/>
+
+        <!--
+            HASH_LONG_MAP_VERSION
+        -->
+        <condition property="_hash_long_version" value="-DHASH_LONG_MAP_VERSION=${HASH_LONG_MAP_VERSION} ">
+            <isset property="HASH_LONG_MAP_VERSION"/>
+        </condition>
+        <property name="_hash_long_version" value=""/>
+
+        <!--
+            enable asserts
+        -->
+        <condition property="_assert" value="-ea ">
+            <matches pattern="(TEST|DEV)" string="${AREA}"/>
+        </condition>
+        <property name="_assert" value=""/>
+
+        <!--
+            DISABLE
+        -->
+        <condition property="_disable" value="-DDISABLE=${DISABLE} ">
+            <isset property="DISABLE"/>
+        </condition>
+        <property name="_disable" value=""/>
+
+        <!--
+            ENABLE
+        -->
+        <condition property="_enable" value="-DENABLE=${ENABLE} ">
+            <isset property="ENABLE"/>
+        </condition>
+        <property name="_enable" value=""/>
+
+        <condition property="_st_properties" value="-DST_PROPERTIES=${ST_PROPERTIES} ">
+            <isset property="ST_PROPERTIES"/>
+        </condition>
+        <property name="_st_properties" value=""/>
+
+        <!--
+            -Xnoclassgc
+            -XX:LoopUnrollLimit=0 This was for a bug in JDK1.4 I believe, it will be very heavily effecting performance.
+            -XX:-OmitStackTraceInFastThrow
+            
+            -XX:+PrintFlagsFinal
+        -->
+        <property name="SERVER_ARGS" value="-server ${_assert}${_disable}${_enable}${_headless}${_scroller_version}${_statement_version}${_hash_long_version}${_st_properties}"/>
+
+        <!--
+            Options to trace performance
+            Try these :-
+                -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:PrintCMSStatistics=1 -XX:+PrintGCApplicationStoppedTime
+                http://www.slideshare.net/SimoneBordet/g1-garbage-collector-details-and-tuning
+        -->
+        <delete file="${LOG_DIR}/gc/${APP_NAME}.log" failonerror="false"/>
+        <move file="${_error_file}" tofile="${LOG_DIR}/${APP_NAME}.hotspot.bak" overwrite="true" quiet="true" failonerror="false" />
+        <delete file="${_error_file}" failonerror="false"/>
+        
+        <move file="${_hprof_file}" tofile="${LOG_DIR}/${APP_NAME}.hprof.bak" overwrite="true" quiet="true" failonerror="false" />
+        <delete file="${__hprof_file}" failonerror="false"/>
+        
+        <mkdir dir="${LOG_DIR}/gc"/>
+        
+        <!--
+        Crash on Out Of Memory Error 
+        https://bugs.openjdk.java.net/browse/JDK-8138745
+        -->
+        <condition property="_crash_on_oome" value="-XX:+CrashOnOutOfMemoryError ">
+           
+           <scriptcondition language="javascript" value="false">
+               var v=project.getProperty("java.version");
+               
+               if( /1\.8\.0_[0-9]+/.test( v))
+               {
+                 var b=v.substring( v.lastIndexOf("_") + 1);
+                 if( b >= 92)
+                 {
+                    self.setValue(true);
+                 }
+               }
+               else
+               {
+                 self.setValue( true);
+               }
+            </scriptcondition>
+        </condition>
+        <property name="_crash_on_oome" value=""/>
+        
+        <condition property="ON_ERROR" value="${_crash_on_oome}-XX:OnError=&quot;tail --lines=100 ${LOG_DIR}/${APP_NAME}.out ${_error_file}|mail --subject '${APP_NAME} crash (pid %p)' --to support@stsoftware.com.au&quot; ">
+            <os family="unix" />
+        </condition>
+        <property name="ON_ERROR" value=""/>
+        
+        <!--<property name="DEBUG_ARGS" value="-XX:+PrintStringDeduplicationStatistics -XX:+PrintFlagsFinal "/>-->
+        <property name="DEBUG_ARGS" value=""/>
+        <property name="TRACE_ARGS" value="-verbose:gc -XX:-PrintCommandLineFlags  ${DEBUG_ARGS}-XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -Xloggc:${LOG_DIR}/gc/${APP_NAME}.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=10M ${ON_ERROR}"/>
+
+        <!--
+            JMX Arguments
+        -->
+        <property name="JMX_SSL" value="false"/>
+        <property name="JMX_AUTH" value="false"/>
+
+        <!--
+        Since JDK6 jmxremote is no longer needed.
+        com.sun.management.jmxremote
+        -->
+        <condition property="JMX_ARGS" value="-Dcom.sun.management.jmxremote.port=${JMX_PORT} -Dcom.sun.management.jmxremote.ssl=${JMX_SSL} -Dcom.sun.management.jmxremote.authenticate=${JMX_AUTH} ">
+            <isset property="JMX_PORT"/>
+        </condition>
+        <property name="JMX_ARGS" value=""/>
+
+        <condition property="_transaction_window_minutes" value="-DTRANSACTION_WINDOW_MINUTES=${TRANSACTION_WINDOW_MINUTES} " >
+            <isset property="TRANSACTION_WINDOW_MINUTES"/>
+        </condition>
+
+        <property name="_transaction_window_minutes" value=""/>
+        <condition property="_transaction_scanner_period" value="-DTRANSACTION_SCANNER_PERIOD=${TRANSACTION_SCANNER_PERIOD} " >
+            <isset property="TRANSACTION_SCANNER_PERIOD"/>
+        </condition>
+        <property name="_transaction_scanner_period" value=""/>
+
+        <property name="_scanner_args" value="${_transaction_window_minutes}${_transaction_scanner_period}"/>
+
+        <property name="JVM_ARGS" value="-DAPP_NAME=${APP_NAME} ${SERVER_ARGS}${MEM_ARGS}${YOUNG_GEN}${GC_ARGS} ${TRACE_ARGS}${JMX_ARGS}${_scanner_args}${_private.db.dir}${_private.db.layers}"/>
+
+    </target>
+
+</project>

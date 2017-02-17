@@ -1,0 +1,12 @@
+<BENCHMARK>
+   <TITLE name="simple test"/>
+   
+   <!--
+       Start each clone at 0, 5, 10, 20 etc. 
+   --> 
+   <CLIENT name="spaced 5 seconds" clone="5" clone_frequency="5 secs" >
+        <TASK name="log">      
+            LOG WRITE "testing 123"
+        </TASK>
+   </CLIENT>
+</BENCHMARK>

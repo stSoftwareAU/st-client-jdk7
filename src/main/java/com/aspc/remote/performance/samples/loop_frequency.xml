@@ -1,0 +1,24 @@
+<BENCHMARK>
+   <TITLE name="simple test"/>
+   
+   <CLIENT name="setup">
+        <TASK name="load">      
+            LOG WRITE "LOADING..."
+            Sleep 2;
+        </TASK>
+   </CLIENT>
+   <!--
+       Start each clone at 0, 5, 10, 20 etc. 
+   --> 
+   <CLIENT name="test loop frequency" depends="setup" >
+        <TASK name="loop 5 times at a frequency of 5 seconds" loop_frequency="5 secs" loop="5">      
+            LOG WRITE "testing 123"
+            Sleep 2;
+        </TASK>
+
+        <TASK name="loop 5 times-SLOW" loop_frequency="2 secs" loop="5">      
+            LOG WRITE "testing 123";
+            Sleep 2;
+        </TASK>
+   </CLIENT>
+</BENCHMARK>

@@ -1,0 +1,96 @@
+<html>
+<head>
+<!--
+  Copyright ??? 2002 ASP Converters pty ltd.
+ 
+  www.aspconverters.com.au
+ 
+  All Rights Reserved.
+ 
+  This software is the proprietary information of
+  ASP Converters Pty Ltd.
+  Use is subject to license terms.
+
+  @author Nigel Leck
+  @version $Revision: 1.16 $
+  @created 16 July 2002
+-->
+</head>
+<body bgcolor="white">
+A JDBC driver to allow remote applications to interface with stSoftware. <BR>
+<BR>
+To provide the facility within your Java application to interface with stSoftware<BR>
+include stRemote.jar in your classpath and follow the following steps.<BR>
+try<BR>
+{<BR>
+    Class.forName("com.aspc.remote.jdbc.SoapDriver" );<BR>
+}<BR>
+catch (Exception e) <BR>
+{<BR>
+    System.out.println("ERROR: failed to load JDBC driver.");<BR>
+    e.printStackTrace();<BR>
+    return;<BR>
+}<BR>
+<BR>
+Properties props = new Properties();<BR>
+props.put( "user", id );<BR>
+props.put( "password", password );<BR>
+<BR>
+Connection connection = DriverManager.getConnection( "SOAP:192.168.7.1/my_data", props );
+<BR>   
+<BR>  
+<!--#ASPC_HEAD_START-->
+
+<!--#ASPC_HEAD_END-->
+</body>
+</html>
+<!--
+  $Log: package.html,v $
+  Revision 1.16  2014-08-19 22:29:23  nigel
+  standards
+
+  Revision 1.15  2005-09-23 16:19:01  build
+  Auto Generated documents
+
+  Revision 1.14  2005/09/23 03:02:40  jason
+  Add example of connecting via soap
+
+  Revision 1.13  2005/09/23 00:53:04  nigel
+  removed
+
+  Revision 1.12  2005/08/29 16:10:40  build
+  Auto Generated documents
+
+  Revision 1.11  2005/08/29 08:24:57  padma
+  generated javadocs.
+
+  Revision 1.10  2005/08/15 16:54:30  build
+  Auto Generated documents
+
+  Revision 1.9  2005/08/15 00:43:17  build
+  Auto Generated documents
+
+  Revision 1.8  2005/06/06 01:35:09  nigel
+  working on SYNC command.
+
+  Revision 1.7  2005/05/29 06:46:16  nigel
+  auto generated.
+
+  Revision 1.6  2005/05/21 01:13:01  nigel
+  made commands final by default.
+
+  Revision 1.5  2005/05/13 04:33:05  nigel
+  checked in engine.
+
+  Revision 1.4  2005/05/04 06:12:53  nigel
+  unify build scripts
+
+  Revision 1.3  2004/10/04 02:11:52  nigel
+  updated javadocs.
+
+  Revision 1.2  2004/10/03 09:33:31  nigel
+  auto generate the package summary for com/aspc/remote/jdbc & soap
+
+  Revision 1.1  2004/09/20 08:01:19  nigel
+  working on javadocs
+-->

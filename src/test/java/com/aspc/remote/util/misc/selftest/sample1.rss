@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://video.search.yahoo.com/mrss" xmlns:st="http://www.stsoftware.com.au/javadocs/index.html" version="2.0">
+  <channel>
+    <title>st Office</title>
+    <link>https://aspc.jobtrack.com.au</link>
+    <generator>www.stSoftware.com.au</generator>
+    <description/>
+    <image>
+      <url>https://aspc.jobtrack.com.au/docs/web/images/logo.gif?CHANGE_NO=2</url>
+    </image>
+    <item>
+      <title>How to dynamically resize images on the server side?</title>
+      <media:subTitle>Page loading speed can be greatly improved by scaling the images on the server side.</media:subTitle>
+      <description>&lt;h2&gt;Overview&lt;/h2&gt; 
+&lt;p style="margin-left: 30px;"&gt;The download of large images to the client browser which will be later resized to be a smaller image is very wasteful and slow.&lt;/p&gt; 
+&lt;p style="margin-left: 30px;"&gt;Let the server dynamically resize and cache your images with NO overhead to subsequent calls. To use in your HTML just add the desired behaviour to the URL e.g &amp;quot;?max-width=100&amp;quot;&lt;/p&gt;</description>
+      <pubDate>Fri, 31 Jan 2014 20:33:29 +0000</pubDate>
+      <dc:path>dynamic-server-side-image-resizing/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d0258145d-20021a225-143ea0198b8</guid>
+      <k>7d00030d0258145d-20021a225</k>
+      <UUID>7d00030d0258145d-20021a225-143ea0198b8</UUID>
+      <id>951</id>
+      <globalKey>951@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/n_leck.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="1">Nigel Leck</dc:creator>
+      <dc:tag code="how-to">how-to</dc:tag>
+      <dc:tag code="featured">featured</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/st/help/resize/landscape.jpg?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="CloudFM" codepath="\CloudFM\" order="\ 00000000 Cloud File Manager" tail="Cloud File Manager">Cloud File Manager</category>
+        <category code="CMS_FEATURES" codepath="\CMS_FUNCTIONS\CMS_FEATURES\" order="\CMS_FUNCTIONS\ 00000001 CMS Features" tail="CMS Features">CMS functionality/CMS Features</category>
+      </categories>
+      <category code="CloudFM" codepath="\CloudFM\" order="\ 00000000 Cloud File Manager" tail="Cloud File Manager">Cloud File Manager</category>
+      <category code="CMS_FEATURES" codepath="\CMS_FUNCTIONS\CMS_FEATURES\" order="\CMS_FUNCTIONS\ 00000001 CMS Features" tail="CMS Features">CMS functionality/CMS Features</category>
+    </item>
+    <item>
+      <title>What is the recommended configuration for a Linux server ?</title>
+      <media:subTitle>How to Lock down a Linux and run the web server as a low privileged user.</media:subTitle>
+      <description>&lt;h3&gt;Linux server lock down&lt;/h3&gt; 
+&lt;ul&gt; 
+ &lt;li&gt;&lt;a href="#REQUIRED_PACKAGES" title="Install only the required packages"&gt;Install and run only the services you require.&lt;/a&gt;&lt;/li&gt; 
+ &lt;li&gt;&lt;a href="#FIREWALL" title="Firewalll close all ports and open as required, this reduces the attack vector."&gt;Block all ports by default and open only those that are required&lt;/a&gt;&lt;/li&gt; 
+ &lt;li&gt;&lt;a href="#LOW" title="Create low permission user to run the web server"&gt;Run servers as low permission user&lt;/a&gt;&lt;/li&gt; 
+ &lt;li&gt;&lt;a href="#ROOT" title="Prevent direct access to functional accounts including ROOT"&gt;Disable direct login to ROOT completely.&lt;/a&gt;&lt;/li&gt; 
+ &lt;li&gt;&lt;a href="http://www.stsoftware.com.au/site/ST/blog/article/block-hack-attempts-from-all-foreign-countries/" title="Simple host.deny to exclude most countries by default &amp;amp; greatly reduces hackers opportunity to gain access your system"&gt;Block SSH login attempts from unknown locations and machines.&lt;/a&gt;&lt;/li&gt; 
+ &lt;li&gt;Set up &lt;a href="https://www.digitalocean.com/community/articles/how-to-use-tripwire-to-detect-server-intrusions-on-an-ubuntu-vps" target="_blank" title="How To Use Tripwire to Detect Server Intrusions on an Ubuntu VPS"&gt;tripwire to detect intrusions&lt;/a&gt;&lt;/li&gt; 
+ &lt;li&gt;&lt;a href="#FILES" title="Increase the file handles for the user that runs the web server"&gt;Increase file handles&lt;/a&gt;&lt;/li&gt; 
+&lt;/ul&gt;</description>
+      <pubDate>Sun, 26 Jan 2014 10:36:19 +0000</pubDate>
+      <dc:path>what-is-the-recommended-configuration-for-a-nix-server-/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d02580290-20021a225-143ce1f10e7</guid>
+      <k>7d00030d02580290-20021a225</k>
+      <UUID>7d00030d02580290-20021a225-143ce1f10e7</UUID>
+      <id>941</id>
+      <globalKey>941@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/n_leck.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="1">Nigel Leck</dc:creator>
+      <dc:tag code="ddos">DDoS</dc:tag>
+      <dc:tag code="how-to">how-to</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/st/help/tux-with-a-gun.jpg?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="TECH_SUPPORT" codepath="\SUPPORT\TECH_SUPPORT\" order="\SUPPORT\ 00000100 Technical Support " tail="Technical Support ">Suppport/Technical Support </category>
+      </categories>
+      <category code="TECH_SUPPORT" codepath="\SUPPORT\TECH_SUPPORT\" order="\SUPPORT\ 00000100 Technical Support " tail="Technical Support ">Suppport/Technical Support </category>
+    </item>
+    <item>
+      <title>What is the new Timeline module?</title>
+      <media:subTitle>The Timeline module is a clever combination of sliding graphs and map to visualise your events, tasks or sales opps.</media:subTitle>
+      <description>&lt;h3&gt;Timeline is more than a graphical representation of your JobTrack data, it is interactive allowing you to link back to the item with a click to see the full details, edit and add details.&lt;/h3&gt; 
+&lt;p&gt;Select from the filters to change the date range and items displayed according to type, category and status. Items are tasks, events or sales opportunities which have been entered and scheduled to a day and time. You'll see items in timeline bands with a colour line representing their scheduled time and duration. The items you can view&lt;/p&gt;</description>
+      <pubDate>Thu, 23 Jan 2014 02:49:04 +0000</pubDate>
+      <dc:path>what-is-the-new-timeline-module/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d0257de65-20021a225-143bd003576</guid>
+      <k>7d00030d0257de65-20021a225</k>
+      <UUID>7d00030d0257de65-20021a225-143bd003576</UUID>
+      <id>931</id>
+      <globalKey>931@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/Tina_2010%5b1%5d.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="46">Tina Odling</dc:creator>
+      <dc:tag code="how-to">how-to</dc:tag>
+      <dc:tag code="featured">featured</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/Timeline.png?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="TIMELINE" codepath="\TIMELINE\" order="\ 00000000 Timeline" tail="Timeline">Timeline</category>
+        <category code="GETTING_STARTED" codepath="\JOBTRACK\GETTING_STARTED\" order="\JOBTRACK\ 00000010 Getting Started" tail="Getting Started">JobTrack/Getting Started</category>
+      </categories>
+      <category code="TIMELINE" codepath="\TIMELINE\" order="\ 00000000 Timeline" tail="Timeline">Timeline</category>
+      <category code="GETTING_STARTED" codepath="\JOBTRACK\GETTING_STARTED\" order="\JOBTRACK\ 00000010 Getting Started" tail="Getting Started">JobTrack/Getting Started</category>
+    </item>
+    <item>
+      <title>How do I send out event invitations?</title>
+      <media:subTitle>Sending an event invitations to your contacts is easy</media:subTitle>
+      <description>&lt;h2&gt;Create a new event.&lt;/h2&gt; 
+&lt;p style="margin-left: 30px;"&gt;&lt;img title="Event" src="/docs/web/images/screens/event2.png" alt="Event" /&gt;&lt;/p&gt; 
+&lt;h2&gt;Invite your contacts by selecting the tab 'Invite Others'&lt;/h2&gt; 
+&lt;p style="margin-left: 30px;"&gt;&lt;img title="Invite Others" src="/docs/web/images/screens/invite_others.png" alt="Invite Others" /&gt;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt; 
+&lt;h2&gt;Send the invitation via email&amp;nbsp;&lt;/h2&gt; 
+&lt;p&gt;Press the button &amp;quot;Send Invitation&amp;quot; to create an email populated with your contacts.&lt;/p&gt; 
+&lt;p&gt;The email opens up with a pre defined template that can be changed.&lt;/p&gt; 
+&lt;p style="margin-left: 30px;"&gt;&lt;img title="email screen" src="/docs/web/images/screens/send_email_screen.png" alt="email screen" /&gt;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;</description>
+      <pubDate>Thu, 16 Jan 2014 05:32:04 +0000</pubDate>
+      <dc:path>how-do-i-send-my-event-invitation-to-my-contacts/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d0257aa97-20021a225-1439988ef0a</guid>
+      <k>7d00030d0257aa97-20021a225</k>
+      <UUID>7d00030d0257aa97-20021a225-1439988ef0a</UUID>
+      <id>913</id>
+      <globalKey>913@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/liam.JPG?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="13770">Liam Itzhaki</dc:creator>
+      <dc:tag code="how-to">how-to</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/st/help/Inventation.jpg?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="JOBTRACK" codepath="\JOBTRACK\" order="\ 00000000 JobTrack" tail="JobTrack">JobTrack</category>
+        <category code="MARKETING" codepath="\MARKETING\" order="\ 00000000 Marketing" tail="Marketing">Marketing</category>
+        <category code="SALES" codepath="\SALES\" order="\ 00000000 Sales" tail="Sales">Sales</category>
+      </categories>
+      <category code="JOBTRACK" codepath="\JOBTRACK\" order="\ 00000000 JobTrack" tail="JobTrack">JobTrack</category>
+      <category code="MARKETING" codepath="\MARKETING\" order="\ 00000000 Marketing" tail="Marketing">Marketing</category>
+      <category code="SALES" codepath="\SALES\" order="\ 00000000 Sales" tail="Sales">Sales</category>
+    </item>
+    <item>
+      <title>Page Keywords Meta Tag</title>
+      <media:subTitle>Keywords must be relevant to the current page. </media:subTitle>
+      <description>&lt;p&gt;The &amp;quot;keywords&amp;quot; meta tags is no longer used by any of the major search engines. Under some circumstances they can actually be scored negatively against the page rank, when a high count of irrelevant or duplicated key words are added.&amp;nbsp;&lt;/p&gt; 
+&lt;p&gt;The system will automatically de-duplicate keywords if entered. For example if &amp;quot;SEO, meta, Seo,tags,,,&amp;quot; is entered as the list of keywords, the list will be converted to &amp;quot;SEO, meta, tags&amp;quot;&lt;/p&gt; 
+&lt;p&gt;Later releases will deprecate the entry of key words completely. Currently Google completely&lt;/p&gt;</description>
+      <pubDate>Wed, 8 Jan 2014 10:40:27 +0000</pubDate>
+      <dc:path>page-keywords-meta-tag-validation-rules/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d024e063b-10012ada6-1437170636d</guid>
+      <k>7d00030d024e063b-10012ada6</k>
+      <UUID>7d00030d024e063b-10012ada6-1437170636d</UUID>
+      <id>483</id>
+      <globalKey>483@2097152781~7527@1</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/n_leck.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="1">Nigel Leck</dc:creator>
+      <dc:tag code="seo">SEO</dc:tag>
+      <dc:tag code="validation">validation</dc:tag>
+      <dc:tag code="meta">meta</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/cms/seo.jpg?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <st:channel/>
+    </item>
+    <item>
+      <title>What is your pricing for websites and CMS?</title>
+      <media:subTitle>Website, CMS, e-Commerce setup and hosting prices.</media:subTitle>
+      <description>&lt;p&gt;&amp;nbsp;&lt;/p&gt; 
+&lt;table class="table table-bordered table-condensed table-hover table-striped" border="0" cellpadding="10"&gt; 
+ &lt;tbody&gt; 
+  &lt;tr&gt;
+   &lt;th style="background-color: #1e90ff;" scope="row" align="center" valign="middle"&gt;&amp;nbsp;&lt;/th&gt;
+   &lt;th style="background-color: #1e90ff;" scope="row" align="center" valign="middle"&gt; &lt;h2&gt;&lt;span style="color: #ffffff;" data-mce-mark="1"&gt;Basic Setup&lt;/span&gt;&lt;/h2&gt; &lt;/th&gt;
+   &lt;th style="background-color: #1e90ff;" scope="row" align="center" valign="middle"&gt; &lt;h2&gt;&lt;span style="color: #ffffff;" data-mce-mark="1"&gt;Full Setup&lt;/span&gt;&lt;/h2&gt; &lt;/th&gt;
+   &lt;th style="background-color: #1e90ff;" scope="row" align="center" valign="middle"&gt; &lt;h2&gt;&lt;span style="color: #ffffff;" data-mce-mark="1"&gt;Customised Solutions&lt;/span&gt;&lt;/h2&gt; &lt;/th&gt;
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td scope="colgroup" align="center" valign="top"&gt; &lt;h2&gt;&lt;span style="color: #000000;" data-mce-mark="1"&gt;&lt;/span&gt;&lt;/h2&gt; &lt;h2&gt;&lt;span data-mce-mark="1"&gt;Import Existing Homepage&lt;/span&gt;&lt;/h2&gt; &lt;h2&gt;&lt;span style="color: #000000;" data-mce-mark="1"&gt;&lt;/span&gt;&lt;/h2&gt; &lt;p&gt;&lt;span style="color: #000000;" data-mce-mark="1"&gt;or bootstrap3 template&lt;/span&gt;&lt;/p&gt; &lt;h2&gt;&lt;span style="color: #000000;" data-mce-mark="1"&gt;&lt;/span&gt;&lt;/h2&gt; &lt;/td&gt; 
+   &lt;td scope="row" align="center" valign="top"&gt; &lt;h3&gt;&lt;span style="color: #000000;" data-mce-mark="1"&gt;√&lt;/span&gt;&lt;/h3&gt; &lt;/td&gt; 
+   &lt;td scope="colgroup" align="center" valign="top"&gt; &lt;h3&gt;&lt;span style="color: #000000;" data-mce-mark="1"&gt;√&lt;/span&gt;&lt;/h3&gt; &lt;/td&gt; 
+   &lt;td scope="colgroup" align="center" valign="top"&gt; &lt;h3&gt;&lt;span style="color: #000000;" data-mce-mark="1"&gt;√&lt;/span&gt;&lt;/h3&gt; &lt;/td&gt; 
+  &lt;/tr&gt; 
+  &lt;tr&gt; 
+   &lt;td scope="colgroup" align="center" valign="top"&gt;  &lt;/td&gt;    
+  &lt;/tr&gt;              
+ &lt;/tbody&gt; 
+&lt;/table&gt;</description>
+      <pubDate>Thu, 2 Jan 2014 09:05:48 +0000</pubDate>
+      <dc:path>what-is-your-pricing-for-websites-and-cms/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d025788b0-20021a225-1435233958d</guid>
+      <k>7d00030d025788b0-20021a225</k>
+      <UUID>7d00030d025788b0-20021a225-1435233958d</UUID>
+      <id>892</id>
+      <globalKey>892@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/Tina_2010%5b1%5d.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="46">Tina Odling</dc:creator>
+      <dc:tag code="pricing">pricing</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/st/price-tag.jpg?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="SALES" codepath="\SALES\" order="\ 00000000 Sales" tail="Sales">Sales</category>
+      </categories>
+      <category code="SALES" codepath="\SALES\" order="\ 00000000 Sales" tail="Sales">Sales</category>
+    </item>
+    <item>
+      <title>Assigning a host name to your hosted stSoftware system</title>
+      <media:subTitle>Once you have a new Domain Name assign the IP addresses of our servers. </media:subTitle>
+      <description>&lt;p&gt;The IP address for &lt;a href="http://www.jobtrack.com.au" title="Job Track "&gt;*.jobtrack.com.au&lt;/a&gt;&amp;nbsp;is &lt;strong&gt;101.0.69.242 &lt;/strong&gt;&amp;amp; &lt;strong&gt;101.0.96.194&lt;/strong&gt;&lt;/p&gt; 
+&lt;p&gt;The IP address for &lt;a href="http://www.stSoftware.com.au" target="_blank" title="stSoftware site"&gt;*.stSoftware.com.au&lt;/a&gt;&amp;nbsp;is&amp;nbsp;&lt;span class="textLink" style="text-decoration: none; color: #000000;"&gt;&lt;strong&gt;101.0.96.196&lt;/strong&gt; &amp;amp; &lt;/span&gt;&lt;strong&gt;&lt;span class="textLink" style="text-decoration: none; color: #000000;"&gt;101.0.96.197&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt; 
+&lt;p&gt;After you have registered a new host name with another number of providers such &lt;a href="http://www.godaddy.com/" target="_blank"&gt;goDaddy&lt;/a&gt;&amp;nbsp;or &lt;a href="http://www.melbourneit.com.au/" target="_blank"&gt;MelbourneIT&lt;/a&gt;&amp;nbsp;you will then need to change the IP address that your host name points to be the server ( *.jobtrack.com.au or *.stsoftware.com.au )&lt;/p&gt; 
+&lt;p&gt;You can watch it here &lt;a href="http://www.whatsmydns.net/"&gt;http://www.whatsmydns.net/&lt;/a&gt;&lt;/p&gt; 
+&lt;p&gt;Once the host name has been assigned to our server. You need to &lt;a href="http://www.stsoftware.com.au/site/ST/contact" target="_blank"&gt;contact us&lt;/a&gt; to associated&lt;/p&gt;</description>
+      <pubDate>Wed, 1 Jan 2014 02:22:34 +0000</pubDate>
+      <dc:path>how-to-assigning-a-host-name-to-your-hosted-stsoftware-system-/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d025785c8-20021a225-1434b9c0b16</guid>
+      <k>7d00030d025785c8-20021a225</k>
+      <UUID>7d00030d025785c8-20021a225-1434b9c0b16</UUID>
+      <id>881</id>
+      <globalKey>881@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/n_leck.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="1">Nigel Leck</dc:creator>
+      <dc:tag code="dns">DNS</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/st/help/dns.jpg?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="TECH_SUPPORT" codepath="\SUPPORT\TECH_SUPPORT\" order="\SUPPORT\ 00000100 Technical Support " tail="Technical Support ">Suppport/Technical Support </category>
+      </categories>
+      <category code="TECH_SUPPORT" codepath="\SUPPORT\TECH_SUPPORT\" order="\SUPPORT\ 00000100 Technical Support " tail="Technical Support ">Suppport/Technical Support </category>
+    </item>
+    <item>
+      <title>What is Cloud Forms</title>
+      <media:subTitle>stSoftware's Forms is a web based designer</media:subTitle>
+      <description>&lt;div class="col-xs-12 col-lg-3 col-lg-offset-1 text-center  visible-xs visible-sm"&gt; 
+ &lt;p&gt;&lt;strong&gt;stSoftware's Forms is a web based designer&lt;/strong&gt;&lt;/p&gt; 
+ &lt;p&gt;stSoftware's Forms is a web based designer that enables web forms to be created quickly and easily. Forms can then be consumed on most common mobile devices from the internet, anywhere and anytime. stSoftware's&amp;nbsp;Forms are integrated with stSoftware's&amp;nbsp;Workflow to automate business processes and deliver rich cloud applications.&lt;/p&gt; 
+&lt;/div&gt; 
+&lt;div class="col-xs-12 col-md-8 col-lg-7"&gt;
+ &lt;img src="/docs/web/cms/help/painter.png" alt="Form Painter" /&gt;
+&lt;/div&gt; 
+&lt;div class="clearfix"&gt;
+ &amp;nbsp;
+&lt;/div&gt; 
+&lt;div class="col-xs-12 col-lg-12"&gt; 
+ &lt;p&gt;&lt;strong&gt;&lt;strong&gt;Quick and Easy Forms Design&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt; 
+ &lt;p&gt;Empower business users and enhance developer productivity:&lt;/p&gt; 
+ &lt;ul&gt; 
+  &lt;li&gt;Auto-generate forms to support your business applications&amp;nbsp;&lt;/li&gt; 
+  &lt;li&gt;Customize forms&lt;/li&gt;
+ &lt;/ul&gt;
+&lt;/div&gt;</description>
+      <pubDate>Fri, 20 Dec 2013 00:38:20 +0000</pubDate>
+      <dc:path>what-is-cloud-forms/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d025761a8-20021a225-1430d704e52</guid>
+      <k>7d00030d025761a8-20021a225</k>
+      <UUID>7d00030d025761a8-20021a225-1430d704e52</UUID>
+      <id>874</id>
+      <globalKey>874@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/IMG_6627.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="13245">Lei Gao</dc:creator>
+      <dc:tag code="featured">featured</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/cms/help/painter.png?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="PAINTER" codepath="\CloudForms\PAINTER\" order="\CloudForms\ 00000010 Painter" tail="Painter">Cloud Forms/Painter</category>
+      </categories>
+      <category code="PAINTER" codepath="\CloudForms\PAINTER\" order="\CloudForms\ 00000010 Painter" tail="Painter">Cloud Forms/Painter</category>
+    </item>
+    <item>
+      <title>HTML component accessibility validation</title>
+      <media:subTitle>Automatic validation that the HTML is well formed and accessible</media:subTitle>
+      <description>&lt;p&gt;When a HTML component is changed validations for the validity and for accessibility will be performed.&amp;nbsp;&lt;br /&gt;&lt;img src="/docs/web/cms/help/accessibility/accessibility_validation.png" alt="" /&gt;&lt;/p&gt;</description>
+      <pubDate>Wed, 18 Dec 2013 21:59:11 +0000</pubDate>
+      <dc:path>check-your-active-html-accessibility/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d0257607c-20021a225-14307b83e10</guid>
+      <k>7d00030d0257607c-20021a225</k>
+      <UUID>7d00030d0257607c-20021a225-14307b83e10</UUID>
+      <id>873</id>
+      <globalKey>873@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/IMG_6627.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="13245">Lei Gao</dc:creator>
+      <dc:tag code="accessibility">accessibility</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/cms/help/accessibility/Handicapped_Accessible_sign.png?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="SEO_VALIDATION" codepath="\SEO_VALIDATION\" order="\ 00000000 Validations" tail="Validations">Validations</category>
+        <category code="ACCESSIBILITY" codepath="\CMS_FUNCTIONS\ACCESSIBILITY\" order="\CMS_FUNCTIONS\ 00000002 Accessibility" tail="Accessibility">CMS functionality/Accessibility</category>
+      </categories>
+      <category code="SEO_VALIDATION" codepath="\SEO_VALIDATION\" order="\ 00000000 Validations" tail="Validations">Validations</category>
+      <category code="ACCESSIBILITY" codepath="\CMS_FUNCTIONS\ACCESSIBILITY\" order="\CMS_FUNCTIONS\ 00000002 Accessibility" tail="Accessibility">CMS functionality/Accessibility</category>
+    </item>
+    <item>
+      <title>Check your articles,email &amp; pages Accessibility</title>
+      <media:subTitle>Before publishing submit your html for accessibility checking. </media:subTitle>
+      <description>&lt;ul&gt; 
+ &lt;li&gt;HTML code in the rich text editor to be checked&lt;/li&gt; 
+&lt;/ul&gt; 
+&lt;p&gt;&lt;img src="/docs/web/cms/help/accessibility/accessibility_html.png" alt="" /&gt;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt; 
+&lt;ul&gt; 
+ &lt;li&gt;click the Check Accessibility button to check&lt;/li&gt; 
+&lt;/ul&gt; 
+&lt;p&gt;&lt;img src="/docs/web/cms/help/accessibility/accessibility_button.png" alt="" /&gt;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt; 
+&lt;ul&gt; 
+ &lt;li&gt;Check results in another browser window&lt;/li&gt; 
+&lt;/ul&gt; 
+&lt;p&gt;&lt;img src="/docs/web/cms/help/accessibility/accessibility_result.png" alt="" /&gt;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;</description>
+      <pubDate>Wed, 18 Dec 2013 21:43:56 +0000</pubDate>
+      <dc:path>check-your-rich-text-accessibility/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d02575c03-20021a225-14307aa46ea</guid>
+      <k>7d00030d02575c03-20021a225</k>
+      <UUID>7d00030d02575c03-20021a225-14307aa46ea</UUID>
+      <id>871</id>
+      <globalKey>871@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/IMG_6627.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="13245">Lei Gao</dc:creator>
+      <dc:tag code="accessibility">accessibility</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/cms/help/accessibility/Handicapped_Accessible_sign.png?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="ACCESSIBILITY" codepath="\CMS_FUNCTIONS\ACCESSIBILITY\" order="\CMS_FUNCTIONS\ 00000002 Accessibility" tail="Accessibility">CMS functionality/Accessibility</category>
+        <category code="EMAIL-OPTIONS" codepath="\EMAIL\EMAIL-OPTIONS\" order="\EMAIL\ 00000010 Options" tail="Options">Email FAQ/Options</category>
+      </categories>
+      <category code="ACCESSIBILITY" codepath="\CMS_FUNCTIONS\ACCESSIBILITY\" order="\CMS_FUNCTIONS\ 00000002 Accessibility" tail="Accessibility">CMS functionality/Accessibility</category>
+      <category code="EMAIL-OPTIONS" codepath="\EMAIL\EMAIL-OPTIONS\" order="\EMAIL\ 00000010 Options" tail="Options">Email FAQ/Options</category>
+    </item>
+    <item>
+      <title>How to configure DNS round robin for web server failover ?</title>
+      <media:subTitle>Round-robin DNS gives cheap and easy load balancing and fault tolerance.</media:subTitle>
+      <description>&lt;h2&gt;Server Cluster&lt;/h2&gt; 
+&lt;p&gt;A cluster of servers (two or more ) can be setup and the DNS entry for your site can be defined with the IP addresses for each of the servers,&amp;nbsp;this is known as&amp;nbsp;&lt;a href="https://en.wikipedia.org/wiki/Round_robin_DNS"&gt;Round-robin DNS&lt;/a&gt;&lt;/p&gt;</description>
+      <pubDate>Wed, 18 Dec 2013 21:25:42 +0000</pubDate>
+      <dc:path>how-to-configure-load-balancer-/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d0257606e-20021a225-14307999502</guid>
+      <k>7d00030d0257606e-20021a225</k>
+      <UUID>7d00030d0257606e-20021a225-14307999502</UUID>
+      <id>872</id>
+      <globalKey>872@2097152781~6413@2</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/n_leck.jpg?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="1">Nigel Leck</dc:creator>
+      <dc:tag code="dns">DNS</dc:tag>
+      <dc:tag code="ha">HA</dc:tag>
+      <media:thumbnail url="https://aspc.jobtrack.com.au/docs/web/st/help/dns_round_robin.gif?CHANGE_NO=1"/>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <categories>
+        <category code="TECH_SUPPORT" codepath="\SUPPORT\TECH_SUPPORT\" order="\SUPPORT\ 00000100 Technical Support " tail="Technical Support ">Suppport/Technical Support </category>
+      </categories>
+      <category code="TECH_SUPPORT" codepath="\SUPPORT\TECH_SUPPORT\" order="\SUPPORT\ 00000100 Technical Support " tail="Technical Support ">Suppport/Technical Support </category>
+    </item>
+    <item>
+      <title>Customizing your login screens</title>
+      <media:subTitle>You can personalize the look and feel of your login screens with the CMS module</media:subTitle>
+      <description>&lt;p&gt;Screen URLs &amp;nbsp;can be found under: Admin &amp;gt; Setting &amp;gt; Passwords tab&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;img title="Customise login screen " src="/docs/web/cms/help/customized_login.png" alt="Customise login screen " /&gt;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt; 
+&lt;p&gt;The login screen can be customised from the CMS module.&lt;/p&gt; 
+&lt;p&gt;Go to : CMS Sites &amp;gt; Select &amp;quot;public&amp;quot; site &amp;gt; Go to &amp;quot;pages&amp;quot; tab and select the &amp;quot;login&amp;quot; screen.&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;img title="Login" src="/docs/web/cms/help/Login.png" alt="Login" /&gt;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;Now You can modify the login page and the CSS properties.&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt; 
+&lt;p&gt;Alternatively,&amp;nbsp;the login page can be copied, and customised. The login URL will have to be updated in the setting screen.&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt; 
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;</description>
+      <pubDate>Mon, 16 Dec 2013 01:26:19 +0000</pubDate>
+      <dc:path>customise-the-login-screen-change-password-screen-and-reset-password-screen/</dc:path>
+      <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d02574322-10012ada6-142f902cd35</guid>
+      <k>7d00030d02574322-10012ada6</k>
+      <UUID>7d00030d02574322-10012ada6-142f902cd35</UUID>
+      <id>862</id>
+      <globalKey>862@2097152781~7527@1</globalKey>
+      <dc:creator avatarurl="https://aspc.jobtrack.com.au/docs/web/images/avatar/liam.JPG?CHANGE_NO=1&amp;FORMAT=thumb50" contactid="13770">Liam Itzhaki</dc:creator>
+      <statusIcon>/docs/web/cms/icons/state-published.png?CHANGE_NO=1</statusIcon>
+      <st:channel/>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,8 @@
+<BENCHMARK>
+
+   <CLIENT name="import 1" >
+        <TASK name="log" varying="people,pets">      
+            LOG WRITE "%people% and %pets%"
+        </TASK>
+   </CLIENT>
+</BENCHMARK>

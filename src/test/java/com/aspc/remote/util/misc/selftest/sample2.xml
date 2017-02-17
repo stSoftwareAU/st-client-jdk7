@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <soapenv:Header>
+        <ns1:TxId xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://systinet.com/soap-jta/">
+            <id>eqrapvm3d.nam.nsroot.net:ffffffffffffffff~145208bdf96</id>
+        </ns1:TxId>
+    </soapenv:Header>
+    <SOAP-ENV:Body>
+        <SOAPSDK1:response xmlns:SOAPSDK1="http://www.aspconverters.com/message/">
+            <result>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?>
+&lt;RG version=&quot;2.1&quot;>&lt;RS offset=&quot;0&quot; seq=&quot;0&quot;>&lt;DDL>&lt;CD p=&quot;free&quot; t=&quot;long&quot;/>&lt;CD p=&quot;used&quot; t=&quot;long&quot;/>&lt;CD p=&quot;total&quot; t=&quot;long&quot;/>&lt;/DDL>&lt;DML>&lt;R id=&quot;memory&quot; key=&quot;memory&quot;>&lt;C p=&quot;free&quot;>16768804760&lt;/C>&lt;C p=&quot;used&quot;>82991208&lt;/C>&lt;C p=&quot;total&quot;>16851795968&lt;/C>&lt;/R>&lt;/DML>&lt;/RS>&lt;RS offset=&quot;0&quot; seq=&quot;1&quot;>&lt;DDL>&lt;CD p=&quot;free&quot; t=&quot;long&quot;/>&lt;CD p=&quot;used&quot; t=&quot;long&quot;/>&lt;CD p=&quot;total&quot; t=&quot;long&quot;/>&lt;/DDL>&lt;DML>&lt;R id=&quot;memory&quot; key=&quot;memory&quot;>&lt;C p=&quot;free&quot;>16769347080&lt;/C>&lt;C p=&quot;used&quot;>82448888&lt;/C>&lt;C p=&quot;total&quot;>16851795968&lt;/C>&lt;/R>&lt;/DML>&lt;/RS>&lt;/RG></result>
+        </SOAPSDK1:response>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+
+ 

@@ -1,0 +1,12 @@
+<BENCHMARK>
+
+   <CLIENT name="sample" >
+        <TASK name="Login as guest" java_class="com.aspc.remote.performance.tasks.LoginTask">
+            USER=user,PASSWD=password
+        </TASK>
+
+        <TASK name="Log in and log out" java_class="com.aspc.remote.performance.tasks.LoginTask">
+            USER=user,PASSWD=password,LOGOUT=Y
+        </TASK>
+   </CLIENT>
+</BENCHMARK>

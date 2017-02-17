@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="st-client" default="build" >
+    <description>Test Client</description>
+    <import file="core.xml"/>
+    <target name="-init">
+        <echo>init st-client</echo>
+        <echo>ST_HOME=${ST_HOME}</echo>
+        <echo>dbtype=${DBTYPE}</echo>
+        <property name="BASE_DIR" value="${basedir}"/>
+        <property name="lib.cache.dir" value="${BASE_DIR}/test/lib/"/>
+        <property name="lib.dir" value="${BASE_DIR}/../../webapps/st/WEB-INF/lib/"/>
+        <property file="${ST_HOME}/conf/common.properties"/>
+        <echo>dbtype=${DBTYPE}</echo>
+        <property name="log.dir" value="${ST_HOME}/logs"/>
+    </target>
+    
+    <target name="-init-libs" depends="-init">   
+        <!--<property name="lib.source.dir" value="${lib.cache.dir}"/>-->     
+        <ant antfile="${BASE_DIR}/../../bin/build_ivy.xml" target="-init-jars" >
+            <property name="lib.dir" value="${lib.dir}"/>
+            <property name="lib.cache.dir" value="${lib.cache.dir}"/>
+            <property name="ivy-conf" value="tests"/>
+            
+            <property name="ivy.dep.file" value="${BASE_DIR}/../../bin/ivy.xml" /> 
+        </ant>
+    </target> 
+    
+    <target name="build" depends="-init-libs">
+        <property name="test.class.dir" value="${BASE_DIR}/test/classes"/>        
+        <delete  dir="${test.class.dir}"/>
+        <mkdir dir="${test.class.dir}"/>     
+                
+        <javac debug="on"
+               
+               deprecation="off"
+               encoding="utf-8"
+               includeantruntime="false"
+               destdir="${test.class.dir}"
+               
+               optimize="off"
+               
+               includes="**/*.java"
+               
+               fork="true"
+               includejavaruntime="false"
+               memoryinitialsize="512m"
+               memoryMaximumSize="1024m">
+            <src path="src/main/java" />
+            <src path="src/test/java"/>
+            
+            <classpath>
+                <fileset dir="${lib.cache.dir}" includes="*.jar"/>
+            </classpath>
+        </javac>
+           
+    </target>
+    <target name="-test-init">
+        <property name="MAX_MEMORY" value="2048m"/>
+    </target>
+    <target name="test" depends="-test-init,jvm-args">
+    <!--<target name="test">-->
+        <property name="test.threads" value="4"/>
+        <property name="test.package" value="com/**"/>
+        <property name="_test_std_ex" value="**/*$*"/>
+
+        <property name="test.xml.dir" value="${BASE_DIR}/tests/xml"/>
+        <mkdir dir="${test.xml.dir}"/>
+
+        <!-- timeout after 6 hours -->
+        <junit
+            printsummary="yes"
+            maxmemory="${MAX_MEMORY}"
+            fork="true"
+            newenvironment="true"
+
+            showoutput="true"
+          
+            forkmode="perBatch"
+            threads="${test.threads}"
+        >
+            <classpath>
+                <!--<fileset dir="${lib.cache.dir}" includes="*.jar"/>-->
+                <!--<pathelement path="${test.class.dir}"/>-->
+                <pathelement path="${test.classpath}" />
+                <!--<pathelement path="${src.dir}"/>-->
+            </classpath>
+
+            <formatter type="xml" />
+            <formatter type="brief" usefile="false"/>
+            
+            <sysproperty key="USER" value="${DBUSER}"/>
+            <sysproperty key="PASSWORD" value="${DBPASSWORD}"/>
+            <sysproperty key="DATASOURCE" value="${DBSOURCE}"/>
+            <sysproperty key="CONNECT_TYPE" value="${DBTYPE}"/>
+            
+            <sysproperty key="ENABLE_POINTER_CHECK" value="YES"/>
+            <sysproperty key="MAX_MEMORY" value="${MAX_MEMORY}"/>
+
+            <sysproperty key="DISABLE_LAZY_LOAD" value="${DISABLE_LAZY_LOAD}"/>
+            <sysproperty key="LOG_PROPERTIES" value="${LOG_PROPERTIES}"/>
+
+            <sysproperty key="SRC_DIR" value="${BASE_DIR}/src/test/java"/>
+            <sysproperty key="LOG_DIR" value="${log.dir}"/>
+
+            <jvmarg line="${JVM_ARGS}"/>
+            <jvmarg value="-ea"/>
+            <jvmarg value="-Djava.awt.headless=true"/>
+            
+            <jvmarg value="-DAREA=TEST"/>
+
+            <sysproperty key="ST_HOME" value="${ST_HOME}"/>
+            <sysproperty key="HIDE_KNOWN_ERRORS" value="YES"/>
+            
+            <batchtest todir="${test.xml.dir}" failureProperty="junit_failed" errorProperty="junit_error">
+                <fileset dir="${test.class.dir}" includes="${test.package}" excludes="${_test_std_ex}">
+                    <filename name="**/Test*.class" casesensitive="false" />
+                </fileset>
+            </batchtest>
+
+         </junit>
+        
+    </target>
+    
+    <target name="skipTest">
+        <condition property="skip.test">
+            <or>
+                <istrue value="${skipTests}"/>
+                <istrue value="${maven.skip.test}"/>
+            </or>
+        </condition>
+    </target>
+    <target name="maven-test" depends="skipTest" unless="skip.test">
+        <ant target="test"></ant>
+        <ant antfile="../../bin/launcher.xml" target="test_email-results"></ant>
+    </target>
+
+</project>
