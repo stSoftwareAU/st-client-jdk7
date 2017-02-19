@@ -132,7 +132,7 @@
     </target>
     <target name="maven-test" depends="skipTest" unless="skip.test">
         <ant target="test"></ant>
-        <ant antfile="../../bin/launcher.xml" target="test_email-results"></ant>
+        <!--<ant antfile="../../bin/launcher.xml" target="test_email-results"></ant>-->
     </target>
 
 </project>
