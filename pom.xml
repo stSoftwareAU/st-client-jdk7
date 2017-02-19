@@ -10,6 +10,7 @@
 
   <properties>
     <main.basedir>${project.basedir}</main.basedir>
+    <jenkins.e2eTests.reportsDirectory>tests/xml/</jenkins.e2eTests.reportsDirectory>
   </properties>
 
   <dependencies>
