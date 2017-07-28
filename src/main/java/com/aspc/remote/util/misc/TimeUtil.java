@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -57,6 +57,11 @@ import org.apache.commons.logging.Log;
  */
 public final class TimeUtil
 {
+    /**
+     * W3C Datetime Format (also known as ISO 8601). https://en.wikipedia.org/wiki/ISO_8601
+     */
+    public static final String W3C_DATETIME = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    
     public static final String REST_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 
     /**
@@ -78,6 +83,13 @@ public final class TimeUtil
     
     public static final String DEFAULT_TIME_FORMAT = "d MMM yyyy HH:mm:ss";
     public static final String DEFAULT_DATE_FORMAT = "d MMM yyyy";
+    
+    public static Date parseW3CDatetime( final @Nonnull String w3cDatetime) throws ParseException
+    {
+        String tempDatetime=w3cDatetime.replace( "Z", "");
+        
+        return parse("yyyy-MM-dd'T'HH:mm:ss", tempDatetime, GMT_ZONE);
+    }
     
     @CheckReturnValue @Nonnull
     public static GregorianCalendar getGC( final @Nullable TimeZone timeZone)
@@ -330,7 +342,7 @@ public final class TimeUtil
         {
             // TimeZone is case sensitive ( don't uppercase)
             String tzStr = userDateString.substring( userDateString.indexOf("@") + 1);
-            tzStr = StringUtilities.replace( tzStr, " ", "");
+            tzStr = tzStr.replace( " ", "");
 
             tz = TimeZone.getTimeZone( tzStr);
             tempDateString = tempDateString.substring( 0, pos).trim();
@@ -358,7 +370,7 @@ public final class TimeUtil
         
         while( tempDateString.contains("  "))
         {
-            tempDateString = StringUtilities.replace( tempDateString, "  ", " ");
+            tempDateString = tempDateString.replace( "  ", " ");
         }
 
         if(tempDateString.equals(DateUtil.TYPE_TODAY))

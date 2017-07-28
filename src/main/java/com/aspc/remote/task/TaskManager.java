@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -491,8 +491,8 @@ public class TaskManager
 
         SoapResultSet srs = null;
 
-        String encMsg = StringUtilities.replace( msg, "\\", "\\\\");
-        encMsg = StringUtilities.replace( encMsg, "'", "\\'");
+        String encMsg = msg.replace( "\\", "\\\\");
+        encMsg = encMsg.replace( "'", "\\'");
 
         String cmd = "TASK SESSION "+session+" ERROR '"+task+"','"+encMsg+"'";
 

@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@
 package com.aspc.remote.util.misc;
 
 import com.aspc.remote.database.InvalidDataException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -770,7 +771,8 @@ public final class DateUtil
     @CheckReturnValue
     public static int getCurrentYear(final TimeZone timeZone)
     {
-        GregorianCalendar gc = new GregorianCalendar(timeZone);
+        GregorianCalendar gc;
+        gc = getTodayGC( timeZone);
         gc.setTime(new Date());
         return gc.get(GregorianCalendar.YEAR);
     }
@@ -812,7 +814,7 @@ public final class DateUtil
 
             while( dateString.contains("  "))
             {
-                dateString = StringUtilities.replace( dateString, "  ", " ");
+                dateString = dateString.replace( "  ", " ");
             }
             if( dateString.length() > 5 &&  dateString.startsWith( "TODAY" ) && !dateString.contains("TD") )
             {
@@ -856,7 +858,7 @@ public final class DateUtil
         {
             // TimeZone is case sensitive ( don't uppercase)
             String tzStr = userDate.substring( pos + 1);
-            tzStr = StringUtilities.replace( tzStr, " ", "");
+            tzStr = tzStr.replace( " ", "");
 
             tempTZ = TimeZone.getTimeZone( tzStr);
         }
@@ -868,9 +870,9 @@ public final class DateUtil
         {
             resultDate = TimeUtil.parse( STD_FORMAT, t, null);
         }
-        catch( Exception e)
+        catch( ParseException e)
         {
-            throw new InvalidDataException( e.toString(), e);
+            throw new InvalidDataException(t, e);
         }
 
         return resultDate;

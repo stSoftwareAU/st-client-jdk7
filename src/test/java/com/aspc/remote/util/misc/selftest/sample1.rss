@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://video.search.yahoo.com/mrss" xmlns:st="http://www.stsoftware.com.au/javadocs/index.html" version="2.0">
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://video.search.yahoo.com/mrss" xmlns:st="http://stSoftware.com.au/javadocs/index.html" version="2.0">
   <channel>
     <title>st Office</title>
     <link>https://aspc.jobtrack.com.au</link>
@@ -41,7 +41,7 @@
  &lt;li&gt;&lt;a href="#FIREWALL" title="Firewalll close all ports and open as required, this reduces the attack vector."&gt;Block all ports by default and open only those that are required&lt;/a&gt;&lt;/li&gt; 
  &lt;li&gt;&lt;a href="#LOW" title="Create low permission user to run the web server"&gt;Run servers as low permission user&lt;/a&gt;&lt;/li&gt; 
  &lt;li&gt;&lt;a href="#ROOT" title="Prevent direct access to functional accounts including ROOT"&gt;Disable direct login to ROOT completely.&lt;/a&gt;&lt;/li&gt; 
- &lt;li&gt;&lt;a href="http://www.stsoftware.com.au/site/ST/blog/article/block-hack-attempts-from-all-foreign-countries/" title="Simple host.deny to exclude most countries by default &amp;amp; greatly reduces hackers opportunity to gain access your system"&gt;Block SSH login attempts from unknown locations and machines.&lt;/a&gt;&lt;/li&gt; 
+ &lt;li&gt;&lt;a href="http://stSoftware.com.au/site/ST/blog/article/block-hack-attempts-from-all-foreign-countries/" title="Simple host.deny to exclude most countries by default &amp;amp; greatly reduces hackers opportunity to gain access your system"&gt;Block SSH login attempts from unknown locations and machines.&lt;/a&gt;&lt;/li&gt; 
  &lt;li&gt;Set up &lt;a href="https://www.digitalocean.com/community/articles/how-to-use-tripwire-to-detect-server-intrusions-on-an-ubuntu-vps" target="_blank" title="How To Use Tripwire to Detect Server Intrusions on an Ubuntu VPS"&gt;tripwire to detect intrusions&lt;/a&gt;&lt;/li&gt; 
  &lt;li&gt;&lt;a href="#FILES" title="Increase the file handles for the user that runs the web server"&gt;Increase file handles&lt;/a&gt;&lt;/li&gt; 
 &lt;/ul&gt;</description>
@@ -186,7 +186,7 @@
 &lt;p&gt;The IP address for &lt;a href="http://www.stSoftware.com.au" target="_blank" title="stSoftware site"&gt;*.stSoftware.com.au&lt;/a&gt;&amp;nbsp;is&amp;nbsp;&lt;span class="textLink" style="text-decoration: none; color: #000000;"&gt;&lt;strong&gt;101.0.96.196&lt;/strong&gt; &amp;amp; &lt;/span&gt;&lt;strong&gt;&lt;span class="textLink" style="text-decoration: none; color: #000000;"&gt;101.0.96.197&lt;/span&gt;&lt;/strong&gt;&lt;/p&gt; 
 &lt;p&gt;After you have registered a new host name with another number of providers such &lt;a href="http://www.godaddy.com/" target="_blank"&gt;goDaddy&lt;/a&gt;&amp;nbsp;or &lt;a href="http://www.melbourneit.com.au/" target="_blank"&gt;MelbourneIT&lt;/a&gt;&amp;nbsp;you will then need to change the IP address that your host name points to be the server ( *.jobtrack.com.au or *.stsoftware.com.au )&lt;/p&gt; 
 &lt;p&gt;You can watch it here &lt;a href="http://www.whatsmydns.net/"&gt;http://www.whatsmydns.net/&lt;/a&gt;&lt;/p&gt; 
-&lt;p&gt;Once the host name has been assigned to our server. You need to &lt;a href="http://www.stsoftware.com.au/site/ST/contact" target="_blank"&gt;contact us&lt;/a&gt; to associated&lt;/p&gt;</description>
+&lt;p&gt;Once the host name has been assigned to our server. You need to &lt;a href="http://stSoftware.com.au/site/ST/contact" target="_blank"&gt;contact us&lt;/a&gt; to associated&lt;/p&gt;</description>
       <pubDate>Wed, 1 Jan 2014 02:22:34 +0000</pubDate>
       <dc:path>how-to-assigning-a-host-name-to-your-hosted-stsoftware-system-/</dc:path>
       <guid>https://aspc.jobtrack.com.au/feed/?UUID=7d00030d025785c8-20021a225-1434b9c0b16</guid>

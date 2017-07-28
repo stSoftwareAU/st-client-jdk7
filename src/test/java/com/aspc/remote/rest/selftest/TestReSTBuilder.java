@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -37,10 +37,12 @@ import com.aspc.remote.rest.Method;
 import com.aspc.remote.rest.ReST;
 import com.aspc.remote.rest.Status;
 import com.aspc.remote.rest.Response;
+import com.aspc.remote.rest.errors.NotAuthorizedException;
 import com.aspc.remote.rest.internal.Trace;
 import org.apache.commons.logging.Log;
 import com.aspc.remote.util.misc.CLogger;
 import com.aspc.remote.util.misc.DocumentUtil;
+import com.aspc.remote.util.misc.FileUtil;
 import com.aspc.remote.util.misc.StringUtilities;
 import java.io.File;
 import java.io.InputStream;
@@ -332,7 +334,7 @@ public class TestReSTBuilder extends TestCase
     @SuppressWarnings("UseSpecificCatch")
     public void testGETBody() throws Exception
     {
-        File file = File.createTempFile("test", "test");
+        File file = File.createTempFile("test", "test",FileUtil.makeQuarantineDirectory());
         String url = "https://demo1.jobtrack.com.au/ReST/v4/class/DBFolder?_method=GET";
         ReST.Builder call = ReST.builder( url).setAuthorization("admin", "admin");
         try
@@ -428,15 +430,15 @@ public class TestReSTBuilder extends TestCase
 
         ReST.Builder call2 = ReST.builder( url).setAuthorization("admin", "zzzbzbzb").setMinCachePeriod("10 minutes");
 
-        String data2 = call2.getContentAsString();
+        try{
+            JSONObject json2 = call2.getResponseAndCheck().getContentAsJSON();
 
-        JSONObject json2=new JSONObject( data2);
-
-        LOGGER.info( json2.toString(2));
-
-        JSONArray results2 = json2.getJSONArray("results");
-        assertEquals("should have no records", 0, results2.length());
-
+            fail( json2.toString(2));
+        }
+        catch( NotAuthorizedException nae)
+        {
+            // Correct
+        }
     }
 
     /**

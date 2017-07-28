@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 1999-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -549,7 +549,7 @@ public final class MemoryManager
     private static long iClearMemory(final @Nonnull Cost cost) throws InterruptedException
     {
         /* Clear rainy day fund to give us some space to work   */
-        rainyDayFund = null;
+        releaseRainyDayFund();
 
         long        oTotal,
                     cleared = 0,
@@ -922,7 +922,7 @@ public final class MemoryManager
         long max = heapMemoryUsage.getMax();
         assert max>0:"max must be positive: " + max;
         long committed = heapMemoryUsage.getCommitted();
-        assert max>committed:"committed: " + NumUtil.convertMemoryToHumanReadable(committed) +" must not above max: " + NumUtil.convertMemoryToHumanReadable(max);
+        assert max>=committed:"committed: " + NumUtil.convertMemoryToHumanReadable(committed) +" must not above max: " + NumUtil.convertMemoryToHumanReadable(max);
         
         if( committed > max) return committed;
 
@@ -951,7 +951,7 @@ public final class MemoryManager
             }
             catch( IllegalArgumentException iae)
             {                    
-                rainyDayFund=null;
+                releaseRainyDayFund();
                 Thread.yield();
                 if( attempts > 3)
                 {
@@ -1591,7 +1591,7 @@ public final class MemoryManager
     private static long showDetails(
         final StopWatch sw,
         final long oUsed,
-        final @Nullable String msg,
+        final @Nullable String clearMsg,
         final @Nullable Cost cost,
         final StringBuilder sb
     )
@@ -1608,9 +1608,41 @@ public final class MemoryManager
 
         long reserved = Runtime.getRuntime().totalMemory();
         long used = getUsed(heapMemoryUsage);
-
+        final String leftPadding= "                 ";
         sb.append( "Memory Manager\n");
         sb.append( "--------------\n");
+        if( clearMsg!=null)
+        {
+            String tmpMsg=clearMsg.trim();
+            int pos = tmpMsg.indexOf(":");
+            String left=tmpMsg;
+            String right="";
+            if( pos!=-1)
+            {
+                left="    " + tmpMsg.substring(0, pos +1);
+                right=tmpMsg.substring(pos +1).trim();
+            }
+            
+            sb.append(left);
+            if( left.length()<leftPadding.length())
+            {
+                sb.append(leftPadding.substring(0, leftPadding.length()-left.length()));
+            }
+            boolean first=true;
+            for( String item:right.split(", "))
+            {
+                if( first==false)
+                {
+                    sb.append(leftPadding);
+                }
+                else
+                {
+                    first=false;
+                }
+                sb.append(item);
+                sb.append("\n");
+            }
+        }
         if( cost !=null)
         {
             sb.append( "    Cost:        ");
@@ -1674,7 +1706,7 @@ public final class MemoryManager
         sb.append( NumUtil.convertMemoryToHumanReadable(currentThreadhold));
         long cleared = -1;
 
-        if( oUsed != used)
+        if( oUsed > used)
         {
             cleared = oUsed - used;
 
@@ -1943,28 +1975,24 @@ public final class MemoryManager
             if( isFull())
             {
                 lowMemoryMode=true;
-                rainyDayFund=null;
+                releaseRainyDayFund();
             }
             
+            long totalMemoryUsed=getTotalUsed();
             long        totalMemory;
             totalMemory = getTotalMemory();
             assert totalMemory >0: "max memory should more than zero " + totalMemory;
-
+            assert totalMemoryUsed<=totalMemory:"Total used memory:" + totalMemoryUsed +" must be less than total memory: " + totalMemory;
+            long totalMemoryFree=totalMemory-totalMemoryUsed;
+            assert totalMemoryFree>=0: "totalMemoryFree must be non negative: " + totalMemoryFree;
+            if( totalMemoryFree<0) totalMemoryFree=0;
+            
             long paddingMemory = getPaddingMemory();
-            long requiredFree = (long)( totalMemory * (double)safeZoneUpper/100.0) - paddingMemory;
-
-            if( requiredFree<0)
-            {
-                if( lowMemoryMode)
-                {
-                    LOGGER.warn( "Low memory mode but not memory required to be freed, setting the default free amount" );  
-                    requiredFree=totalMemory/2;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
+            long totalMemoryFreeAdjusted=totalMemoryFree-paddingMemory;
+            
+            if( totalMemoryFreeAdjusted<0) totalMemoryFreeAdjusted=0;
+            double totalMemoryFreePercentAdjusted=(double)totalMemoryFreeAdjusted/(double)totalMemory;
+            assert totalMemoryFreePercentAdjusted>=0.0 && totalMemoryFreePercentAdjusted<=1.0: "totalMemoryFreePercentAdjusted must be between 0-1: " + totalMemoryFreePercentAdjusted;
             
             Cost maxLevel = null;
 
@@ -1977,7 +2005,7 @@ public final class MemoryManager
                 }
                 catch( IllegalArgumentException iae)
                 {                    
-                    rainyDayFund=null;
+                    releaseRainyDayFund();
                     
                     if( attempts > 3)
                     {
@@ -1995,8 +2023,10 @@ public final class MemoryManager
             
             long currentThreadhold = TENURED_GENERATION_POOL.getCollectionUsageThreshold();
             long requiredThreadhold = calculatedTenuredThreshold();
-
-            long safetyThreadhold = tenuredUsage.getMax() - (tenuredUsage.getMax()/100 * (safeZoneLower));
+            long tenuredMax=getTenuredTotalMemory(tenuredUsage);
+            
+            long safetyThreadhold = tenuredMax - (long)(tenuredMax/100.0 * safeZoneLower);
+            assert safetyThreadhold<tenuredMax: "safetyThreadhold{" +safetyThreadhold+"} < tenuredMax{" + tenuredMax +"}";
 
             if( safetyThreadhold < requiredThreadhold) safetyThreadhold=requiredThreadhold;
 
@@ -2020,36 +2050,63 @@ public final class MemoryManager
                     LOGGER.error("Could not set the setUsageThreshold to " + requiredThreadhold + " max " + totalMemory, iae);
                 }
             }
-
-            long tenuredUSED  = tenuredUsage.getUsed()-paddingMemory;
-            if( tenuredUSED < 0) tenuredUSED = 0;
-            long adjustedTenuredFree = totalMemory - tenuredUSED ;
-
+            long tenuredUsed  = tenuredUsage.getUsed();
+            long tenuredUsedAdjusted  = tenuredUsed-paddingMemory;
+            if( tenuredUsedAdjusted < 0) tenuredUsedAdjusted = 0;
+//            long tenuredMax = tenuredUsage.getMax();
+//            long tenuredCommitted = tenuredUsage.getCommitted();
+//            tenuredMax=(tenuredMax>tenuredCommitted?tenuredMax:tenuredCommitted);
+//            long tenuredMax = getTenuredTotalMemory(tenuredUsage);
+            long tenuredFreeAdjusted =  tenuredMax- tenuredUsedAdjusted ;
+            if( tenuredFreeAdjusted<0) tenuredFreeAdjusted=0;
+            
             long cleared = 0;
             String type = "unknow";
 
             long totalUsed=getTotalUsed();
             
-            double adjustedFreePercent = (double)adjustedTenuredFree/(double)totalMemory;
+            double tenuredFreePercentAdjusted = (double)tenuredFreeAdjusted/(double)tenuredMax;
 
             long gcCount=getCountGC();
             boolean collectionUsageThresholdExceeded = TENURED_GENERATION_POOL.isCollectionUsageThresholdExceeded();
             boolean usageThresholdExceeded = TENURED_GENERATION_POOL.isUsageThresholdExceeded();
+//            long tenuredFreeRequired=0;
             if( usageThresholdExceeded == false)
-            {
+            {                
                 collectionUsageThresholdExceeded=false;
             }
+//            else
+//            {
+//                long usageThreshold = TENURED_GENERATION_POOL.getUsageThreshold();
+//                tenuredFreeRequired=usageThreshold-tenuredUsed;
+//            }
             long collectionUsageThresholdCount= TENURED_GENERATION_POOL.getCollectionUsageThresholdCount();
 
             /**
              * If we have < 10% AND there has been a full GC since the last time we ran then we will clear all cache again. 
              */
-            if( adjustedFreePercent < 0.1 && lastPanicGCCount !=gcCount)
+            if( totalMemoryFreePercentAdjusted < 0.1 && lastPanicGCCount !=gcCount)
             {
                 PANIC_COUNT.incrementAndGet();
 
+                long requiredFree = (long)( totalMemory * (double)safeZoneUpper/100.0) - paddingMemory;
+
+                if( requiredFree<0)
+                {
+                    if( lowMemoryMode)
+                    {
+                        LOGGER.warn( "Low memory mode but not memory required to be freed, setting the default free amount" );  
+                        requiredFree=totalMemory/2;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+
                 lastPanicGCCount=gcCount;
-                rainyDayFund=null;
+                releaseRainyDayFund();
+
                 long free=getFreeMemory();
                 long initialFree=free;
                 Cost lastCleared=null;
@@ -2088,7 +2145,7 @@ public final class MemoryManager
 
                 if( lastCleared== Cost.PANIC)
                 {
-                    type = "PANIC ONLY " + PF.format(adjustedFreePercent)+ " (" + NumUtil.convertMemoryToHumanReadable(getUsed(tenuredUsage)) + " of " + NumUtil.convertMemoryToHumanReadable(totalMemory) + ") free.";
+                    type = "PANIC ONLY " + PF.format(totalMemoryFreePercentAdjusted)+ " (" + NumUtil.convertMemoryToHumanReadable(totalMemoryFreeAdjusted) + " of " + NumUtil.convertMemoryToHumanReadable(totalMemory) + ") free.";
                     if( paddingMemory>0)
                     {
                         type +=" Padding " + NumUtil.convertMemoryToHumanReadable(paddingMemory) +".";
@@ -2117,7 +2174,7 @@ public final class MemoryManager
                     reason="Threshold exceeded";
                 }
                 else if(
-                    tenuredUSED >= safetyThreadhold &&
+                    tenuredUsedAdjusted >= safetyThreadhold &&
                     (
                         lastMediumGCCount!=gcCount                                                                ||
                         lastMediumClearTime + MIN_INCREMENTAL_CLEAR_TIME < sw.creationDate().getTime()
@@ -2127,7 +2184,6 @@ public final class MemoryManager
                     cleanUpNeeded = true;
                     clearMediumLevel = true;
                     reason="tenured used > safety";
-
                 }
                 else if(
                     usageThresholdExceeded &&
@@ -2143,24 +2199,23 @@ public final class MemoryManager
 
                 if( cleanUpNeeded)
                 {
-                    LOGGER.debug( "CHECK ZONE: staring clean");
-
-                    /* Ok We need to do something */
-                    sw=new StopWatch(true);
-
+                    long usageThreshold = TENURED_GENERATION_POOL.getUsageThreshold();
+                    assert usageThreshold>0:"must be postive: " + usageThreshold;
+                    long tenuredFreeRequired=tenuredUsed-usageThreshold;
+                    if( tenuredFreeRequired<0)tenuredFreeRequired=0;
+                    long tenuredFreeRequiredAdjusted= tenuredFreeRequired + (long)((double)tenuredMax * 0.05); 
+                    assert tenuredFreeRequiredAdjusted>0: "tenuredFreeRequiredAdjustedmust be postive: " + tenuredFreeRequiredAdjusted;
+                    
                     /** Give ourselves some room to move */
-                    rainyDayFund = null;
-
-                    long needToClear = requiredFree - adjustedTenuredFree;
-
+                    long rainyDaySize=releaseRainyDayFund();
+                    
                     type = "Clean up: " + reason + ", required " +
-                            NumUtil.convertMemoryToHumanReadable(needToClear) +
+                            NumUtil.convertMemoryToHumanReadable(tenuredFreeRequiredAdjusted) + 
+                            (rainyDaySize>0?", rainy day fund " +NumUtil.convertMemoryToHumanReadable(rainyDaySize):"") +
                             ", tenured free " +
-                            NumUtil.convertMemoryToHumanReadable(adjustedTenuredFree) + " (" + PF.format(adjustedFreePercent) + ")";
+                            NumUtil.convertMemoryToHumanReadable(tenuredFreeAdjusted) + " (" + PF.format(tenuredFreePercentAdjusted) + ")";
 
-                    String msg = "MemoryManager: " + type;
-                    LOGGER.info( msg);
-                    RUNNER.setName( msg);
+                    RUNNER.setName( "MemoryManager: " + type);
                     nameSet=true;
 
                     int level;
@@ -2174,7 +2229,7 @@ public final class MemoryManager
                         /**
                          * If we have cleared enough break out.
                          */
-                        if( cleared >= needToClear) break;
+                        if( cleared >= tenuredFreeRequiredAdjusted) break;
                         Cost levelCost=Cost.find(level);
                         long levelClearedAmount = freeLevel( levelCost,  1);
 
@@ -2186,13 +2241,10 @@ public final class MemoryManager
                         }
                     }
 
-//                    if( cleared > 0)
-//                    {
                     lastLowClearTime = sw.creationDate().getTime();
                     lastLowGCCount=gcCount;
-                    //}
 
-                    if( cleared < needToClear && clearMediumLevel)
+                    if( cleared < tenuredFreeRequiredAdjusted && clearMediumLevel)
                     {
                         lastMediumClearTime = sw.creationDate().getTime();
                         lastMediumGCCount=gcCount;
@@ -2202,7 +2254,7 @@ public final class MemoryManager
                             /**
                              * If we have cleared enough break out.
                              */
-                            if( cleared >= needToClear) break;
+                            if( cleared >= tenuredFreeRequiredAdjusted) break;
 
                             Cost levelCost=Cost.find(level);
                             double percentage=0.0;
@@ -2216,9 +2268,9 @@ public final class MemoryManager
                                 estimate = estimateLevel( levelCost);
                                 if( estimate > 0)
                                 {
-                                    if( cleared + estimate >= needToClear)
+                                    if( cleared + estimate >= tenuredFreeRequiredAdjusted)
                                     {
-                                        percentage = (double)(needToClear - cleared)/(double)estimate;
+                                        percentage = (double)(tenuredFreeRequiredAdjusted - cleared)/(double)estimate;
                                     }
                                     else
                                     {
@@ -2271,12 +2323,9 @@ public final class MemoryManager
             if( call)
             {
                 callListeners( maxLevel);
-//                assert sw != null;
-//                if(sw!=null)
-//                {
+
                 long diff = sw.durationMS();
                 totalClearedTimeTaken += diff;
-//                }
             }
 
             populatePadding();
@@ -2296,6 +2345,20 @@ public final class MemoryManager
         }
     }
 
+    /* Clear rainy day fund to give us some space to work */
+    private static long releaseRainyDayFund()
+    {
+        long rainyDayFundSize=0;
+        byte[] tmpRainyDayFund=rainyDayFund;
+        if( tmpRainyDayFund!=null)
+        {
+            rainyDayFundSize=tmpRainyDayFund.length;
+            rainyDayFund = null;                  
+        }
+        
+        return rainyDayFundSize;
+    }
+    
     private static void populatePadding()
     {
         long threshold = TENURED_GENERATION_POOL.getUsageThreshold();
@@ -2560,10 +2623,10 @@ public final class MemoryManager
 
     /**
      * 1/2 meg to do some work
-     * @return the rainy day fund
+//     * @return the rainy day fund
      */
     @Nullable
-    public static byte[] makeRainyDay()
+    public static void makeRainyDay()
     {
         byte temp[] = rainyDayFund;
         if( temp == null) //NOPMD
@@ -2579,7 +2642,7 @@ public final class MemoryManager
             }
         }
 
-        return temp;
+//        return temp;
     }
 
 

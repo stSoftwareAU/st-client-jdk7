@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -858,7 +858,7 @@ public class Client implements Executor
         }
 
         String size = ""+sourceFile.length();
-        byte[] raw = FileUtil.generateCheckSum( sourceFile );
+        byte[] raw = FileUtil.generateSHA1( sourceFile );
 
         /* compress the file */
         File deflate = File.createTempFile( "deflate", "tmp", sourceFile.getParentFile());
@@ -877,7 +877,7 @@ public class Client implements Executor
         try
         {
             /* checksum */
-            byte[] chk = FileUtil.generateCheckSum( encrypt );
+            byte[] chk = FileUtil.generateSHA1( encrypt );
 
             SoapResultSet srs;
 
@@ -1535,7 +1535,7 @@ public class Client implements Executor
             throw new Exception( "Unsupported fetch type: "+type );
         }
 
-        String tempName = StringUtilities.replace( fileName, "'", "\\'");
+        String tempName = fileName.replace( "'", "\\'");
         SoapResultSet srs = fetch( "FILE INFO PATH '" + tempName + "' columns isGzip" );
         String key = "";
         String gzip;

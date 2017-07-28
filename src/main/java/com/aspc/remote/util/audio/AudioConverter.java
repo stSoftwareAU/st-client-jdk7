@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -104,7 +104,7 @@ public class AudioConverter {
         File tmpFile=null;
         try
         {
-            String sha1=new String( StringUtilities.encodeBase64( FileUtil.generateCheckSum(srcFile)), "ascii").replace("=", "").replace("/", "_");
+            String sha1=new String( StringUtilities.encodeBase64( FileUtil.generateSHA1(srcFile)), "ascii").replace("=", "").replace("/", "_");
             String prefix=srcFile.getName();
             int pos = prefix.lastIndexOf(".");
             if( pos > 3)

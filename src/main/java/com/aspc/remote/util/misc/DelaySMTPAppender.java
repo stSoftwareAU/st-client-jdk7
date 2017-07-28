@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -33,6 +33,7 @@
  */
 package com.aspc.remote.util.misc;
 
+import com.aspc.remote.application.Shutdown;
 import java.util.ArrayList;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
@@ -43,6 +44,9 @@ import org.apache.log4j.spi.ErrorCode;
 
 import java.util.Properties;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.mail.Session;
 import javax.mail.Authenticator;
@@ -56,6 +60,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.AddressException;
+import org.apache.log4j.spi.TriggeringEventEvaluator;
 
 /**
  * Send an e-mail when a specific logging event occurs, typically on
@@ -79,7 +84,7 @@ import javax.mail.internet.AddressException;
  *  @author      Ceki G&uuml;lc&uuml;
  *  @since       18 December 2007
  */
-public class DelaySMTPAppender extends AppenderSkeleton
+public final class DelaySMTPAppender extends AppenderSkeleton
         implements Runnable
 {
 
@@ -99,10 +104,15 @@ public class DelaySMTPAppender extends AppenderSkeleton
     private String smtpPassword;
     private boolean smtpDebug = false;
     private boolean locationInfo = true;
+    private int smtpPort=-1;
+    private boolean sslEnabled=false;
+    private static final BufferEntry BLANK = new BufferEntry();
+    private static final ExecutorService SENDER= Executors.newSingleThreadExecutor();
+
     /**
      *
      */
-    protected ArrayList msgBuffer = new ArrayList();
+    private final ArrayList<BufferEntry> msgBuffer = new ArrayList();
     /**
      *
      */
@@ -111,18 +121,20 @@ public class DelaySMTPAppender extends AppenderSkeleton
      *
      */
     public long delaySeconds = 30;
-    private Thread sendThread;
+    private final AtomicBoolean senderScheduled=new AtomicBoolean();
     private static final int MESSAGE_MAX_SIZE = 4096; // default messageSize
     private static final long SUPPRESS_INTERVAL = 60 * 1000L; // 1 minute
     private static final int MAX_MESSAGES = 60;
+    
     private static long counterStartTime = 0;//MT CHECKED
     private static int counter = 0;//MT CHECKED
     private static boolean isSuppressed;//MT CHECKED
+    
     /**
      * Store for the current thread whether we are currently appending to the
      * SMTP buffer
      */
-    private static final ThreadLocal isThreadCurrentlyAppending = new ThreadLocal()
+    private static final ThreadLocal<Boolean> IS_THREAD_CURRENTLY_APPENDING = new ThreadLocal()
     {
 
         @Override
@@ -131,11 +143,6 @@ public class DelaySMTPAppender extends AppenderSkeleton
             return true;
         }
     };
-    
-    static
-    {
-        ThreadPool.addPurifier(new DelaySMTPPurifier());
-    }
 
     /**
      * The default constructor will instantiate the appender with a
@@ -144,6 +151,10 @@ public class DelaySMTPAppender extends AppenderSkeleton
      */
     public DelaySMTPAppender()
     {
+        final DelaySMTPAppender current=this;
+        Shutdown.addListener(() -> {
+            current.sendBuffer();
+        });
     }
 
     /**
@@ -152,8 +163,7 @@ public class DelaySMTPAppender extends AppenderSkeleton
      */
     public static void setSMTPForThreadEnabled(boolean enabled)
     {
-
-        isThreadCurrentlyAppending.set(enabled);
+        IS_THREAD_CURRENTLY_APPENDING.set(enabled);
     }
 
     /**
@@ -230,11 +240,16 @@ public class DelaySMTPAppender extends AppenderSkeleton
             props = new Properties();
         }
 
-        boolean sslEnabled=false;
         if (StringUtilities.notBlank(smtpHost))
         {
             props.put("mail.smtp.host", smtpHost);
         }
+        
+        if(smtpPort>0)
+        {
+           props.put("mail.smtp.port", smtpPort);
+        }
+    
         props.put("mail.smtp.ssl.enable", sslEnabled);
         props.put("mail.smtp.socketFactory.fallback", "true");
         final String pw=smtpPassword == null? props.getProperty("mail.smtp.password" ) : smtpPassword;
@@ -263,11 +278,10 @@ public class DelaySMTPAppender extends AppenderSkeleton
 
     private boolean isCurrentlyAppending()
     {
-
-        boolean ret = (Boolean) isThreadCurrentlyAppending.get();
+        boolean ret = IS_THREAD_CURRENTLY_APPENDING.get();
         return ret;
     }
-
+    
     /**
      * Perform SMTPAppender specific appending actions, mainly adding
      * the event to a cyclic buffer and checking if the event triggers
@@ -299,15 +313,20 @@ public class DelaySMTPAppender extends AppenderSkeleton
 
                 synchronized (this)
                 {
-                    if (sendThread == null)
+                    if (senderScheduled.get()==false)
                     {
-                        sendThread = new Thread(this);
-                        sendThread.setName("delay email appender [waiting]");
-                        sendThread.setDaemon(true);
-                        sendThread.start();
+                        SENDER.submit(this);
+                        senderScheduled.set(true);
                     }
 
-                    msgBuffer.add(entry);
+                    if( msgBuffer.size()>MAX_MESSAGES)
+                    {
+                        msgBuffer.add(BLANK);
+                    }
+                    else
+                    {
+                        msgBuffer.add(entry);
+                    }
                 }
             }
         }
@@ -336,11 +355,8 @@ public class DelaySMTPAppender extends AppenderSkeleton
         //cut off [REPEATED
         synchronized (this)
         {
-            int size = msgBuffer.size();
-
-            for (int i = 0; i < size; i++)
+            for (BufferEntry bufferEntry:msgBuffer)
             {
-                BufferEntry bufferEntry = (BufferEntry) msgBuffer.get(i);
                 String bufferMessage = bufferEntry.getMessage();
 
                 if (eventKey.equals(bufferMessage))
@@ -441,12 +457,17 @@ public class DelaySMTPAppender extends AppenderSkeleton
      */
     protected void sendBuffer()
     {
-        ArrayList buffer;
+        ArrayList<BufferEntry> buffer;
         synchronized (this)
         {
-            buffer = (ArrayList) msgBuffer.clone();
-            msgBuffer.clear();
-            sendThread = null;
+            try{
+                buffer = (ArrayList) msgBuffer.clone();
+                msgBuffer.clear();
+            }
+            finally
+            {
+                senderScheduled.set(false);
+            }
         }
 
         if (buffer.isEmpty())
@@ -481,10 +502,8 @@ public class DelaySMTPAppender extends AppenderSkeleton
             {
                 sbuf.append(t);
             }
-            int len = buffer.size();
-            for (int i = 0; i < len; i++)
+            for (BufferEntry entry:buffer)
             {          
-                BufferEntry entry = (BufferEntry) buffer.get(i);           
                 sbuf.append(entry.getMessage());
                 if (entry.getCount() > 1)
                 {
@@ -568,6 +587,24 @@ public class DelaySMTPAppender extends AppenderSkeleton
         this.subject = subject;
     }
 
+    /**
+     * The <b>SMTPHost</b> option takes a integer for the port.
+     * @param smtpPort  the port
+     */
+    public void setSMTPPort(final int smtpPort)
+    {
+        this.smtpPort = smtpPort;
+    }
+    
+    /**
+     * Turn on SSL.
+     * @param sslEnabled  Should use SSL
+     */
+    public void setSSL(final boolean sslEnabled)
+    {
+        this.sslEnabled = sslEnabled;
+    }
+    
     /**
      * The <b>SMTPHost</b> option takes a string value which should be a
      * the host name of the SMTP server that will send the e-mail message.
@@ -742,23 +779,35 @@ public class DelaySMTPAppender extends AppenderSkeleton
     @Override
     public void run()
     {
+        Thread t = Thread.currentThread();
+        String tn=t.getName();
+
         try
         {
+            t.setName("delay email appender [waiting]");
+
             Thread.sleep(delaySeconds * 1000);
         } 
         catch (InterruptedException e)
         {
-            ;//OK
         }
-        sendBuffer();
+        finally
+        {
+            try{
+                sendBuffer(); // The actual sendig of the emails. 
+            }
+            finally
+            {
+                t.setName(tn);
+            }
+        }
     }
-
 
     /**
      * Class to store the LoggingEvent and count of duplicate messages
      * 
      */
-    class BufferEntry
+    private static class BufferEntry
     {   
         int eventCount;
         int originalLength;
@@ -775,7 +824,6 @@ public class DelaySMTPAppender extends AppenderSkeleton
         {
             eventCount++;
         }
-
 
         void setMessage(final LoggingEvent event, final Layout aLayout)
         {
@@ -842,4 +890,9 @@ public class DelaySMTPAppender extends AppenderSkeleton
             return this.isTruncated;
         }
     }
+    
+    static
+    {
+        ThreadPool.addPurifier(new DelaySMTPPurifier());
+    }    
 }

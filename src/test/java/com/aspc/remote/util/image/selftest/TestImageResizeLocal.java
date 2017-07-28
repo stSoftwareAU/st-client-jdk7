@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -173,7 +173,7 @@ public class TestImageResizeLocal extends TestCase
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNonImage() throws IOException, Exception
     {
-        File tmpFile=File.createTempFile("non-image", ".txt");
+        File tmpFile=File.createTempFile("non-image", ".txt",FileUtil.makeQuarantineDirectory());
         try{
             FileWriter fw = null;
             try
@@ -211,7 +211,7 @@ public class TestImageResizeLocal extends TestCase
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNonExisting() throws IOException, Exception
     {
-        File tmpFile=File.createTempFile("image", ".png");
+        File tmpFile=File.createTempFile("image", ".png",FileUtil.makeQuarantineDirectory());
 
         try
         {

@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2002-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -91,6 +91,12 @@ public interface HashLongMap<T> extends InterfaceSizeOf, Cloneable
      */
     @CheckReturnValue @Nonnull
     public long[] getKeyArray();
+    
+    /**
+     * create an array of arrays for the keys. 
+     * @return the data array.
+     */
+    public long[][] getKeyData();
     
     /**
      * Is the key array sorted ? 

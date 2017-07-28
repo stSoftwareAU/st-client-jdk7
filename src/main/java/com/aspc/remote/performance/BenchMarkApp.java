@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -509,10 +509,10 @@ public class BenchMarkApp extends AppCmdLine
             NetUrl nu = new NetUrl( remoteURL);
 
             String host = nu.getHost();
-            host = StringUtilities.replace(host, "http://", "");
-            host = StringUtilities.replace(host, "https://", "");
+            host = host.replace( "http://", "");
+            host = host.replace( "https://", "");
 
-            title = StringUtilities.replace(title, "${HOST}", host);
+            title = title.replace( "${HOST}", host);
         }
     }
 
@@ -1800,7 +1800,7 @@ public class BenchMarkApp extends AppCmdLine
 
         while( tmpTitle.contains("__"))
         {
-            tmpTitle = StringUtilities.replace( tmpTitle, "__",  "_");
+            tmpTitle = tmpTitle.replace( "__", "_");
         }
 
         try

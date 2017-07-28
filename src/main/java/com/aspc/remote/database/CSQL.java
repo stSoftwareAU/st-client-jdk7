@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -75,7 +75,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
 
     /** control the time we will log the stack traces of slow requests */
     public static final String PROPERTY_LOG_SLOW_STACK_TRACE_TIME="LOG_SLOW_STACK_TRACE_TIME";
-    
+
     private static enum Type{
         SELECT,
         UPDATE,
@@ -85,9 +85,9 @@ public final class CSQL extends SResultSet implements ResultsLoader
         ADMIN,
         UNKNOWN;
     };
-    
+
     private Type sqlType;
-    
+
     private int                     maxRow,
                                     rowCount;
 
@@ -127,9 +127,9 @@ public final class CSQL extends SResultSet implements ResultsLoader
 
     private static final Log LOGGER = CLogger.getLog( "com.aspc.remote.database.CSQL");//#LOGGER-NOPMD
 
-    private static final boolean DEBUG_ALLOW_SIMULATE_SLOW=true;//#RELEASE ENABLED
+    private static final boolean DEBUG_ALLOW_SIMULATE_SLOW=false;//#RELEASE ENABLED
     private static final ThreadLocal<Long> SIMULATE_SLOW=new ThreadLocal<>();
-    
+
     private static final boolean DEBUG_LOG_BATCH_VALUES=false;//#RELEASE
 
     /**
@@ -145,11 +145,11 @@ public final class CSQL extends SResultSet implements ResultsLoader
         clear();
     }
 
-    /** 
-     * Slow ALL queries from this thread down by the delay milliseconds. 
-     * 
-     * @param delayMS 0 or less means no delay. 
-     * @return the previous delay value. 
+    /**
+     * Slow ALL queries from this thread down by the delay milliseconds.
+     *
+     * @param delayMS 0 or less means no delay.
+     * @return the previous delay value.
      */
     public static long simulateSlowQuery( final @Nonnegative long delayMS)
     {
@@ -164,7 +164,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             {
                 SIMULATE_SLOW.remove();
             }
-            
+
             if( old !=null)
             {
                 return old;
@@ -174,10 +174,10 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 return 0;
             }
         }
-        
+
         return -1;
     }
-    
+
     /**
      * Disable error level logging ( warning only).
      * @return this
@@ -188,9 +188,9 @@ public final class CSQL extends SResultSet implements ResultsLoader
         suppressErrorLogging=true;
         return this;
     }
-    
+
     /**
-     * Enable error level logging 
+     * Enable error level logging
      * @return this
      */
     @Nonnull
@@ -199,10 +199,10 @@ public final class CSQL extends SResultSet implements ResultsLoader
         suppressErrorLogging=false;
         return this;
     }
-    
+
     /**
      * Force the statement to be read only
-     * @param readonly true if this query should be readonly. 
+     * @param readonly true if this query should be readonly.
      * @return this.
      */
     @Nonnull
@@ -212,12 +212,12 @@ public final class CSQL extends SResultSet implements ResultsLoader
         {
             throw new IllegalArgumentException( "can't set as modifiable on a database that is marked as readonly");
         }
-        
+
         this.readonly=readonly;
-        
+
         return this;
     }
-    
+
     /**
      * add additional thread IDs
      * @param threadID the thread id
@@ -399,7 +399,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 try
                 {
                     threadConn = dataBase.checkOutConnection();
-                    threadConn.setAutoCommit( false);                    
+                    threadConn.setAutoCommit( false);
 
                     break;
                 }
@@ -817,7 +817,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             boolean inTransaction;
 
             inTransaction = (transactionConn != null);
-            
+
             if( inTransaction)
             {
                 conn = transactionConn;
@@ -845,13 +845,13 @@ public final class CSQL extends SResultSet implements ResultsLoader
                     if( conn.isReadOnly()==false)
                     {
                         conn.setReadOnly(true);
-                        turnOffReadOnly=true;                    
+                        turnOffReadOnly=true;
                     }
                 }
 
                 if( turnOffReadOnly == false && query )
                 {
-                    turnOffAutoCommit=true;                    
+                    turnOffAutoCommit=true;
                 }
             }
 
@@ -1329,7 +1329,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
      * @throws SQLException a database problem
      */
     @Nonnull
-    public CSQL addPreparedStatement( final @Syntax("SQL") @Nonnull String statement, final Object args[]) throws SQLException
+    public CSQL addPreparedStatement( final @Syntax("SQL") @Nonnull String statement, final Object... args) throws SQLException
     {
         PreparedStatementHolder holder=null;
         if( preparedStatementMap == null)
@@ -1379,6 +1379,14 @@ public final class CSQL extends SResultSet implements ResultsLoader
             {
                 pstmt.setDouble(i + 1, ((Double)value));
             }
+            else if(value instanceof Date)
+            {
+                pstmt.setDate(i + 1, ((Date)value));
+            }
+            else if(value instanceof Timestamp)
+            {
+                pstmt.setTimestamp(i+1, (Timestamp)value);
+            }
             else if( value == null)
             {
                 pstmt.setNull(i + 1, 0);
@@ -1400,7 +1408,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
         }
 
         pstmt.addBatch();
-        
+
         return this;
     }
 
@@ -1490,7 +1498,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 if( tmpHolder.logText != null) sb.append( tmpHolder.logText);
                 sb.append(" */");
             }
-            
+
             recordTime( sb.toString(), start, batchStatement.getConnection(), e);
 
             if( e instanceof SQLException)//NOPMD
@@ -1582,7 +1590,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             Exception e2= convertException( e);
 
             if( e2 != null ) throw e2;
-        }        
+        }
     }
 
     private void executePostgresSql( final @Nonnull Statement stmt, final boolean query, final @Nonnull String theSql) throws Exception
@@ -1610,7 +1618,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
         }
     }
 
-    @CheckReturnValue @Nonnull 
+    @CheckReturnValue @Nonnull
     private String removeComments( final @Nonnull String sql)
     {
         String temp = sql;
@@ -2135,7 +2143,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
         {
             executeSql( inSql, false);
         }
-        
+
         return this;
     }
 
@@ -2191,7 +2199,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 "Too Many Rows(" + getRowCount() + ") found for :-\n" + theSelect
             );
         }
-        
+
         return this;
     }
 
@@ -2211,7 +2219,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
      * Returns true if the batchStatement was a select type of batchStatement
      * @return true if there is output
      */
-    @CheckReturnValue 
+    @CheckReturnValue
     public boolean hasOutput()
     {
         return columns != null;
@@ -2293,7 +2301,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
 
     /**
      * With addition option of a row ( -1 for all rows) and only some columns
-     * 
+     *
      * @param header_fg include header
      * @param whichRow which row
      * @param restrictCols the columns
@@ -2457,7 +2465,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             this.preparedStatement = ps;
             this.statement = statement;
         }
-        
+
     }
 
     static

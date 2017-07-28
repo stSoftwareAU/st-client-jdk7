@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -622,8 +622,8 @@ public class CField extends JPanel implements DocumentListener, FocusListener
                         //final StringUtilities su = new StringUtilities();
 
                         text = StringUtilities.replace( text, ",","");
-                        text = StringUtilities.replace( text, ")","");
-                        text = StringUtilities.replace( text, "(","-");
+                        text = text.replace( ")", "");
+                        text = text.replace( "(", "-");
 
                         try
                         {

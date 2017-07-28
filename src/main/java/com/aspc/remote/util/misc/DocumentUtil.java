@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -1258,7 +1258,7 @@ public final class DocumentUtil
             
             transformer.reset();
         }
-        catch( Exception e)
+        catch( TransformerConfigurationException e)
         {
             LOGGER.warn( "Can not reset transformer", e);
             cachable=false;

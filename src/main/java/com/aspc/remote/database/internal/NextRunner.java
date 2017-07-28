@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -46,6 +46,8 @@ import com.aspc.remote.util.misc.*;
 import com.aspc.remote.util.timer.Lap;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
 import javax.annotation.Nonnull;
 
@@ -305,7 +307,7 @@ public class NextRunner implements Runnable
             // just clear out any remaining
             stmt.getMoreResults();            
         }
-        catch( Throwable t)
+        catch( Exception t)
         {
             if( conn != null)
             {
@@ -323,7 +325,7 @@ public class NextRunner implements Runnable
                 {
                     stmt.close();
                 }
-                catch( Exception e)
+                catch( SQLException e)
                 {
                     LOGGER.warn( "Could not close statement", e);
                 }
@@ -347,7 +349,7 @@ public class NextRunner implements Runnable
                         "INSERT INTO next_number(name,next_nr)VALUES(" + dBase.encodeString(sv.getID()) + ",1)"
                     );
                 }
-                catch( Exception e)
+                catch( SQLException e)
                 {
                     // we can continue as two servers maybe creating the record at one time.
                     LOGGER.warn( "possible race condition NextNumber.get( " + sv.getID() + "," + cacheSize + ") for " + dBase.getTypeKey(), e);
@@ -419,7 +421,7 @@ public class NextRunner implements Runnable
             // just clear out any remaining
             stmt.getMoreResults();            
         }
-        catch( Throwable t)
+        catch( Exception t)
         {
             if( conn != null)
             {
@@ -437,7 +439,7 @@ public class NextRunner implements Runnable
                 {
                     stmt.close();
                 }
-                catch( Exception e)
+                catch( SQLException e)
                 {
                     LOGGER.warn( "Could not close statement", e);
                 }
@@ -461,7 +463,7 @@ public class NextRunner implements Runnable
                         "INSERT INTO next_number(name,next_nr)VALUES(" + dBase.encodeString(sv.getID()) + ",1)"
                     );
                 }
-                catch( Exception e)
+                catch( SQLException e)
                 {
                     // we can continue as two servers maybe creating the record at one time.
                     LOGGER.warn( "possible race condition NextNumber.get( " + sv.getID() + "," + cacheSize + ") for " + dBase.getTypeKey(), e);
@@ -494,9 +496,22 @@ public class NextRunner implements Runnable
             sb.append(" WHERE name=");
             sb.append(eID);
 
-            sql.findOne(
-                sb.toString()
-            );
+            for( int attempt=0;true;attempt++){
+                try{
+                    sql.findOne(
+                        sb.toString()
+                    );
+                    break;
+                }
+                catch( SQLTransactionRollbackException r)
+                {                
+                    if(attempt>3)
+                    {
+                        throw r;
+                    }
+                    LOGGER.warn( sb.toString(), r);
+                }
+            }
         }
         catch( NotFoundException nf)
         {

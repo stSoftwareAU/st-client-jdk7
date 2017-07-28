@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -87,9 +87,41 @@ public class TestStringUtilities extends TestCase
     public static void main(String[] args)
     {
         Test test = suite();
-//        test = TestSuite.createTest(TestStringUtilities.class, "testReplaceQuotes");
+//        test = TestSuite.createTest(TestStringUtilities.class, "testLikeBad");
         TestRunner.run(test);
         QueueLog.flush(60000);
+    }
+    
+    public void testEncodeDecodeArray()
+    {
+        byte array[]=new byte[256];
+        byte b= Byte.MIN_VALUE;
+        for(int pos=0; pos< array.length;pos++)
+        {
+            array[pos]=b;
+            b+=1;
+        }
+        
+        String encodeArray = StringUtilities.encode(array);
+        byte[] decodeArray = StringUtilities.decodeToBytes(encodeArray);
+        
+        for(int pos=0; pos< array.length;pos++)
+        {
+            assertEquals( pos+")", array[pos],decodeArray[pos]);
+        }
+    }
+    public void testNotEncoded()
+    {
+        String[] notEncodedStr = {"%", "%3", "%zz", "%3z", "%z3", "a b", "&nbsp;", "a=b"};
+        String[] couldBeEncodedStr = {"%20", "a%ddb", "a+b"};
+        for(String str : notEncodedStr)
+        {
+            assertTrue(str + " is not encoded", StringUtilities.isNotEncoded(str));
+        }
+        for(String str : couldBeEncodedStr)
+        {
+            assertFalse(str + " could be encoded", StringUtilities.isNotEncoded(str));
+        }
     }
     
     public void testReplaceQuotes()
@@ -102,12 +134,12 @@ public class TestStringUtilities extends TestCase
         
         String tmp=sb.toString();
         
-        String tmp2=StringUtilities.replace(tmp, "'", "''");
+        String tmp2=tmp.replace( "'", "''");
         
         assertEquals( "should have doubled", 512, tmp2.length());
         
     }
-        
+    
     public void testValidHTML()
     {
         String list[]={
@@ -163,7 +195,7 @@ public class TestStringUtilities extends TestCase
     }
     public void testValidDomian()
     {
-        String list[]={"www.stsoftware.com.au", "gmail.com"};
+        String list[]={"stSoftware.com.au", "gmail.com"};
         for( String domain:list)
         {
             if( StringUtilities.HOST_PATTERN.matcher(domain).matches()==false)
@@ -434,6 +466,8 @@ public class TestStringUtilities extends TestCase
     public void testGoodURI()
     {
         String list[]={
+            "http://www.penguin.com.au/products/9781925355864/i'm-supposed-to-protect-you-from/",
+            "http://www.venturapress.com.au/books/#/rebellious-daughters/",
             "/",
             "/ds/code_mirror/4.7%2bzz/lib/codemirror.css",
             "/ds/code_mirror/4.7/lib/codemirror.css?ext=%2bxyz",
@@ -441,7 +475,7 @@ public class TestStringUtilities extends TestCase
             "//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js",
             "http://fonts.googleapis.com/css?family=Source+Code+Pro%7cOpen+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800",
             "sftp://docmgr:dhsjah@devserver6/tmp/",            
-            "https://www.stsoftware.com.au",
+            "https://stSoftware.com.au",
             "/summary/generic?SCREEN_KEY=270650@2~170@1&LAYERID=110&FC=Y",
             "/29/29032/SoW+for_a_Contractor",
             "/(good)/transfer/docs/mail/tenders%40smegateway.com.au/29/29032/SoW+for+a+Contractor+(BOI+ROP+IT).doc",
@@ -451,7 +485,11 @@ public class TestStringUtilities extends TestCase
             "ftp://noboby:xxxx@localhost/docs2",
             "file://C:\\Users\\ADMIN~1\\AppData\\Local\\Temp\\2",
             "http://www.youtube.com/v/7zxEw3QanhY",
-            "http://localhost:8080/ds/jshint/2.5.6/jshint.js?ts=1417847961433&code=%2fabc%2f"
+            "http://localhost:8080/ds/jshint/2.5.6/jshint.js?ts=1417847961433&code=%2fabc%2f",
+            "http://www.penguin.com.au/products/9781925355239/brett-whiteley:-art,-life-and-the-other/",
+            "http://www.penguin.com.au/products/9781925355741/beach-at-night,-the/",
+            "http://www.penguin.com.au/products/9781922182128/hello,-beautiful!:-scenes-from-a-life/",
+            "http://www.penguin.com.au/products/9781921922244/careful,-he-might-hear-you:-text-classic/"
         };
         
         for( String uri: list)
@@ -467,7 +505,7 @@ public class TestStringUtilities extends TestCase
     {
         String list[]={
             "http://localhost:8080/ds/jshint%2f2.5.6%2fjshint.js?ts=1417847961433",
-            "https://www,stsoftware.com.au",
+//            "https://www,stsoftware.com.au",
             "/summary/generic&SCREEN_KEY=270650@2~170@1&LAYERID=110?FC=Y",
             "/summary/generic?SCREEN_KEY=270650@2~170@1&LAYERID=110?FC=Y",
             "ftp://noboby:xxxx@localhost/docs2,ftp://noboby:xxxx@localhost/docs",
@@ -1362,7 +1400,13 @@ public class TestStringUtilities extends TestCase
     {
         String good[][]={
             {"* A * SAVED IS A * EARNED *", " A PENNY SAVED IS A PENNY EARNED ", " A DOLLAR SAVED IS A DOLLAR EARNED "},        
-            {"abc*", "ABCD", "ABC"},        
+            {"abc*", "ABCD", "ABC"},  
+            {"123-*-*", "123-456-789"},
+            {"*-*-*", "123-456-789"},
+            {"123-*-*", "123-456-"},
+            {"123-*-*", "123--"},
+            {"123-*-*", "123--456"},
+            {"*-*-*-*-*-*-*-*-*", "1-2-3-4-5-6-7-8-9"},
          //   {"jaguar top car", "Top speed Jaguar car is 200kpm", "Jaguar is a top car"},        
         };
         
@@ -1382,13 +1426,17 @@ public class TestStringUtilities extends TestCase
     
     public void testLikeBad()
     {
-        String good[][]={
+        String badList[][]={
             {"* A * SAVED IS A ", " A PENNY SAVED IS A PENNY EARNED ", " A DOLLAR SAVED IS A DOLLAR EARNED "},        
-            {"abc*", "AB", "AB*"},        
+            {"abc*", "AB", "AB*"},   
+            {"123-*-*", "123-456789"},
+            {"*-*-*", "123-456789"},
+            {"*-*-*-*-*-*-*-*-", "1-2-3-4-5-6-7-8-9"},
+
          //   {"jaguar top car", "Top speed Jaguar car is 200kpm", "Jaguar is a top car"},        
         };
         
-        for( String check[]: good)
+        for( String check[]: badList)
         {
             String pattern=check[0];
             

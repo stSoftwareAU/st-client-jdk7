@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -50,9 +50,12 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.net.ssl.SSLException;
 import org.apache.commons.logging.Log;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -79,6 +82,150 @@ public final class HTMLUtilities
     // Constructors
     private HTMLUtilities()
     {
+    }
+
+    private static String makeSafeSegment( final @Nonnull Node n)
+    {
+        String cleanHTML="";
+    
+        if( n instanceof Element )
+        {
+            Element e=(Element)n;
+            cleanHTML+=iMakeSafeSegment(e.toString());
+        }
+        else
+        {
+            cleanHTML+=n;
+        }
+        
+        return cleanHTML;
+    }
+    
+    /**
+     *
+     * @param html
+     * @return the safe HTML.
+     */
+    @Nonnull @CheckReturnValue
+    public static String makeSafeSegment( final @Nonnull String html)
+    {
+        String cleanHTML=iMakeSafeSegment(html);
+        
+        while( cleanHTML.startsWith("&nbsp;"))
+        {
+            cleanHTML=cleanHTML.substring("&nbsp;".length()).trim();
+        }
+        while( cleanHTML.endsWith("&nbsp;"))
+        {
+            cleanHTML=cleanHTML.substring(0, cleanHTML.length() - "&nbsp;".length()).trim();
+        }
+        while( true)
+        {
+            cleanHTML=cleanHTML.trim();
+            if(cleanHTML.startsWith("<p>")&& cleanHTML.endsWith("</p>"))
+            {
+                if( cleanHTML.indexOf("<p>", 3)==-1)
+                {
+                    cleanHTML=cleanHTML.substring(3, cleanHTML.length()-4);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return cleanHTML.trim();
+    }        
+    
+    private static String iMakeSafeSegment( final @Nonnull String html)
+    {        
+        if( html ==null) throw new IllegalArgumentException("html must not be null");
+        
+        Document doc = Jsoup.parse(html);
+        
+        String cleanHTML="";
+        for( Node n:doc.body().childNodes())
+        {
+            if( n instanceof Element )
+            {
+                Element e=(Element)n;
+                
+                String tag=e.tagName();
+                switch( tag.toUpperCase())
+                {
+                    case "BR":
+                        cleanHTML+="<br>\n";
+                        break;
+                    case "P":
+                    case "I":
+                    case "UL":
+                    case "LI":
+                    case "BLOCKQUOTE":  // The <blockquote> tag specifies a section that is quoted from another source.
+//                    case "P":
+                    case "EM":      // The <em> tag is a phrase tag. It renders as emphasized text.
+                    case "STRONG":  // The <strong> tag is a phrase tag. It defines important text.
+                    case "CODE":    // The <code> tag is a phrase tag. It defines a piece of computer code.
+                    case "SAMP":    // The <samp> tag is a phrase tag. It defines sample output from a computer program.
+                    case "KBD":     // The <kbd> tag is a phrase tag. It defines keyboard input.
+                    case "VAR":     // The <var> tag is a phrase tag. It defines a variable.
+                    case "SUP":     // The <sup> tag defines superscript text. Superscript text appears half a character above the normal line, and is sometimes rendered in a smaller font. Superscript text can be used for footnotes, like WWW[1].
+                    case "B":
+                        cleanHTML+="<" + tag.toLowerCase() +">";
+                        for( Node n2:e.childNodes())
+                        {
+                            cleanHTML+=makeSafeSegment(n2);
+                        }
+                        cleanHTML+="</" + tag.toLowerCase() +">";
+                        
+                        break;
+                    case "SPAN":
+                    case "DIV":
+                        for( Node n2:e.childNodes())
+                        {
+                            cleanHTML+=makeSafeSegment(n2);
+                        }
+                        
+                        break;
+                    case "A":
+    //                    LOGGER.info(e);
+                        String href=e.attr("href");
+                        if( href.matches("http(s|)://.*")==false)
+                        {
+                            LOGGER.warn( "Illegal href " + e);
+                            for( Node n2:e.childNodes())
+                            {
+                                cleanHTML+=makeSafeSegment(n2);
+                            }
+                        }
+                        else
+                        {
+                            cleanHTML+="<a href=\"" + href.replace("\"", "'") +"\">";
+                            for( Node n2:e.childNodes())
+                            {
+                                cleanHTML+=makeSafeSegment(n2);
+                            }
+                            cleanHTML+="</a>";
+                        }
+                        break;
+
+                    default:
+                        LOGGER.info( "ignore: " + e);
+//                        e.remove();
+                }
+//                cleanHTML+=makeSafeSegment(((Element)n).html());
+            }
+            else
+            {
+                cleanHTML+=n;
+            }
+        }
+           
+        return cleanHTML;
     }
     
     public static URL bestURL(final String checkURL, final boolean tryUpgradeToSSL) throws MalformedURLException, URISyntaxException, IOException
@@ -435,33 +582,33 @@ public final class HTMLUtilities
     {
         String name = orgName;
 
-        name = StringUtilities.replace(name, ":", "_");
-        name = StringUtilities.replace(name, " ", "_");
-        name = StringUtilities.replace(name, "=", "_");
-        name = StringUtilities.replace(name, ".", "_");
+        name = name.replace( ":", "_");
+        name = name.replace( " ", "_");
+        name = name.replace( "=", "_");
+        name = name.replace( ".", "_");
 
-        name = StringUtilities.replace(name, "_AT_", "_A_T_");
-        name = StringUtilities.replace(name, "_DASH_", "_D_A_S_H_");
-        name = StringUtilities.replace(name, "_AND_", "_A_N_D_");
-        name = StringUtilities.replace(name, "_ROW_", "_R_O_W_");
-        name = StringUtilities.replace(name, "_PERCENT_", "_P_E_R_C_E_N_T_");
-        name = StringUtilities.replace(name, "_FETCH_", "_F_E_T_C_H_");
-        name = StringUtilities.replace(name, "_END_", "_E_N_D_");
+        name = name.replace( "_AT_", "_A_T_");
+        name = name.replace( "_DASH_", "_D_A_S_H_");
+        name = name.replace( "_AND_", "_A_N_D_");
+        name = name.replace( "_ROW_", "_R_O_W_");
+        name = name.replace( "_PERCENT_", "_P_E_R_C_E_N_T_");
+        name = name.replace( "_FETCH_", "_F_E_T_C_H_");
+        name = name.replace( "_END_", "_E_N_D_");
 
-        name = StringUtilities.replace(name, "_BCURLY_", "_B_C_U_R_L_Y_");
-        name = StringUtilities.replace(name, "_ECURLY_", "_E_C_U_R_L_Y_");
+        name = name.replace( "_BCURLY_", "_B_C_U_R_L_Y_");
+        name = name.replace( "_ECURLY_", "_E_C_U_R_L_Y_");
 
-        name = StringUtilities.replace(name, "[", "_FETCH_");
-        name = StringUtilities.replace(name, "@", "_AT_");
-        name = StringUtilities.replace(name, "%", "_PERCENT_");
-        name = StringUtilities.replace(name, "-", "_DASH_");
-        name = StringUtilities.replace(name, "&", "_AND_");
-        name = StringUtilities.replace(name, "|", "_ROW_");
-        name = StringUtilities.replace(name, "~", "_SEP_");
-        name = StringUtilities.replace(name, "]", "_END_");
+        name = name.replace( "[", "_FETCH_");
+        name = name.replace( "@", "_AT_");
+        name = name.replace( "%", "_PERCENT_");
+        name = name.replace( "-", "_DASH_");
+        name = name.replace( "&", "_AND_");
+        name = name.replace( "|", "_ROW_");
+        name = name.replace( "~", "_SEP_");
+        name = name.replace( "]", "_END_");
 
-        name = StringUtilities.replace(name, "{", "_BCURLY_"); //curly brackets
-        name = StringUtilities.replace(name, "}", "_ECURLY_");
+        name = name.replace( "{", "_BCURLY_"); //curly brackets
+        name = name.replace( "}", "_ECURLY_");
 
         return name;
     }
@@ -475,22 +622,22 @@ public final class HTMLUtilities
     {
         String temp = id.toUpperCase().trim();
 
-        temp = StringUtilities.replace(temp, " ", "_");
-        temp = StringUtilities.replace(temp, "=", "_EQ_");
-        temp = StringUtilities.replace(temp, ":", "_COL_");
-        temp = StringUtilities.replace(temp, "%", "_PERCENT_");
-        temp = StringUtilities.replace(temp, ".", "_PERIOD_");
-        temp = StringUtilities.replace(temp, "[", "_FETCH_");
-        temp = StringUtilities.replace(temp, "@", "_AT_");
-        temp = StringUtilities.replace(temp, "%", "_PERCENT_");
-        temp = StringUtilities.replace(temp, "-", "_DASH_");
-        temp = StringUtilities.replace(temp, "&", "_AND_");
-        temp = StringUtilities.replace(temp, "^", "_HAT_");
-        temp = StringUtilities.replace(temp, "|", "_ROW_");
-        temp = StringUtilities.replace(temp, "~", "_SEP_");
-        temp = StringUtilities.replace(temp, "]", "_END_");
-        temp = StringUtilities.replace(temp, "{", "_BCURLY_");
-        temp = StringUtilities.replace(temp, "}", "_ECURLY_");
+        temp = temp.replace( " ", "_");
+        temp = temp.replace( "=", "_EQ_");
+        temp = temp.replace( ":", "_COL_");
+        temp = temp.replace( "%", "_PERCENT_");
+        temp = temp.replace( ".", "_PERIOD_");
+        temp = temp.replace( "[", "_FETCH_");
+        temp = temp.replace( "@", "_AT_");
+        temp = temp.replace( "%", "_PERCENT_");
+        temp = temp.replace( "-", "_DASH_");
+        temp = temp.replace( "&", "_AND_");
+        temp = temp.replace( "^", "_HAT_");
+        temp = temp.replace( "|", "_ROW_");
+        temp = temp.replace( "~", "_SEP_");
+        temp = temp.replace( "]", "_END_");
+        temp = temp.replace( "{", "_BCURLY_");
+        temp = temp.replace( "}", "_ECURLY_");
         temp = temp.replaceAll( "[^_A-Z0-9]", "_");
         if( temp.length() > 0 && temp.matches("[A-Z]+.*")== false)
         {

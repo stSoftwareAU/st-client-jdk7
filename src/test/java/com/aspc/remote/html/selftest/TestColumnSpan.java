@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -136,8 +136,8 @@ public class TestColumnSpan extends TestCase
 
         String temp2 = page2.generate();
 
-        temp = StringUtilities.replace( temp, " ", "");
-        temp2 = StringUtilities.replace( temp2, " ", "");
+        temp = temp.replace( " ", "");
+        temp2 = temp2.replace( " ", "");
         assertEquals( "Check pages match", temp, temp2);
     }
 
@@ -166,8 +166,8 @@ public class TestColumnSpan extends TestCase
         }
 
         String temp = page.generate();
-        File rowFile=File.createTempFile("rows", ".html");
-        File row2File=File.createTempFile("rows2", ".html");
+        File rowFile=File.createTempFile("rows", ".html",FileUtil.makeQuarantineDirectory());
+        File row2File=File.createTempFile("rows2", ".html",FileUtil.makeQuarantineDirectory());
         try{
             try (FileWriter w = new FileWriter( rowFile)) {
                 w.write( temp);
@@ -202,8 +202,8 @@ public class TestColumnSpan extends TestCase
             try (FileWriter w2 = new FileWriter(row2File )) {
                 w2.write( temp2);
             }
-            //temp = StringUtilities.replace( temp, " ", "");
-            //temp2 = StringUtilities.replace( temp2, " ", "");
+            //temp = temp.replace( " ", "");
+            //temp2 = temp2.replace( " ", "");
             assertEquals( "Check pages match", temp, temp2);
         }
         finally{

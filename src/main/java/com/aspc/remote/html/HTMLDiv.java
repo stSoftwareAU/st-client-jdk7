@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -80,7 +80,9 @@ public class HTMLDiv extends HTMLContainer implements HandlesMouseEvents
     public HTMLDiv(final String id, final boolean allowMixed)
     {
         this.allowMixed = allowMixed;
-        setId( id);
+        if( StringUtilities.notBlank(id)) {
+            setId( id);
+        }
     }
 
     /**
@@ -95,7 +97,9 @@ public class HTMLDiv extends HTMLContainer implements HandlesMouseEvents
   //          System.out.print("abc");
       //  }
         this.allowMixed = false;
-        setId( id);
+        if( StringUtilities.notBlank(id)) {
+            setId( id);
+        }
     }
 
     /**
@@ -132,10 +136,10 @@ public class HTMLDiv extends HTMLContainer implements HandlesMouseEvents
     @Override
     protected final void iSetId( final String id)
     {
-        assert id != null && (id.length() == 0 || id.matches("^[A-Za-z][A-Za-z0-9_:\\.-]*")) : "invalid div id '" + id + "'";
-               
+        assert id != null && id.length() > 0 : "invalid empty div id";
         if( allowMixed)
         {
+            assert id.matches(VALID_NAME_REGEX): "invalid div ID " + id;
             this.id=id;
         }
         else

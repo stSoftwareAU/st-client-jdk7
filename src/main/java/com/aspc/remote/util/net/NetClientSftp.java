@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -354,8 +354,8 @@ public class NetClientSftp implements NetClient, SftpProgressMonitor
         {            
             String base = FileUtil.getBaseFromPath( path );
             
-            base = StringUtilities.replace( base, "//", "/" );
-            base = StringUtilities.replace( base, "\\", "/" );
+            base = base.replace( "//", "/" );
+            base = base.replace( "\\", "/" );
             
             try
             (FileInputStream fis = new FileInputStream( rawFile )) {
@@ -429,7 +429,7 @@ public class NetClientSftp implements NetClient, SftpProgressMonitor
                     fullPath = path;
                 }
 
-                fullPath = StringUtilities.replace( fullPath, "//", "/");
+                fullPath = fullPath.replace( "//", "/");
                 
                 /** 
                  * Try to cd in one go first. 

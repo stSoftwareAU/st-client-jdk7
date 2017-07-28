@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@ package com.aspc.remote.util.links;
 import org.apache.commons.logging.Log;
 import com.aspc.remote.util.misc.*;
 import com.aspc.remote.database.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.CheckReturnValue;
@@ -311,7 +312,7 @@ public class LinkType
                 else
                 {
                     results += TimeUtil.getDiff(
-                        lc.getCheckedOutDate()
+                        checkedOutDate
                     );
                 }
             }
@@ -486,7 +487,7 @@ public class LinkType
      * @return this
      * @throws Exception a serious problem
      */
-    @SuppressWarnings({"AssignmentToForLoopParameter", "BroadCatchBlock", "TooBroadCatch"})
+    @SuppressWarnings({"AssignmentToForLoopParameter", "BroadCatchBlock", "TooBroadCatch", "UseSpecificCatch"})
     @Nonnull
     public LinkType testLines(final @Nonnull ConcurrentHashMap<Object, LinkConnection>    checkout ) throws Exception//NOPMD
     {
@@ -502,6 +503,15 @@ public class LinkType
                 }
                 catch( TimeoutException to)
                 {
+                    closeConnection(lc, checkout);
+                }
+                catch( SQLException sqlException)
+                {
+                    LOGGER.warn(
+                        "Connection failed " + lc,
+                        sqlException
+                    );
+
                     closeConnection(lc, checkout);
                 }
                 catch( Throwable t)
@@ -677,6 +687,7 @@ public class LinkType
      * @param connection
      * @return the value
      */
+    @CheckReturnValue
     public boolean hasConnection( final @Nonnull LinkConnection connection)
     {
         if( connection==null) throw new IllegalArgumentException("connection is mandatory");

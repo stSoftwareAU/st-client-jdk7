@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -176,10 +176,10 @@ public class HTMLButton extends HTMLComponent implements HandlesSingleClick
     {
         this.name=name;
         String tmpName = name.trim();
-        tmpName = StringUtilities.replace( tmpName, " ","_");
+        tmpName = tmpName.replace( " ", "_");
         while( tmpName.contains("__"))
         {
-            tmpName = StringUtilities.replace( tmpName, "__","_");
+            tmpName = tmpName.replace( "__", "_");
         }
         tmpName = tmpName.toUpperCase();
 
@@ -1203,7 +1203,7 @@ public class HTMLButton extends HTMLComponent implements HandlesSingleClick
                 // We can't have double slashes in URL's as netscape gets confused.
                 if( image.startsWith("/") && image.contains("//"))
                 {
-                    image = StringUtilities.replace( image, "//", "/");
+                    image = image.replace( "//", "/");
                 }
                 buffer.append(" src=\"").append(image).append( "\"");
                 buffer.append(" alt=\"");

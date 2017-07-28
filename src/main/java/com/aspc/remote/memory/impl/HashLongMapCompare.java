@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2002-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -30,7 +30,7 @@ import java.util.HashMap;
 public final class HashLongMapCompare implements HashLongMap, Cloneable
 {
     private HashLongMapV6 v6;
-    private HashLongMapV7 v7;
+    private HashLongMapV8 v8;
 
     /**
      * Constructs a new, empty map with the specified initial capacity
@@ -41,7 +41,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public HashLongMapCompare(final int initialCapacity)
     {
         v6=new HashLongMapV6(initialCapacity);
-        v7=new HashLongMapV7(initialCapacity);
+        v8=new HashLongMapV8(initialCapacity);
     }
 
     /**
@@ -60,7 +60,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     @Override
     public boolean isInitialized()
     {
-        return v7.isInitialized();
+        return v8.isInitialized();
     }
 
     /**
@@ -69,14 +69,15 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
      * @return the new group.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public Object clone() throws CloneNotSupportedException//NOPMD
     {
-        HashLongMapV7 c7 = (HashLongMapV7)v7.clone();
+        HashLongMapV8 c8 = (HashLongMapV8)v8.clone();
         HashLongMapV6 c6 = (HashLongMapV6)v6.clone();
 
         HashLongMapCompare c = new HashLongMapCompare();
         c.v6=c6;
-        c.v7=c7;
+        c.v8=c8;
 
         return c;
     }
@@ -90,11 +91,11 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public int size()
     {
         int size2 = v6.size();
-        int size3 = v7.size();
+        int size3 = v8.size();
 
         if( size2 != size3)
         {
-            assert size2 == size3: "v6 size=" + size2 + " v7 size=" + size3;
+            assert size2 == size3: "v6 size=" + size2 + " v8 size=" + size3;
         }
 
         return size2;
@@ -109,9 +110,9 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public boolean isEmpty()
     {
         boolean isEmpty2 = v6.isEmpty();
-        boolean isEmpty3 = v7.isEmpty();
+        boolean isEmpty3 = v8.isEmpty();
 
-        assert isEmpty2 == isEmpty3: "v6.isEmpty()=" + isEmpty2 + " v7.isEmpty()=" + isEmpty3;
+        assert isEmpty2 == isEmpty3: "v6.isEmpty()=" + isEmpty2 + " v8.isEmpty()=" + isEmpty3;
 
         return isEmpty3;
     }
@@ -128,7 +129,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public boolean containsValue(final Object value)
     {
         boolean containsValue2 = v6.containsValue(value);
-        boolean containsValue3 = v7.containsValue(value);
+        boolean containsValue3 = v8.containsValue(value);
 
         assert( containsValue2 == containsValue3);
 
@@ -144,16 +145,16 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public long[] briefKeyArray()
     {
         long list2[] = v6.briefKeyArray();
-        long list3[] = v7.briefKeyArray();
+        long list3[] = v8.briefKeyArray();
 
-        assert list2.length == list3.length: "v6 length=" + list2.length + " v7 length=" + list3.length;
+        assert list2.length == list3.length: "v6 length=" + list2.length + " v8 length=" + list3.length;
 
         return list3;
     }
 
     private void compare( long list2[], long list3[], final boolean sorted)
     {
-        assert list2.length == list3.length: "v6 length=" + list2.length + " v7 length=" + list3.length;
+        assert list2.length == list3.length: "v6 length=" + list2.length + " v8 length=" + list3.length;
 
         String msg=null;
 
@@ -161,7 +162,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
         {
             if( list2[pos] != list3[pos])
             {
-                msg = pos + ") v6: " + list2[pos] + " v7: " + list3[pos];
+                msg = pos + ") v6: " + list2[pos] + " v8: " + list3[pos];
                 break;
             }
         }
@@ -196,7 +197,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public long[] getKeyArray()
     {
         long list2[] = v6.getKeyArray();
-        long list3[] = v7.getKeyArray();
+        long list3[] = v8.getKeyArray();
 
         compare( list2, list3, false);
         return list3;
@@ -210,7 +211,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public boolean isKeyArraySorted()
     {
         //boolean isKeyArraySorted2 = v6.isKeyArraySorted();
-        boolean isKeyArraySorted3 = v7.isKeyArraySorted();
+        boolean isKeyArraySorted3 = v8.isKeyArraySorted();
 
         return isKeyArraySorted3;
     }
@@ -226,7 +227,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public long[] getSortedKeyArray()
     {
         long list2[] = v6.getSortedKeyArray();
-        long list3[] = v7.getSortedKeyArray();
+        long list3[] = v8.getSortedKeyArray();
 
         compare( list2, list3, true);
         return list3;
@@ -244,7 +245,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public boolean containsKey(final long key)
     {
         boolean containsKey2 = v6.containsKey(key);
-        boolean containsKey3 = v7.containsKey(key);
+        boolean containsKey3 = v8.containsKey(key);
 
         assert( containsKey2 == containsKey3);
 
@@ -266,8 +267,8 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public Object get(final long key)
     {
         Object o2 = v6.get(key);
-        Object o3 = v7.get(key);
-        assert o2 == o3: "get( " + key + ") v6=" + o2 + " v7=" + o3;
+        Object o3 = v8.get(key);
+        assert o2 == o3: "get( " + key + ") v6=" + o2 + " v8=" + o3;
 
         return o3;
     }
@@ -288,9 +289,9 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public Object put(final long key, final Object value)
     {
         Object o2 = v6.put( key, value);
-        Object o3 = v7.put( key, value);
+        Object o3 = v8.put( key, value);
 
-        assert o2 == o3: "put( " + key + ", " + value + ") v6:" + o2 + " v7:" + o3;
+        assert o2 == o3: "put( " + key + ", " + value + ") v6:" + o2 + " v8:" + o3;
 
         return o3;
     }
@@ -306,7 +307,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     {
 
         v6.putMultiRows(rows, value, stateOfRows);
-        v7.putMultiRows(rows, value, stateOfRows);
+        v8.putMultiRows(rows, value, stateOfRows);
     }
 
     /**
@@ -322,7 +323,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public Object remove(final long key)
     {
         Object o2 = v6.remove( key);
-        Object o3 = v7.remove( key);
+        Object o3 = v8.remove( key);
 
         assert( o2 == o3);
 
@@ -336,7 +337,7 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public void clear()
     {
         v6.clear();
-        v7.clear();
+        v8.clear();
     }
 
     /** {@inheritDoc} */
@@ -344,8 +345,13 @@ public final class HashLongMapCompare implements HashLongMap, Cloneable
     public long sizeOf()
     {
         long size = v6.sizeOf();
-        size += v7.sizeOf();
+        size += v8.sizeOf();
 
         return size;
+    }
+
+    @Override
+    public long[][] getKeyData() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

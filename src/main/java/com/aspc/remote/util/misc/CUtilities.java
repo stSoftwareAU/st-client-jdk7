@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -46,6 +46,9 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.StringTokenizer;
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.ImageIcon;
 
 /**
@@ -120,6 +123,7 @@ public final class CUtilities
      *
      * @return the name.
      */
+    @CheckReturnValue @Nonnull
     public static String makeAppShortName()
     {
         String applicationName = CProperties.getProperty( PROPERTY_APP_SHORTNAME);
@@ -133,20 +137,13 @@ public final class CUtilities
                     "application.name",
                     "java app"
                 );
-                applicationName = StringUtilities.replace(
-                    applicationName,
-                    "com.aspc.",
-                    ""
-                );
+                assert applicationName!=null;
+                applicationName = applicationName.replace("com.aspc.", "");
 
-                applicationName = StringUtilities.replace(
-                    applicationName,
-                    ".StartUp",
-                    ""
-                );
+                applicationName = applicationName.replace( ".StartUp", "");
             }
         }
-        
+        assert applicationName!=null;
         
         return applicationName;
     }
@@ -156,10 +153,14 @@ public final class CUtilities
      *
      * @return the name.
      */
+    @CheckReturnValue @Nonnull
     public static String getAppName()
     {
-        String applicationName = CProperties.getProperty( PROPERTY_APP_SHORTNAME, "");
-        
+        String applicationName = CProperties.getProperty( PROPERTY_APP_SHORTNAME);
+        if(applicationName==null|| StringUtilities.isBlank(applicationName))
+        {
+            return "";
+        }
         return applicationName;
     }
     
@@ -168,27 +169,33 @@ public final class CUtilities
      *
      * @return the name.
      */
+    @CheckReturnValue @Nonnull
     public static String getAreaName()
     {
-        String area = CProperties.getProperty( PROPERTY_AREA_NAME, "");
-                
+        String area = CProperties.getProperty( PROPERTY_AREA_NAME);
+        if(area==null|| StringUtilities.isBlank(area))
+        {
+            return "";
+        }
         return area;
     }
     
     /**
      * HTTP port of the server 
      * @return port as String
-     */
+     *
+    @CheckReturnValue @Nonnull
     public static String getHTTPPort()
     {
         String port = System.getProperty(PROPERTY_PORT);
         return port;
     }
-    
+    */
     /**
      * HTTPS port of the server if SSL is enabled 
      * @return port as String
      */
+    @CheckReturnValue @Nullable
     public static String getHTTPSPort()
     {
         String port = System.getProperty(PROPERTY_SSLPORT);
@@ -199,6 +206,7 @@ public final class CUtilities
      * Host name on which server is running.
      * @return Host name as String
      */
+    @CheckReturnValue @Nullable
     public static String getHostName()
     {
         String host = System.getProperty(PROPERTY_HOSTNAME);
@@ -210,6 +218,7 @@ public final class CUtilities
      * @param value the value
      * @return the value
      */
+    @CheckReturnValue
     public static boolean isZero( double value)
     {
         return value > -0.00000001 && value < 0.00000001;
@@ -219,8 +228,9 @@ public final class CUtilities
      * Has this module been enabled.
      * @param module The module to check
      * @return true if enabled
-     */
-    public static boolean isEnabled( String module)
+     */    
+    @CheckReturnValue
+    public static boolean isEnabled( final @Nullable String module)
     {
         String list;
         
@@ -255,6 +265,7 @@ public final class CUtilities
      * 
      * @return the value
      */
+    @CheckReturnValue
     public static boolean isWindose( )
     {
         return !CProperties.isUnix();
@@ -265,7 +276,7 @@ public final class CUtilities
      * @param baseComponent base component
      * @param componentToCenter the component to center
      */
-    public static void center(final Component baseComponent, final Component componentToCenter)
+    public static void center(final @Nullable Component baseComponent, final @Nonnull Component componentToCenter)
     {
         Dimension size = null;
         Point where = null;
@@ -305,6 +316,7 @@ public final class CUtilities
      * @param path The path to the icon.
      * @param description The icon's tooltip
      */
+    @CheckReturnValue @Nullable
     public static ImageIcon makeImageIcon(Object base, String path, String description)
     {
         try
@@ -319,7 +331,7 @@ public final class CUtilities
             
             return new ImageIcon( toByteArray(is), description );
         }
-        catch( Exception e )
+        catch( IOException e )
         {
             LOGGER.error("Icon load failure: " + path, e );
         }
@@ -333,6 +345,7 @@ public final class CUtilities
      * @return byte[]   The data from the InputStream as byte array
      * @throws IOException A serious problem
      */
+    @CheckReturnValue @Nonnull
     public static byte[] toByteArray(InputStream is)
     throws IOException
     {
@@ -355,6 +368,7 @@ public final class CUtilities
      * @param image 
      * @return the value
      */
+    @CheckReturnValue @Nullable
     public static BufferedImage makeBufferedImage( Image image)
     {
         if( waitForImage( image) == false) 
@@ -398,6 +412,7 @@ public final class CUtilities
      * @param image 
      * @return the value
      */
+    @CheckReturnValue
     public static boolean waitForImage( final Image image)
     {
         if( image == null) 
@@ -452,6 +467,7 @@ public final class CUtilities
      * 
      * @return the value
      */
+    @CheckReturnValue
     public static boolean isSystemOnline()
     {
         if( isOnline) return true;
@@ -471,8 +487,14 @@ public final class CUtilities
         
         return isOnline;
     }
-    
+    @CheckReturnValue
     public static boolean checkWebsiteURL(final String websiteUrl)
+    {
+        return checkWebsiteURL(websiteUrl, "15 Secs", "1 hour");
+    }
+    
+    @CheckReturnValue
+    public static boolean checkWebsiteURL(final String websiteUrl, final String maxBlockPeriod, final String errorCachePeriod)
     {
 //SERVER-START        
         try 
@@ -481,17 +503,31 @@ public final class CUtilities
             {                
                 if( websiteUrl.toLowerCase().matches("http(s|)://.*\\..*"))
                 {
-                    if( ReSTUtil.validateURL(websiteUrl))
+                    String tmpURL=websiteUrl;
+                    int anchorPos = tmpURL.indexOf("#");
+                    if( anchorPos!=-1)
+                    {
+                        tmpURL=tmpURL.substring(0, anchorPos);
+                    }
+                    if( ReSTUtil.validateURL(tmpURL))
                     {
                         Response rr=ReST
-                            .builder(websiteUrl)
-                            .setErrorCachePeriod("1 hour")
+                            .builder(tmpURL)
+                            .setErrorCachePeriod(errorCachePeriod)
                             .setMinCachePeriod("3 month")
-                            .setMaxBlockPeriod("15 SECS")
+                            .setAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36")
+                            .setMaxBlockPeriod(maxBlockPeriod)
                             .getResponse();
 
+//                        if( rr.status == Status.C403_ERROR_FORBIDDEN)
+//                        {
+//                            LOGGER.info( "Forbidden URL (assuming it's valid): " + websiteUrl );
+//                            return true;
+//                        }
+                        
                         String status =rr.checkStatus();
-                        LOGGER.info( status + " status for website: " + websiteUrl );
+                        
+                        LOGGER.debug( status + " status for website: " + websiteUrl );
                         return true;
                     }
                     else{

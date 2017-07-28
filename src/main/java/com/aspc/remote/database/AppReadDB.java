@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -149,7 +149,7 @@ public class AppReadDB extends DBaseCmdLine
         {
             String name = sql.getColumnName(c);
 
-            name = StringUtilities.replace(name, "\"", "\"\"");
+            name = name.replace( "\"", "\"\"");
 
             if( c != 1) w.append(",");
             w.append("\"");
@@ -164,7 +164,7 @@ public class AppReadDB extends DBaseCmdLine
             {
                 String value = sql.getString(c);
 
-                value = StringUtilities.replace(value, "\"", "\"\"");
+                value = value.replace( "\"", "\"\"");
 
                 if( c != 1) w.append(",");
                 w.append("\"");

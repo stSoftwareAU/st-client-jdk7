@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -87,7 +87,7 @@ public final class StringUtilities
     /**
      * URI pattern matching 
      */
-    public static final Pattern URI_PATTERN=Pattern.compile("^([a-z]{3,5}://([a-z0-9\\+/\\-_\\.]+:[a-z0-9\\+/\\-_\\.:]+@|)|/)([a-z0-9\\+\\(\\)/\\-_\\.~\\\\:]|%([0-9a-f][0-9a-e]|[013-9a-f]f))*(|:[0-9]+)/*(|\\?[\\w\\-:;,./%&=~@\\+\\(\\)\\*]*)$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern URI_PATTERN=Pattern.compile("^([a-z]{3,5}://([a-z0-9\\+/\\-_\\.]+:[a-z0-9\\+/\\-_\\.:]+@|)|/)([!',a-z0-9\\+\\(\\)/\\-_\\.~\\\\:]|%([0-9a-f][0-9a-e]|[013-9a-f]f))*(|:[0-9]+)/*(|\\?[\\w\\-:;,'./%&=~@\\+\\(\\)\\*]*)(|\\#[\\w\\-:;,'./%&=~@\\+\\(\\)\\*]*)$", Pattern.CASE_INSENSITIVE);
 
     /**
      * valid phone regular expression
@@ -190,11 +190,14 @@ public final class StringUtilities
     private static final  String[] ROMAN_LETTERS = { "M",  "CM",  "D",  "CD", "C",  "XC",
                                         "L",  "XL",  "X",  "IX", "V",  "IV", "I" };
 
-    @CheckReturnValue
-    public static String safeMessage( final String message)
+    @CheckReturnValue @Nonnull
+    public static String safeMessage( final @Nullable String message)
     {
+        if( isBlank(message)) return "";
+        assert message!=null;
         Pattern p=Pattern.compile("password[:=]( *.{1,5}[^,\\}\\)]*)", Pattern.CASE_INSENSITIVE);
         String tmpMessage=message;
+        
         Matcher m= p.matcher(tmpMessage);
         if( m.find())
         {
@@ -2284,6 +2287,7 @@ public final class StringUtilities
                 {
                     return false;
                 }
+                pos+=name.length();
             }
             else
             {
@@ -2508,6 +2512,8 @@ public final class StringUtilities
      */
     public static void checkIllegalCharactersHTML( final @Nonnull String text) throws IllegalArgumentException
     {
+        assert text!=null: "text is NULL";
+        
         for( char c: text.toCharArray())
         {
             if( c < 32)
@@ -2588,7 +2594,7 @@ public final class StringUtilities
      * @return the value
      */
     @CheckReturnValue
-    public static String decodeHTML( final String encodedHTML)
+    public static String decodeHTML( final @Nonnull String encodedHTML)
     {
         assert validCharactersHTML( encodedHTML): encodedHTML;
         
@@ -3307,8 +3313,6 @@ public final class StringUtilities
 
             String text = w.toString();
 
-//            doc = null;
-
             return text;
         }
         catch( IOException | BadLocationException | EmptyStackException t)
@@ -3635,6 +3639,7 @@ public final class StringUtilities
             int b;
 
             b = array[off + i];
+            
             if (b < 0)
             {
                 b += 256;
@@ -3645,12 +3650,13 @@ public final class StringUtilities
                 b >= 'a' && b <= 'z' ||
                 b >= '0' && b <= '9' ||
                 strict == false && ( // if not strict encode that the following characters are added as are
-                b == '-' ||
-                b == '_' ||
-                b == '.' ||
-                b == '*' ||
-                b == '(' ||
-                b == ')')
+                    b == '-' ||
+                    b == '_' ||
+                    b == '.' ||
+                    b == '*' ||
+                    b == '(' ||
+                    b == ')'
+                )
             )
             {
                 sb.append((char) b);
@@ -3668,6 +3674,59 @@ public final class StringUtilities
         }
 
         return sb.toString();
+    }
+    
+    /**
+     * check if the str is NOT strictly encoded into
+     * "<code>x-www-form-urlencoded</code>" format.
+     * @param str string to test
+     * @return true if the str is NOT strictly encoded, false when the str is null or it could be encoded, eg: "%20" could be or could be NOT encoded
+     */
+    public static @CheckReturnValue boolean isNotEncoded(final @Nullable String str)
+    {
+        if(str == null)
+        {
+            return true;
+        }
+        
+        if(
+            str.matches(".*%[^0-9a-fA-F][^0-9a-fA-F].*") ||
+            str.matches(".*%[0-9a-fA-F][^0-9a-fA-F].*") ||
+            str.matches(".*%[^0-9a-fA-F].*") ||
+            str.matches(".*%.?")
+        )
+        {
+            return true;
+        }
+        byte[] array = str.getBytes(StandardCharsets.UTF_8);
+        for (byte b: array)
+        {
+//            int b = array[i];
+            
+//            if (b < 0)
+//            {
+//                b += 256;
+//            }
+
+            if (
+                (b < 'A' || b > 'Z') &&
+                (b < 'a' || b > 'z') &&
+                (b < '0' || b > '9') &&
+                b != '-' &&
+                b != '_' &&
+                b != '.' &&
+                b != '*' &&
+                b != '(' &&
+                b != ')' &&
+                b != '%' &&
+                b != '+'
+            )
+            {
+                return true;
+            }
+
+        }
+        return false;
     }
 
     /**
@@ -3695,9 +3754,12 @@ public final class StringUtilities
         /*
          * The need for speed.
          */
-        if (isBlank(str) ||
-                (str.indexOf('+') == -1 &&
-                str.indexOf('%') == -1))
+        if (
+            isBlank(str) ||
+            (
+                str.indexOf('+') == -1 &&
+                str.indexOf('%') == -1)
+            )
         {
             return str;
         }
@@ -3775,18 +3837,6 @@ public final class StringUtilities
 
         return result;
     }
-//
-//    /**
-//     *
-//     * @param desc
-//     * @param len
-//     * @return the value
-//     */
-//    @CheckReturnValue
-//    public static String fixedWidth(String desc, int len)
-//    {
-//        return rightPad(desc, len, " ");
-//    }
 
     /**
      *
@@ -3955,6 +4005,10 @@ public final class StringUtilities
         for(int i = 0; i < src.length(); i++)
         {
             byte c = (byte)(src.charAt(i) & 0xFF);
+            if( c< 0)
+            {
+                throw new IllegalArgumentException("not base91 encoded: " + src);
+            }
             if (BASE91DECODER[c] == -1)
             {
                 continue;
@@ -4119,15 +4173,17 @@ public final class StringUtilities
      * @param encodedStr encoded string
      * @return the decoded string
      */
-    @CheckReturnValue
-    public static String decodeBase64(final String encodedStr)
+    @CheckReturnValue @Nonnull
+    public static String decodeBase64(final @Nonnull String encodedStr)
     {
-        if (encodedStr == null)
-        {
-            return null;
-        }
+        assert encodedStr!=null:"encoded string must be non null";
+        if( encodedStr==null) throw new IllegalArgumentException( "encoded string must be non null");
+//        if (encodedStr == null)
+//        {
+//            return null;
+//        }
 
-        assert check8Bit( encodedStr): "not 8 but chars " + encodedStr;
+        assert check8Bit( encodedStr): "not all 8 bit chars " + encodedStr;
         byte[] bytes = encodedStr.replace(" ", "+").getBytes(StandardCharsets.UTF_8);
         if( bytes.length == 0) return "";
         byte[] decoded = decodeBase64(bytes);
@@ -4239,12 +4295,12 @@ public final class StringUtilities
         {
             /* if the input is not a multiple of four and we have padding there is
             something wrong with the input */
-            throw new RuntimeException("invalid input byte array length " + input.length);
+            throw new IllegalArgumentException("invalid input byte array length " + input.length);
         }
 
         if (partial == 1)
         {
-            throw new RuntimeException("illegal input length " + input.length);
+            throw new IllegalArgumentException("illegal input length " + input.length);
         }
 
         if (pad == input.length)
@@ -4265,9 +4321,15 @@ public final class StringUtilities
         /* scan for illegal input */
         for (int i = 0; i < input.length; i++)
         {
-            if (BASE64DECODER[input[i]] == -1)
+            byte b = input[i];
+            if (BASE64DECODER[b] == -1)
             {
-                throw new RuntimeException("illegal byte value at offset " + i);
+                IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
+                    "Parameter not base64 encoded, illegal byte '" + encode( new byte[]{b}) +"' at offset " + i
+                );
+//                LOGGER.warn( encode(input), illegalArgumentException);
+                
+                throw illegalArgumentException;
             }
         }
 
@@ -4276,9 +4338,9 @@ public final class StringUtilities
             for (int i = 0; i < (octets * 4);)
             {
                 int bits = ((BASE64DECODER[input[i++]] << 24) >>> 6) |
-                        ((BASE64DECODER[input[i++]] << 24) >>> 12) |
-                        ((BASE64DECODER[input[i++]] << 24) >>> 18) |
-                        ((BASE64DECODER[input[i++]] << 24) >>> 24);
+                           ((BASE64DECODER[input[i++]] << 24) >>> 12) |
+                           ((BASE64DECODER[input[i++]] << 24) >>> 18) |
+                           ((BASE64DECODER[input[i++]] << 24) >>> 24);
 
                 result[pos++] = (byte) (bits >> 16);
                 result[pos++] = (byte) (bits >> 8);
@@ -4290,7 +4352,7 @@ public final class StringUtilities
         {
             int offset = (octets * 4);
             int bits = ((BASE64DECODER[input[offset]] << 24) >>> 6) |
-                    ((BASE64DECODER[input[offset + 1]] << 24) >>> 12);
+                       ((BASE64DECODER[input[offset + 1]] << 24) >>> 12);
             if (partial == 3 || pad == 1)
             {
                 bits |= ((BASE64DECODER[input[offset + 2]] << 24) >>> 18);

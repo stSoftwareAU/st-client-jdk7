@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,7 @@ public class SoapCallException extends Exception
         super( StringUtilities.safeMessage( reason));
 
         this.code = code;
-        this.reason = reason;
+       // this.reason = reason;
     }
 
     /**
@@ -72,11 +72,11 @@ public class SoapCallException extends Exception
      * returns the fault reason
      * @return the reason
      */
-    public String getReason()
-    {
-        return reason;
-    }
+//    public String getReason()
+//    {
+//        return getMessage();
+//    }
 
-    private final String code,
-                   reason;
+    private final String code;//,
+                   //reason;
 }

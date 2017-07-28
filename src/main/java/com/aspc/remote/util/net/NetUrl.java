@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -170,8 +170,8 @@ public class NetUrl
 
             if( pos != -1)
             {
-                tempPassword = tempLogin.substring( pos + 1);
-                tempLogin = tempLogin.substring( 0, pos);
+                tempPassword = StringUtilities.decode(tempLogin.substring( pos + 1));
+                tempLogin = StringUtilities.decode(tempLogin.substring( 0, pos));
             }
         }
 

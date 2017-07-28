@@ -181,7 +181,7 @@ public class RestCallHTTP extends RestCall
                 trace=Trace.FETCHED_UNCOMPRESSED;
             }
             
-            String tmpCS=new String( StringUtilities.encodeBase64( FileUtil.generateCheckSum(tmpFile)));
+            String tmpCS=new String( StringUtilities.encodeBase64( FileUtil.generateSHA1(tmpFile)));
             String ext=".unknown";
             if( StringUtilities.notBlank(mimeType))
             {
@@ -229,7 +229,6 @@ public class RestCallHTTP extends RestCall
             FileUtil.replaceTargetWithTempFile(tmpPropertiesFile, propertiesFile);
             
             return Response.builder(Status.find(status),mimeType, cacheFile).setTrace(trace).make();
-//            return new Response(cacheFile, trace, mimeType, Status.find(status));
         }
         catch( Exception e)
         {
@@ -269,7 +268,7 @@ public class RestCallHTTP extends RestCall
             }
 
             p.setProperty( RestTransport.STATUS, Integer.toString(status.code));
-            String tmpCS=new String( StringUtilities.encodeBase64( FileUtil.generateCheckSum(tmpFile)));
+            String tmpCS=new String( StringUtilities.encodeBase64( FileUtil.generateSHA1(tmpFile)));
             p.setProperty( RestTransport.CHECKSUM, tmpCS);
             File cacheFile=new File( tmpFile.getParentFile(), tmpCS.replace("/", "_").replace("=", "") + ".error");
             FileUtil.replaceTargetWithTempFile(tmpFile, cacheFile);

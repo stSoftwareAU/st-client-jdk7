@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,7 @@ import com.aspc.remote.util.misc.internal.ImplFileValidationHandler;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -342,26 +343,29 @@ public final class FileUtil
     }
     //SERVER-END
     @CheckReturnValue @Nonnull
-    public static String requiredExtension( final @Nonnull String mimeType, final @Nonnull String defaultExtension)
-    {
-        assert mimeType!=null;
+    public static String requiredExtension( final @Nullable String mimeType, final @Nonnull String defaultExtension)
+    {        
         assert defaultExtension!=null;
-        
-        String checks[][]={
-            {"application/json", "json"},
-            {"text/html", "html"},
-            {"application/xml", "xml"},
-            {"application/msword", "doc"},
-            {"application/msexcel", "xls"},
-            {"image/gif", "gif"},
-            {"image/jpg", "jpg"},
-            {"image/png", "png"},
-        };
-        for( String[] minePair: checks)
+     
+        if( mimeType!=null && StringUtilities.notBlank(mimeType))
         {
-            if( mimeType.toLowerCase().contains(minePair[0]))
+            String checks[][]={
+                {"application/json", "json"},
+                {"text/html", "html"},
+                {"application/xml", "xml"},
+                {"application/msword", "doc"},
+                {"application/msexcel", "xls"},
+                {"image/gif", "gif"},
+                {"image/jpeg", "jpg"},
+                {"image/jpg", "jpg"},
+                {"image/png", "png"},
+            };
+            for( String[] minePair: checks)
             {
-                return minePair[1];
+                if( mimeType.toLowerCase().contains(minePair[0]))
+                {
+                    return minePair[1];
+                }
             }
         }
 
@@ -521,6 +525,7 @@ public final class FileUtil
      */
     public static void mkdirs( final @Nonnull String dir) throws IOException
     {
+        if( StringUtilities.isBlank(dir)) throw new IllegalArgumentException("blank directory");
         mkdirs( new File( dir));
     }
 
@@ -533,16 +538,27 @@ public final class FileUtil
     {
         if( dir.exists())
         {
+            if( dir.isDirectory()==false)
+            {
+                throw new IOException("not a directory: " + dir);
+            }
             return; // already exists.
         }
 
-        if( dir.mkdirs())
+        File absoluteDir = dir.getAbsoluteFile();
+        if( absoluteDir.exists())
+        {
+            LOGGER.warn( "Absolute Directory exists: " + absoluteDir);
+            return;
+        }
+        
+        if( absoluteDir.mkdirs())
         {
             return; // we created successfully.
         }
 
         // we can't create and the directory doesn't exist.
-        if( dir.exists() == false)
+        if( absoluteDir.exists() == false)
         {
             // just wait a bit someone else maybe creating directories.
             LOGGER.info( "pausing to give time for other directories to be created");
@@ -557,15 +573,23 @@ public final class FileUtil
             }
 
             // test if it exits now.
-            if( dir.exists() == false)
+            if( absoluteDir.exists() == false)
             {
-                dir.mkdirs();// try to create again
+                absoluteDir.mkdirs();// try to create again
             }
 
             // we still can't create
-            if( dir.exists() == false)
+            if( absoluteDir.exists() == false)
             {
-                throw new IOException( "could not create directory " + dir);
+                Path path=absoluteDir.toPath();
+                if( Files.notExists(path))
+                {
+                    throw new IOException( "could not create directory " + absoluteDir);
+                }
+                else
+                {
+                    LOGGER.warn( "Can not determine if the directory exists or not: " + path);
+                }
             }
         }
     }
@@ -577,17 +601,17 @@ public final class FileUtil
      * This method will try to delete ( if the file/directory exists) then if that fails rename. 
      * Only if we can not remove/rename will an IOException be thrown.
      *
-     * @param file the file/directory to delete
+     * @param fileOrDirectory the file/directory to delete
      * @throws java.io.IOException if an IO exception occurs.
      */
-    public static void deleteAll( final @Nullable File file) throws IOException
+    public static void deleteAll( final @Nullable File fileOrDirectory) throws IOException
     {
         //if doesn't exist then no issue.
-        if( file == null || file.exists() == false) return;
+        if( fileOrDirectory == null || fileOrDirectory.exists() == false) return;
 
-        if( file.isDirectory())
+        if( fileOrDirectory.isDirectory())
         {
-            File files[] = file.listFiles();
+            File files[] = fileOrDirectory.listFiles();
             if( files !=null){
                 for (File tmpFile : files) 
                 {
@@ -596,9 +620,9 @@ public final class FileUtil
             }
         }
 
-        if( file.delete() == false)
+        if( fileOrDirectory.delete() == false)
         {
-            if( file.exists())
+            if( fileOrDirectory.exists())
             {
                 // just wait a bit someone else maybe creating directories.
                 LOGGER.info( "pausing to give time for other files to be created");
@@ -612,16 +636,16 @@ public final class FileUtil
                     throw new RuntimeException( "interrupted", ie);
                 }
 
-                file.delete();
-                if( file.exists())
+                fileOrDirectory.delete();
+                if( fileOrDirectory.exists())
                 {
-                    LOGGER.warn( "could not delete '" + file + "'... trying to rename");
-                    File tmpDelete = new File( file.getPath() + System.currentTimeMillis() + "_deleted");
+                    LOGGER.warn( "could not delete '" + fileOrDirectory + "'... trying to rename");
+                    File tmpDelete = new File( fileOrDirectory.getPath() + System.currentTimeMillis() + "_deleted");
 
-                    file.renameTo(tmpDelete);
-                    if( file.exists())
+                    fileOrDirectory.renameTo(tmpDelete);
+                    if( fileOrDirectory.exists())
                     {
-                        throw new IOException( "could not delete " + file);
+                        throw new IOException( "could not delete " + fileOrDirectory);
                     }
                 }
             }
@@ -685,7 +709,7 @@ public final class FileUtil
                 };
                 for (String specialChar : specialChars) 
                 {
-                    fileName = StringUtilities.replace(fileName, specialChar, "\"" + specialChar + "\"");
+                    fileName = fileName.replace( specialChar, "\"" + specialChar + "\"");
                 }
 
                 urlBuffer.append( fileName);
@@ -855,7 +879,21 @@ public final class FileUtil
 
                         if( tempFile.renameTo(targetFile) == false)
                         {
-                            throw new IOException( "could not move " + tempFile + "->" + targetFile);
+                            try{
+                                if( CALLING_COPY.get().compareAndSet(false, true))
+                                {
+                                    copy(tempFile, targetFile);
+                                    tempFile.delete();
+                                }
+                                else{
+                                    throw new IOException("couldn't copy to " + targetFile);
+                                }
+                            }
+                            finally
+                            {
+                                CALLING_COPY.remove();
+                            }    
+                           // throw new IOException( "could not move " + tempFile + "->" + targetFile);
                         }
                     }
                     finally
@@ -1114,23 +1152,48 @@ public final class FileUtil
     }
     
     /**
-     * Generates check sum.
+     * Generates SHA512.
      *
      * @param file The input file
+     * @return digest
+     * @throws IOException If something went wrong
+     */    
+    public static byte[] generateSHA512( final @Nonnull File file) throws IOException
+    {
+        return generateDigest(file, "SHA-512");
+    }
+    
+    /**
+     * Generates SHA1.
+     *
+     * @param file The input file
+     * @return digest
+     * @throws IOException If something went wrong
+     */
+    @CheckReturnValue @Nonnull
+    public static byte[] generateSHA1( final @Nonnull File file) throws IOException
+    {
+        return generateDigest(file, "SHA1");
+    }
+    /**
+     * Generates Digest.
+     *
+     * @param file The input file
+     * @param algorithum SHA1, SHA512
      * @return checksum
      * @throws IOException If something went wrong
      */
     @CheckReturnValue @Nonnull
-    public static byte[] generateCheckSum( final @Nonnull File file) throws IOException
+    public static byte[] generateDigest( final @Nonnull File file, final String algorithum) throws IOException
     {
-        MessageDigest sha1;
+        MessageDigest md;
         try
         {
-            sha1 = MessageDigest.getInstance("SHA1");
+            md = MessageDigest.getInstance(algorithum);
         } 
         catch (NoSuchAlgorithmException ex)
         {
-            throw new IOException( "could not checksum", ex);
+            throw new IOException( "could not get message digest: " + algorithum, ex);
         }
 
         int buffsize = Math.max((int)Math.min(file.length(), 16 * 1024 * 1024), 1024);
@@ -1149,11 +1212,11 @@ public final class FileUtil
                 {
                     break;
                 }
-                sha1.update(dataBytes, 0, len);
+                md.update(dataBytes, 0, len);
             }
         }
 
-        return sha1.digest();
+        return md.digest();
     }
 
     /**
@@ -1162,90 +1225,90 @@ public final class FileUtil
      * @param files the files
      * @param zipfile the target
      */
-    public static void doZip(final @Nullable ArrayList files , final @Nonnull File zipfile)
+    public static void doZip(final @Nullable ArrayList<File> files , final @Nonnull File zipfile)
     {
         if(files == null || files.isEmpty())
         {
             return;
         }
 
-        ZipOutputStream out = null;
-        FileInputStream in =  null;
+//        ZipOutputStream out = null;
+        
 
-        try
+        try( ZipOutputStream out=new ZipOutputStream(new FileOutputStream(zipfile)))
         {
-            out = new ZipOutputStream((OutputStream) new FileOutputStream(zipfile));
+//            out = new ZipOutputStream((OutputStream) new FileOutputStream(zipfile));
             out.setLevel(6);
 
             int num = 0;
-            for (int i = 1; i < files.size(); i++)
+            for (File file: files)
             {
-                File file = (File) files.get(i);
-                if(file.isDirectory() == true)
+                if(file.isDirectory())
                 {
                    continue;
                 }
                 num++;
 
 
-                byte[] buf = new byte[1024];
-
-                in = new FileInputStream(file);
-                ZipEntry entry = new ZipEntry(file.getName());
+                byte[] buf = new byte[10 * 1024];
 
                 LOGGER.debug("Adding file:" + file.getPath() +", into zipfile");
 
-                out.putNextEntry(entry);
-
-                while (true)
+                try(FileInputStream in =  new FileInputStream(file))
                 {
-                    int len;
-                    len = in.read(buf);
+                    ZipEntry entry = new ZipEntry(file.getName());
 
-                    if( len < 1) break;
+                    out.putNextEntry(entry);
 
-                    out.write(buf, 0, len);
+                    while (true)
+                    {
+                        int len;
+                        len = in.read(buf);
+
+                        if( len < 1) break;
+
+                        out.write(buf, 0, len);
+                    }
+                    out.closeEntry();
+//                    in.close();
                 }
-                out.closeEntry();
-                in.close();
-
             }
-            out.close();
+//            out.close();
 
             LOGGER.debug("Total " + num +" files zipped into zipfile:" + zipfile.getPath());
 
         } 
         catch (IOException e)
         {
-
             LOGGER.error("Exception in zipping files:" + files +", into zipfile:" + zipfile.getPath(), e);
 
-        } finally
-        {
-            try
-            {
-                if (out != null)
-                {
-                    out.close();
-                }
-            } 
-            catch (IOException e)
-            {
-                LOGGER.warn("Exception causing when closing ZipOutputStream " + out, e);
-            }
+        } 
+//        finally
+//        {
+//            try
+//            {
+//                if (out != null)
+//                {
+//                    out.close();
+//                }
+//            } 
+//            catch (IOException e)
+//            {
+//                LOGGER.warn("Exception causing when closing ZipOutputStream " + out, e);
+//            }
 
-            try
-            {
-                if (in != null)
-                {
-                    in.close();
-                }
-            } 
-            catch (IOException e)
-            {
-                LOGGER.warn("Exception causing when closing FileInputStream " + in, e);
-            }
-        }
+//            try
+//            {
+//                if (in != null)
+//                {
+//                    in.close();
+//                }
+//            } 
+//            catch (IOException e)
+//            {
+//                LOGGER.warn("Exception causing when closing FileInputStream " + in, e);
+//            }
+//        }
     }
     
     /**
@@ -1259,9 +1322,9 @@ public final class FileUtil
      */
     public static void doZip(final @Nonnull String fileOrDirToAdd, final @Nonnull String zipFileName, final @Nullable String incPattern, final @Nullable String excPattern) throws IOException
     {
-        File backFile = new File( zipFileName);
-        FileUtil.mkdirs( backFile.getParentFile());
-        FileOutputStream os = new FileOutputStream( backFile);
+        File zipFile = new File( zipFileName);
+        FileUtil.mkdirs( zipFile.getParentFile());
+        FileOutputStream os = new FileOutputStream( zipFile);
         
         try(ZipOutputStream jo = new ZipOutputStream(os))
         {

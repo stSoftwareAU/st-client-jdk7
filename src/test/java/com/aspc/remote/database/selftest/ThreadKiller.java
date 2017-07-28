@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2002-2006 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -113,7 +113,7 @@ public class ThreadKiller implements Runnable
         {
             LOGGER.info( CLogger.stackDump());
         }
-        if( target.isAlive())
+        if( ThreadUtil.isAliveOrStarting(target))
         {
             target.interrupt();
 
@@ -126,7 +126,7 @@ public class ThreadKiller implements Runnable
                 LOGGER.warn("could not join " + target);
             }
 
-            if( target.isAlive())
+            if( ThreadUtil.isAliveOrStarting(target))
             {
                 //target.stop(new KillByError("timed out"));
                 target.interrupt();
@@ -139,7 +139,7 @@ public class ThreadKiller implements Runnable
                     LOGGER.warn("could not join " + target);
                 }
 
-                if( target.isAlive())
+                if( ThreadUtil.isAliveOrStarting(target))
                 {
                     System.err.println( "Killer giving up... kill -9");
                     System.err.flush();

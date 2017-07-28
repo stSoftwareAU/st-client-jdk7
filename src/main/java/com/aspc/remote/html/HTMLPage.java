@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,7 @@ import com.aspc.remote.html.scripts.HTMLStateEvent;
 import com.aspc.remote.html.scripts.JavaScript;
 import com.aspc.remote.html.scripts.ScriptLink;
 import com.aspc.remote.html.style.HTMLStyleSheet;
+import com.aspc.remote.html.style.StyleSheetInterface;
 import com.aspc.remote.html.theme.HTMLMutableTheme;
 import com.aspc.remote.html.theme.HTMLTheme;
 import com.aspc.remote.memory.HashMapFactory;
@@ -52,6 +53,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.*;
 import javax.annotation.Nullable;
@@ -557,11 +559,11 @@ public class HTMLPage extends HTMLPanel
      * @param index
      * @return the value
      */
-    public HTMLStyleSheet getStyle(final int index)
+    public StyleSheetInterface getStyle(final int index)
     {
         if(styles.size() > index)
         {
-            return (HTMLStyleSheet)styles.get(index);
+            return styles.get(index);
         }
         else
         {
@@ -573,28 +575,36 @@ public class HTMLPage extends HTMLPanel
      *
      * @param s the style sheet
      */
-    public void registerStyleSheet( final HTMLStyleSheet s)
+    public void registerStyleSheet( final StyleSheetInterface s)
     {
         if( styles == null)
         {
             styles = new ArrayList();
         }
 
-        s.lock();
-
-        int pos = styles.indexOf(s);
-        if( pos == -1)
+        if( s instanceof HTMLStyleSheet)
         {
-            styles.add(s);
-            s.setPageUniqueCount( styles.size());
+            HTMLStyleSheet ss=(HTMLStyleSheet)s;
+            ss.lock();
+
+            int pos = styles.indexOf(s);
+            if( pos == -1)
+            {
+                styles.add(s);
+                ss.setPageUniqueCount( styles.size());
+            }
+            else
+            {
+                HTMLStyleSheet copy = (HTMLStyleSheet)styles.get(pos);
+                if( copy != s)
+                {
+                    ss.setPageUniqueCount(copy.getPageUniqueCount());
+                }
+            }
         }
         else
         {
-            HTMLStyleSheet copy = (HTMLStyleSheet)styles.get(pos);
-            if( copy != s)
-            {
-                s.setPageUniqueCount(copy.getPageUniqueCount());
-            }
+            styles.add(s);
         }
     }
 
@@ -1894,11 +1904,11 @@ public class HTMLPage extends HTMLPanel
                     HashMap moduleMap = HashMapFactory.create( ThreadCop.MODE.EXTERNAL_SYNCHRONIZED);
                     String temp = tmpName.substring( rootDir.getAbsolutePath().length());
                     temp = temp.substring(0, temp.length() - ".gwt.xml".length());
-                    temp = StringUtilities.replace( temp, "/", ".");
-                    temp = StringUtilities.replace( temp, "\\", ".");
+                    temp = temp.replace( "/", ".");
+                    temp = temp.replace( "\\", ".");
                     while( temp.contains(".."))
                     {
-                        temp = StringUtilities.replace( temp, "..", ".");
+                        temp = temp.replace( "..", ".");
                     }
 
                     if( temp.startsWith( "."))
@@ -2062,9 +2072,9 @@ public class HTMLPage extends HTMLPanel
                             buffer.append(",");
                         }
                         String value = (String)values.get(v);
-                        value = StringUtilities.replace(value, "\\", "\\\\");
-                        value = StringUtilities.replace(value, "'", "\\'");
-                        value = StringUtilities.replace(value, ",", "\\,");
+                        value = value.replace( "\\", "\\\\");
+                        value = value.replace( "'", "\\'");
+                        value = value.replace( ",", "\\,");
                         buffer.append(value);
                     }
                     buffer.append( "';");
@@ -2103,9 +2113,13 @@ public class HTMLPage extends HTMLPanel
                         buffer.append( code);
                         buffer.append( ": \"");
 
-                        String value = dictionary.get(code);
-                        value = StringUtilities.replace(value, "\\", "\\\\");
-                        value = StringUtilities.replace(value, "\"", "\\\"");
+                        String value = dictionary.getOrDefault(code,"");
+                        if( value==null)
+                        {
+                            value="";
+                        }
+                        value = value.replace( "\\", "\\\\");
+                        value = value.replace( "\"", "\\\"");
 
                         buffer.append(value);
                         buffer.append("\"");
@@ -2504,8 +2518,9 @@ public class HTMLPage extends HTMLPanel
 
     private ArrayList<JavaScript> scripts;
 
+    private List<StyleSheetInterface>styles;
     private ArrayList   scriptVariables,
-                        styles,
+//                        styles,
                         headComps,
 
                         preRefreshCalls;

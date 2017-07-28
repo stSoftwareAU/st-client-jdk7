@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 1998-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -25,6 +25,7 @@ import com.aspc.remote.memory.internal.*;
  *  <i>THREAD MODE: MULTI-THREADED memory management</i>
  *
  * @author Nigel Leck
+ * @param <V> the type. 
  * @since 31 December 1998
  */
 public final class ResetableCacheLongTable<V> extends CacheLongTable<V>

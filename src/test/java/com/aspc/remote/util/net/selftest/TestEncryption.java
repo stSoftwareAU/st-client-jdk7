@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -99,11 +99,11 @@ public class TestEncryption extends TestCase
     {
         super.setUp();
         
-        small = File.createTempFile( "temp", "sml" );
+        small = File.createTempFile( "temp", "sml",FileUtil.makeQuarantineDirectory() );
         small.deleteOnExit();
         fill( small, sml );
         
-        large = File.createTempFile( "temp", "lrg" );
+        large = File.createTempFile( "temp", "lrg",FileUtil.makeQuarantineDirectory() );
         large.deleteOnExit();
         fill( large, lrg );
     }
@@ -114,7 +114,7 @@ public class TestEncryption extends TestCase
      */
     public void testEncryptDecrypt() throws Exception
     {
-        File enc = File.createTempFile( "temp", "enc" );
+        File enc = File.createTempFile( "temp", "enc",FileUtil.makeQuarantineDirectory() );
         enc.deleteOnExit();
         
         KeyGenerator kgen = KeyGenerator.getInstance( CryptoUtil.DEFAULT_ENCRYPTION_ALGORITHM );
@@ -136,7 +136,7 @@ public class TestEncryption extends TestCase
             fail( "small file encryption operation failed" );
         }
         
-        File dec = File.createTempFile( "temp", "dec" );
+        File dec = File.createTempFile( "temp", "dec",FileUtil.makeQuarantineDirectory() );
         dec.deleteOnExit();
         
         try
@@ -149,7 +149,7 @@ public class TestEncryption extends TestCase
             fail( "small file decryption operation failed" );
         }
         
-        byte[] org = FileUtil.generateCheckSum( small );
+        byte[] org = FileUtil.generateSHA1( small );
         String chkSum = new String( StringUtilities.encodeBase64( org ), "ascii" );
 
         if( FileUtil.isValid( dec, chkSum, -1 ) == false )
@@ -177,7 +177,7 @@ public class TestEncryption extends TestCase
             fail( "large file decryption operation failed" );
         }
         
-        org = FileUtil.generateCheckSum( large );
+        org = FileUtil.generateSHA1( large );
         chkSum = new String( StringUtilities.encodeBase64( org ), "ascii" );
         if( FileUtil.isValid( dec, chkSum, -1 ) == false )
         {
@@ -191,7 +191,7 @@ public class TestEncryption extends TestCase
      */
     public void test128()throws Exception
     {
-        File enc = File.createTempFile( "temp", "enc" );
+        File enc = File.createTempFile( "temp", "enc",FileUtil.makeQuarantineDirectory() );
         enc.deleteOnExit();
         
         KeyGenerator kgen = KeyGenerator.getInstance( CryptoUtil.DEFAULT_ENCRYPTION_ALGORITHM );
@@ -213,7 +213,7 @@ public class TestEncryption extends TestCase
             fail( "128 bit encryption failed" );
         }
         
-        File dec = File.createTempFile( "temp", "dec" );
+        File dec = File.createTempFile( "temp", "dec",FileUtil.makeQuarantineDirectory() );
         dec.deleteOnExit();
         
         try

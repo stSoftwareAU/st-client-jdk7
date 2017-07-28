@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@ import javax.annotation.Nullable;
  *  @author      Nigel Leck
  *  @since       20 August 1998
  */
-public class HTMLStyleSheet extends InternalStyleSheet
+public class HTMLStyleSheet extends InternalStyleSheet implements StyleSheetInterface
 {
     /**
      *

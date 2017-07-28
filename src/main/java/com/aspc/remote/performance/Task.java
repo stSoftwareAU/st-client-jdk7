@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -287,7 +287,7 @@ public abstract class Task extends Item
                     value = getVaryListValue(VaryList.nextValue( name));
                 }
 
-                command = StringUtilities.replace( command, "%" + name + "%", value);
+                command = command.replace( "%" + name + "%", value);
             }
         }
 
@@ -299,7 +299,7 @@ public abstract class Task extends Item
             {
                 cacheDataFile = readFile( dataFile);
             }
-            command = StringUtilities.replace( command, "%DATA%", cacheDataFile);
+            command = command.replace( "%DATA%", cacheDataFile);
         }
         
         return command.trim();

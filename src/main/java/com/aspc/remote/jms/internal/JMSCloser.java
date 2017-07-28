@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@ package com.aspc.remote.jms.internal;
 
 import org.apache.commons.logging.Log;
 import com.aspc.remote.util.misc.CLogger;
+import com.aspc.remote.util.misc.ThreadUtil;
 import javax.jms.TopicConnection;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
@@ -85,7 +86,7 @@ public final class JMSCloser extends Thread
             LOGGER.warn( "interrupted during close", ie);
         }
         
-        if( isAlive())
+        if( ThreadUtil.isAliveOrStarting(this))
         {
             // don't interrupt as it will close the socket
             //interrupt();

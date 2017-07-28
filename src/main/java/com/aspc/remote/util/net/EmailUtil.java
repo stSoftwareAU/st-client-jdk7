@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2006 stSoftware Pty Ltd
  *
- * www.stsoftware.com.au
+ * stSoftware.com.au
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -292,7 +292,7 @@ public final class EmailUtil
 
         if (split.length != 2)
         {
-            throw new InvalidDataException("email " + email + " should contain @ symbol");
+            throw new InvalidDataException("email " + email + " should contain one @ symbol");
         }
 
         Matcher m = EMAIL_PATTERN.matcher(checkEmail);

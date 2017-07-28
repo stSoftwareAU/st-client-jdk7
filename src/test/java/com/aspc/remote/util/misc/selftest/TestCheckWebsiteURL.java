@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -93,7 +93,7 @@ public class TestCheckWebsiteURL extends TestCase
             "https://demo1.jobtrack.com.au",
             "https://demo2.jobtrack.com.au",
             "https://www.jobtrack.com.au",
-            "https://www.stsoftware.com.au",
+            "https://stSoftware.com.au",
         };
 
         for( String site: sites)

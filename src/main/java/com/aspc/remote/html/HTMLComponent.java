@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -932,8 +932,8 @@ public abstract class HTMLComponent
         {
             buffer.append( " title=\"");
             String tmpTitle=toolTip;
-            tmpTitle = StringUtilities.replace( tmpTitle, "\r\n","\n");
-            tmpTitle = StringUtilities.replace( tmpTitle, "\r","\n");
+            tmpTitle = tmpTitle.replace( "\r\n", "\n");
+            tmpTitle = tmpTitle.replace( "\r", "\n");
             buffer.append( StringUtilities.encodeHTML(tmpTitle));
             buffer.append( "\"");
         }

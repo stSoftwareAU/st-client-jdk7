@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2002-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -1360,6 +1360,15 @@ public final class HashLongMapV7 implements HashLongMap, Cloneable
             lock.release();
             assert ThreadCop.leave(this);
         }
+    }
+
+    @Override
+    public long[][] getKeyData() {
+        long[][] data={
+            getKeyArray()
+        };
+        
+        return data;
     }
 
     /**

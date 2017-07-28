@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,8 @@ import com.aspc.remote.database.internal.ResultsLoader;
 import com.aspc.remote.database.internal.TableUtilRunner;
 import com.aspc.remote.util.links.LinkManager;
 import com.aspc.remote.memory.HashMapFactory;
+import com.aspc.remote.memory.MemoryHandler;
+import com.aspc.remote.memory.MemoryManager;
 import com.aspc.remote.util.misc.CLogger;
 import com.aspc.remote.util.misc.CProperties;
 import com.aspc.remote.util.misc.StringUtilities;
@@ -759,7 +761,7 @@ public final class TableUtil
         if( name.equalsIgnoreCase( FUNCTION_LENGTH))
         {
             String type=dBase.getType();
-            if( type.equals( DataBase.TYPE_MSSQL) || type.equals( DataBase.TYPE_MSSQL_NATIVE))
+            if( type.equals( DataBase.TYPE_MSSQL))// || type.equals( DataBase.TYPE_MSSQL_NATIVE))
             {
                 res = "LEN";
             }
@@ -865,7 +867,7 @@ public final class TableUtil
                 String schema=null;
                 if( dbType.equals( DataBase.TYPE_ORACLE))
                 {
-                    schema=dBase.getUser();
+                    schema=dBase.getUser().toUpperCase();
                 }
 
                 r = dbMeta.getTables( null, schema, "%", usertables);
@@ -1793,7 +1795,7 @@ public final class TableUtil
             }
             catch( SQLException e)
             {
-                if( e instanceof SQLException) throw (SQLException)e;//NOPMD
+                if( e instanceof SQLException) throw e;//NOPMD
                 throw new SQLException( e.toString());
             }
             finally
@@ -1825,7 +1827,7 @@ public final class TableUtil
 
             if(
                 type.equals( DataBase.TYPE_POSTGRESQL) &&
-                CProperties.getProperty( "POSTGRESQL_VERSION","").equals( "7.1") == false
+                "7.1".equals( CProperties.getProperty( "POSTGRESQL_VERSION")) == false
             )
             {
                 statement += " CASCADE";
@@ -2217,6 +2219,54 @@ public final class TableUtil
     private final HashMap<String, IndexInfo[]>         holdIndexes = new  HashMap <>();
     private final HashMap                              cacheColumns = HashMapFactory.create();
     private final ConcurrentHashMap<String, String>    checkedIndex=new ConcurrentHashMap<>();
-
     private static final Log LOGGER = CLogger.getLog( "com.aspc.remote.database.TableUtil");//#LOGGER-NOPMD
+
+    private static final MemoryHandler MEMORY_HANDLER=new MemoryHandler() {
+        @Override
+        public MemoryHandler.Cost getCost() {
+            return MemoryHandler.Cost.MEDIUM_HIGH;
+        }
+
+        @Override
+        public long freeMemory(double percentage) {
+            return queuedFreeMemory(percentage);
+        }
+
+        @Override
+        public long tidyUp() {
+            return 0;
+        }
+
+        @Override
+        public long queuedFreeMemory(double percentage) {
+            if( percentage>0)
+            {
+                long estimate=getEstimatedSize();
+                DATABASE_MAP.clear();
+                
+                return estimate;
+            }
+            
+            return 0;
+        }
+
+        @Override
+        public long panicFreeMemory() {
+            return queuedFreeMemory( 1);
+        }
+
+        @Override
+        public long getEstimatedSize() {
+            return DATABASE_MAP.size() * 1024 * 1024;
+        }
+
+        @Override
+        public long getLastAccessed() {
+            return System.currentTimeMillis();
+        }
+    };
+    
+    static{
+        MemoryManager.register(MEMORY_HANDLER);
+    }
 }

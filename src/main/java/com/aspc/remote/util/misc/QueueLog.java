@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -32,20 +32,26 @@
  *  Australia.
  */
 package com.aspc.remote.util.misc;
-
+//SERVER-START
+import com.aspc.remote.memory.MemoryHandler;
+import com.aspc.remote.memory.MemoryManager;
+//SERVER-END
 import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 
 /**
@@ -68,7 +74,8 @@ public final class QueueLog implements Log
     private static final BlockingQueue<LogMessage> QUEUE;
     private static final Lock QUEUE_LOCK = new ReentrantLock();
     private static final Condition EMPTY_QUEUE  = QUEUE_LOCK.newCondition();
-
+    private static final AtomicBoolean LOW_MEMORY=new AtomicBoolean();
+    
     private static final LinkedHashMap<String,PatternMask> MASK_LIST  = new LinkedHashMap();
     private static PatternMask masks[]={};
     private static final Thread RUNNER;
@@ -84,17 +91,18 @@ public final class QueueLog implements Log
      * The number of log mask patterns.
      * @return The count.
      */
+    @Nonnegative
     public static int getLogMaskCount()
     {
         return masks.length;
     }
-
+    
     /**
      * Flush the remaining messages
      * @param timeToWaitMS the number of milliseconds to wait
      */
     @SuppressWarnings({"SleepWhileInLoop", "AccessingNonPublicFieldOfAnotherObject"})
-    public static void flush( long timeToWaitMS)
+    public static void flush( final long timeToWaitMS)
     {
         long start=System.currentTimeMillis();
         while( QUEUE.isEmpty() == false)
@@ -128,6 +136,7 @@ public final class QueueLog implements Log
      * @param log the log that should be wrapped.
      * @return the queue log.
      */
+    @CheckReturnValue
     public static QueueLog find( final Log log)
     {
         if( log instanceof QueueLog)
@@ -150,42 +159,42 @@ public final class QueueLog implements Log
     }
 
     /* {@inheritDoc} */
-    @Override
+    @Override @CheckReturnValue
     public boolean isDebugEnabled()
     {
         return wrappedLog.isDebugEnabled();
     }
 
     /* {@inheritDoc} */
-    @Override
+    @Override @CheckReturnValue
     public boolean isErrorEnabled()
     {
         return wrappedLog.isErrorEnabled();
     }
 
     /* {@inheritDoc} */
-    @Override
+    @Override @CheckReturnValue
     public boolean isFatalEnabled()
     {
         return wrappedLog.isFatalEnabled();
     }
 
     /* {@inheritDoc} */
-    @Override
+    @Override @CheckReturnValue
     public boolean isInfoEnabled()
     {
         return wrappedLog.isInfoEnabled();
     }
 
     /* {@inheritDoc} */
-    @Override
+    @Override @CheckReturnValue
     public boolean isTraceEnabled()
     {
         return false;
     }
 
     /* {@inheritDoc} */
-    @Override
+    @Override @CheckReturnValue
     public boolean isWarnEnabled()
     {
         return wrappedLog.isWarnEnabled();
@@ -199,7 +208,7 @@ public final class QueueLog implements Log
      * @param obj the message to log
      * @param cause the cause
      */
-    private void schedule( final String level, final Object obj, final Throwable cause)
+    private void schedule( final String level, final @Nullable Object obj, final @Nullable Throwable cause)
     {
         String message = obj != null ? obj.toString() : "";
 
@@ -213,7 +222,31 @@ public final class QueueLog implements Log
             cause
         );
 
-        if( QUEUE_LIMIT >0)
+        if(LOW_MEMORY.get())
+        {
+            QUEUE_LOCK.lock();
+            try
+            {
+                if( QUEUE.isEmpty()==false)
+                {
+                    EMPTY_QUEUE.await(60, TimeUnit.SECONDS);
+                }
+            }
+            catch( InterruptedException ie)
+            {
+
+            }
+            finally
+            {
+                QUEUE_LOCK.unlock();
+            }
+            
+            msg.write();
+            //SERVER-START
+            LOW_MEMORY.set(MemoryManager.isFull());
+            //SERVER-END
+        }
+        else if( QUEUE_LIMIT >0)
         {
             long start=System.currentTimeMillis();
             while( true)
@@ -225,7 +258,7 @@ public final class QueueLog implements Log
                 }
                 catch( IllegalStateException e)
                 {
-                    if( RUNNER != null && RUNNER.isAlive())
+                    if( ThreadUtil.isAliveOrStarting(RUNNER))
                     {
                         QUEUE_LOCK.lock();
                         try
@@ -270,7 +303,7 @@ public final class QueueLog implements Log
             }
         }
         else
-        {
+        {            
             msg.write();
         }
     }
@@ -500,6 +533,46 @@ public final class QueueLog implements Log
         RUNNER.setDaemon(true);
 
         RUNNER.start();
+        //SERVER-START
+        MemoryManager.register(new MemoryHandler() {
+            @Override
+            public MemoryHandler.Cost getCost() {
+                return MemoryHandler.Cost.HIGH;
+            }
+
+            @Override
+            public long freeMemory(double percentage) {
+                return 0;
+            }
+
+            @Override
+            public long tidyUp() {
+                return 0;
+            }
+
+            @Override
+            public long queuedFreeMemory(double percentage) {
+                LOW_MEMORY.set(MemoryManager.isFull());
+                return 0;
+            }
+
+            @Override
+            public long panicFreeMemory() {
+                LOW_MEMORY.set(MemoryManager.isFull());
+                return 0;
+            }
+
+            @Override
+            public long getEstimatedSize() {
+                return QUEUE.size()*1024;
+            }
+
+            @Override
+            public long getLastAccessed() {
+                return System.currentTimeMillis();
+            }
+        });
+        //SERVER-END
     }
 
     /**

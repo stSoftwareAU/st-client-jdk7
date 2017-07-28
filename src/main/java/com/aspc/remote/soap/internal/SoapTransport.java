@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -194,8 +194,8 @@ public abstract class SoapTransport
         buffer.append( "@");
         if( host != null)
         {
-            String temp = StringUtilities.replace( host, "https://", "");
-            temp = StringUtilities.replace( temp, "http://", "");
+            String temp = host.replace( "https://", "");
+            temp = temp.replace( "http://", "");
             buffer.append( temp);
         }
 

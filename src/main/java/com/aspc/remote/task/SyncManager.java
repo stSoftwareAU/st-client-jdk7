@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,7 @@ import com.aspc.remote.jdbc.Executor;
 import com.aspc.remote.jdbc.SoapResultSet;
 import com.aspc.remote.soap.internal.ClientFactory;
 import com.aspc.remote.util.misc.CLogger;
+import com.aspc.remote.util.misc.ThreadUtil;
 import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.pool.PoolableObjectFactory;
@@ -233,7 +234,7 @@ public class SyncManager extends TaskManager implements Runnable
      */
     public synchronized void listen()
     {
-        if( t == null || t.isAlive() == false )
+        if( ThreadUtil.isAliveOrStarting(t) == false )
         {
             t = new Thread( this, "SyncManager task code: "+task );
             t.setDaemon( true );

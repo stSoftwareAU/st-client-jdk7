@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -214,7 +214,7 @@ public final class ThreadPool extends Thread
 
             if( thread == null) return false;
 
-            return thread.isAlive();
+            return ThreadUtil.isAliveOrStarting(thread);
         }
     }
 
@@ -378,7 +378,7 @@ public final class ThreadPool extends Thread
             {
                 if( i < AVAILABLE.size())
                 {
-                    thread = (Thread)AVAILABLE.get( i);
+                    thread = AVAILABLE.get( i);
                 }
             }
 

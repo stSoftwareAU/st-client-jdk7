@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -90,7 +90,7 @@ public class HTMLTags extends HTMLComponent
                 char array[] = { c };
                 String from = new String( array );
                 String to = "&#" + (int)c + ";";
-                text = StringUtilities.replace( text, from, to );
+                text = text.replace( from, to );
             }
         }
 

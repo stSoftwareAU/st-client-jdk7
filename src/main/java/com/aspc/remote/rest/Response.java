@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -71,10 +71,10 @@ public final class Response
     public final Status status;
     public final long lastModified;
     
-    public static Builder builder(final @Nonnull Status status, final @Nonnull String mimeType, final @Nonnull File data)
+    public static Builder builder(final @Nonnull Status status, final @Nonnull String mimeType, final @Nonnull File file)
     {
-        if( data ==null) throw new IllegalArgumentException( "data must not be null");
-        return new Builder( status, mimeType, data,null);
+        if( file ==null) throw new IllegalArgumentException( "data must not be null");
+        return new Builder( status, mimeType, file,null);
     }
         
     public static Builder builder(final @Nonnull Status status, final @Nonnull String mimeType, final @Nonnull String data)
@@ -100,7 +100,6 @@ public final class Response
         private final String mimeType;
         private String cacheControl="no-cache";
         private final Status status;
-//        private long lastModified=System.currentTimeMillis();
         
         private Builder( final @Nonnull Status status, final @Nonnull String mimeType, final @Nonnull File file, final @Nullable String data)
         {
@@ -146,35 +145,11 @@ public final class Response
         }
         
         public @Nonnull Response make() throws IllegalArgumentException
-        {
-//            if( file == null && data == null ) throw new IllegalArgumentException("mandatory data or file");
-            
+        {            
             return new Response( file, data, trace, mimeType, status, cacheControl);
         }
     }
-    
-//    public Response(
-//        final @Nonnull File file, 
-//        final @Nonnull Trace trace, 
-//        final @Nonnull String mimetype, 
-//        final @Nonnull Status status
-//    )
-//    {
-//        this( file, null, trace, mimetype, status);
-//        assert file!=null: "the file is mandatory";
-//    }    
-//        
-//    public Response(
-//        final @Nonnull String data, 
-//        final @Nonnull Trace trace, 
-//        final @Nonnull String mimetype, 
-//        final @Nonnull Status status
-//    )
-//    {
-//        this( null, data, trace, mimetype, status);
-//        assert data!=null: "the data is mandatory";
-//    }  
-    
+
     private Response(
         final @Nullable File file, 
         final @Nullable String data, 
@@ -290,8 +265,8 @@ public final class Response
                 fw.write(data);
             }
             
-            String cs=new String(StringUtilities.encodeBase64(FileUtil.generateCheckSum(tmpFile)));
-
+            String cs=new String(StringUtilities.encodeBase64(FileUtil.generateSHA1(tmpFile)));
+            cs=cs.replace("=", "");
             File targetFile=new File( FileUtil.makeQuarantineDirectory(), "rest_" + cs + ext);
             FileUtil.replaceTargetWithTempFile(tmpFile, targetFile);
             

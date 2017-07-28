@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -172,7 +172,7 @@ public class SyncBlock
                 ERROR_COUNT.incrementAndGet();
                 Thread ownerThread = syncLock.getOwner();
                 
-                if( ownerThread == null || ownerThread.isAlive() == false)
+                if(ThreadUtil.isAliveOrStarting( ownerThread) == false)
                 {
                     synchronized( this)
                     {

@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -334,11 +334,11 @@ public class HTMLTreeLeaf extends HTMLContainer
 
             if( this instanceof HTMLTreeBranch)
             {
-                href += "BRANCH=" + id;
+                href += "BRANCH=" + StringUtilities.encode(id);
             }
             else
             {
-                href += "LEAF=" + id;
+                href += "LEAF=" + StringUtilities.encode(id);
             }
 
             href += getHrefOther();

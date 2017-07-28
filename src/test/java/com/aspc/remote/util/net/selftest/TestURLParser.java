@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -72,6 +72,7 @@ public class TestURLParser extends TestCase
             {"ftp://user:password@hostname/dir", "ftp", "user", "password", "hostname", "", "dir"},
             {"ftp://user:password@hostname:123/dir", "ftp", "user", "password", "hostname", "123", "dir"},
             {"ftp://user:password@hostname:123", "ftp", "user", "password", "hostname", "123", ""},
+            {"ftp://domain%2Fuser:password@hostname:123", "ftp", "domain/user", "password", "hostname", "123", ""},
         };
 
         for (String[] temp : URLS) {

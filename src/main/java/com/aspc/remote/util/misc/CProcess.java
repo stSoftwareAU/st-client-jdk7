@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -129,11 +129,12 @@ public class CProcess
 
             for( int loop = 0; loop < 2; loop++)
             {
-                if( processRunner.isAlive())
+                if( ThreadUtil.isAliveOrStarting(processRunner))
                 {
 //                    if( loop == 0)
 //                    {
-                        processRunner.interrupt();
+                    assert processRunner!=null;
+                    processRunner.interrupt();
 //                    }
 //                    else
 //                    {

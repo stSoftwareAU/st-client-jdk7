@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * A JSONArray is an ordered sequence of values. Its external text form is a
@@ -189,6 +192,7 @@ public class JSONArray {
      * @throws JSONException
      *             If there is no value for the index.
      */
+    @Nonnull @CheckReturnValue
     public Object get(int index) throws JSONException {
         Object object = this.opt(index);
         if (object == null) {
@@ -208,6 +212,7 @@ public class JSONArray {
      *             If there is no value for the index or if the value is not
      *             convertible to boolean.
      */
+    @CheckReturnValue
     public boolean getBoolean(int index) throws JSONException {
         Object object = this.get(index);
         if (object.equals(Boolean.FALSE)
@@ -232,12 +237,13 @@ public class JSONArray {
      *             If the key is not found or if the value cannot be converted
      *             to a number.
      */
+    @CheckReturnValue
     public double getDouble(int index) throws JSONException {
         Object object = this.get(index);
         try {
             return object instanceof Number ? ((Number) object).doubleValue()
                     : Double.parseDouble((String) object);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             throw new JSONException("JSONArray[" + index + "] is not a number.");
         }
     }
@@ -251,12 +257,13 @@ public class JSONArray {
      * @throws JSONException
      *             If the key is not found or if the value is not a number.
      */
+    @CheckReturnValue
     public int getInt(int index) throws JSONException {
         Object object = this.get(index);
         try {
             return object instanceof Number ? ((Number) object).intValue()
                     : Integer.parseInt((String) object);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             throw new JSONException("JSONArray[" + index + "] is not a number.");
         }
     }
@@ -271,6 +278,7 @@ public class JSONArray {
      *             If there is no value for the index. or if the value is not a
      *             JSONArray
      */
+    @Nonnull @CheckReturnValue
     public JSONArray getJSONArray(int index) throws JSONException {
         Object object = this.get(index);
         if (object instanceof JSONArray) {
@@ -289,6 +297,7 @@ public class JSONArray {
      *             If there is no value for the index or if the value is not a
      *             JSONObject
      */
+    @Nonnull @CheckReturnValue
     public JSONObject getJSONObject(int index) throws JSONException {
         Object object = this.get(index);
         if (object instanceof JSONObject) {
@@ -307,12 +316,13 @@ public class JSONArray {
      *             If the key is not found or if the value cannot be converted
      *             to a number.
      */
+    @CheckReturnValue
     public long getLong(int index) throws JSONException {
         Object object = this.get(index);
         try {
             return object instanceof Number ? ((Number) object).longValue()
                     : Long.parseLong((String) object);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             throw new JSONException("JSONArray[" + index + "] is not a number.");
         }
     }
@@ -326,6 +336,7 @@ public class JSONArray {
      * @throws JSONException
      *             If there is no string value for the index.
      */
+    @Nonnull @CheckReturnValue
     public String getString(int index) throws JSONException {
         Object object = this.get(index);
         if (object instanceof String) {
@@ -341,6 +352,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return true if the value at the index is null, or if there is no value.
      */
+    @CheckReturnValue
     public boolean isNull(int index) {
         return JSONObject.NULL.equals(this.opt(index));
     }
@@ -356,6 +368,7 @@ public class JSONArray {
      * @throws JSONException
      *             If the array contains an invalid number.
      */
+    @Nonnull @CheckReturnValue
     public String join(String separator) throws JSONException {
         int len = this.length();
         StringBuilder sb = new StringBuilder();
@@ -374,6 +387,7 @@ public class JSONArray {
      *
      * @return The length (or size).
      */
+    @CheckReturnValue
     public int length() {
         return this.myArrayList.size();
     }
@@ -385,6 +399,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return An object value, or null if there is no object at that index.
      */
+    @Nullable @CheckReturnValue
     public Object opt(int index) {
         return (index < 0 || index >= this.length()) ? null : this.myArrayList
                 .get(index);
@@ -399,6 +414,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return The truth.
      */
+    @CheckReturnValue
     public boolean optBoolean(int index) {
         return this.optBoolean(index, false);
     }
@@ -414,10 +430,11 @@ public class JSONArray {
      *            A boolean default.
      * @return The truth.
      */
+    @CheckReturnValue
     public boolean optBoolean(int index, boolean defaultValue) {
         try {
             return this.getBoolean(index);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             return defaultValue;
         }
     }
@@ -431,6 +448,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return The value.
      */
+    @CheckReturnValue
     public double optDouble(int index) {
         return this.optDouble(index, Double.NaN);
     }
@@ -446,10 +464,11 @@ public class JSONArray {
      *            The default value.
      * @return The value.
      */
+    @CheckReturnValue
     public double optDouble(int index, double defaultValue) {
         try {
             return this.getDouble(index);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             return defaultValue;
         }
     }
@@ -463,6 +482,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return The value.
      */
+    @CheckReturnValue
     public int optInt(int index) {
         return this.optInt(index, 0);
     }
@@ -478,10 +498,11 @@ public class JSONArray {
      *            The default value.
      * @return The value.
      */
+    @CheckReturnValue
     public int optInt(int index, int defaultValue) {
         try {
             return this.getInt(index);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             return defaultValue;
         }
     }
@@ -494,6 +515,7 @@ public class JSONArray {
      * @return A JSONArray value, or null if the index has no value, or if the
      *         value is not a JSONArray.
      */
+    @Nullable @CheckReturnValue
     public JSONArray optJSONArray(int index) {
         Object o = this.opt(index);
         return o instanceof JSONArray ? (JSONArray) o : null;
@@ -508,6 +530,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return A JSONObject value.
      */
+    @Nullable @CheckReturnValue
     public JSONObject optJSONObject(int index) {
         Object o = this.opt(index);
         return o instanceof JSONObject ? (JSONObject) o : null;
@@ -522,6 +545,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return The value.
      */
+    @CheckReturnValue
     public long optLong(int index) {
         return this.optLong(index, 0);
     }
@@ -537,11 +561,12 @@ public class JSONArray {
      *            The default value.
      * @return The value.
      */
+    @CheckReturnValue
     public long optLong(int index, long defaultValue) {
         assert defaultValue>=ReSTUtil.MIN_SAFE_INTEGER && defaultValue<=ReSTUtil.MAX_SAFE_INTEGER: "unsafe long value " + defaultValue; 
         try {
             return this.getLong(index);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             return defaultValue;
         }
     }
@@ -555,6 +580,7 @@ public class JSONArray {
      *            The index must be between 0 and length() - 1.
      * @return A String value.
      */
+    @Nonnull @CheckReturnValue
     public String optString(int index) {
         return this.optString(index, "");
     }
@@ -569,6 +595,7 @@ public class JSONArray {
      *            The default value.
      * @return A String value.
      */
+    @Nonnull @CheckReturnValue
     public String optString(int index, String defaultValue) {
         Object object = this.opt(index);
         return JSONObject.NULL.equals(object) ? defaultValue : object
@@ -582,6 +609,7 @@ public class JSONArray {
      *            A boolean value.
      * @return this.
      */
+    @Nonnull
     public JSONArray put(boolean value) {
         this.put(value ? Boolean.TRUE : Boolean.FALSE);
         return this;
@@ -595,6 +623,7 @@ public class JSONArray {
      *            A Collection value.
      * @return this.
      */
+    @Nonnull
     public JSONArray put(Collection<Object> value) {
         this.put(new JSONArray(value));
         return this;
@@ -609,8 +638,9 @@ public class JSONArray {
      *             if the value is not finite.
      * @return this.
      */
+    @Nonnull
     public JSONArray put(double value) throws JSONException {
-        Double d = new Double(value);
+        Double d = value;
         JSONObject.testValidity(d);
         this.put(d);
         return this;
@@ -623,6 +653,7 @@ public class JSONArray {
      *            An int value.
      * @return this.
      */
+    @Nonnull
     public JSONArray put(int value) {
         this.put(new Integer(value));
         return this;
@@ -635,6 +666,7 @@ public class JSONArray {
      *            A long value.
      * @return this.
      */
+    @Nonnull
     public JSONArray put(long value) {
         assert value>=ReSTUtil.MIN_SAFE_INTEGER && value<=ReSTUtil.MAX_SAFE_INTEGER: "unsafe long value " + value; 
         this.put(new Long(value));
@@ -649,6 +681,7 @@ public class JSONArray {
      *            A Map value.
      * @return this.
      */
+    @Nonnull
     public JSONArray put(Map<String, Object> value) {
         this.put(new JSONObject(value));
         return this;
@@ -663,6 +696,7 @@ public class JSONArray {
      *            JSONObject.NULL object.
      * @return this.
      */
+    @Nonnull
     public JSONArray put(Object value) {
         this.myArrayList.add(value);
         return this;
@@ -681,6 +715,7 @@ public class JSONArray {
      * @throws JSONException
      *             If the index is negative.
      */
+    @Nonnull
     public JSONArray put(int index, boolean value) throws JSONException {
         this.put(index, value ? Boolean.TRUE : Boolean.FALSE);
         return this;
@@ -698,6 +733,7 @@ public class JSONArray {
      * @throws JSONException
      *             If the index is negative or if the value is not finite.
      */
+    @Nonnull
     public JSONArray put(int index, Collection<Object> value) throws JSONException {
         this.put(index, new JSONArray(value));
         return this;
@@ -716,6 +752,7 @@ public class JSONArray {
      * @throws JSONException
      *             If the index is negative or if the value is not finite.
      */
+    @Nonnull
     public JSONArray put(int index, double value) throws JSONException {
         this.put(index, new Double(value));
         return this;
@@ -734,6 +771,7 @@ public class JSONArray {
      * @throws JSONException
      *             If the index is negative.
      */
+    @Nonnull
     public JSONArray put(int index, int value) throws JSONException {
         this.put(index, new Integer(value));
         return this;
@@ -752,6 +790,7 @@ public class JSONArray {
      * @throws JSONException
      *             If the index is negative.
      */
+    @Nonnull
     public JSONArray put(int index, long value) throws JSONException {
         assert value>=ReSTUtil.MIN_SAFE_INTEGER && value<=ReSTUtil.MAX_SAFE_INTEGER: "unsafe long value " + value; 
         this.put(index, new Long(value));
@@ -771,6 +810,7 @@ public class JSONArray {
      *             If the index is negative or if the the value is an invalid
      *             number.
      */
+    @Nonnull
     public JSONArray put(int index, Map<String, Object> value) throws JSONException {
         this.put(index, new JSONObject(value));
         return this;
@@ -792,6 +832,7 @@ public class JSONArray {
      *             If the index is negative or if the the value is an invalid
      *             number.
      */
+    @Nonnull
     public JSONArray put(int index, Object value) throws JSONException {
         JSONObject.testValidity(value);
         if (index < 0) {
@@ -816,6 +857,7 @@ public class JSONArray {
      * @return The value that was associated with the index, or null if there
      *         was no value.
      */
+    @Nullable
     public Object remove(int index) {
         return index >= 0 && index < this.length()
             ? this.myArrayList.remove(index)
@@ -829,6 +871,7 @@ public class JSONArray {
      * @param other The other JSONArray
      * @return true if they are equal
      */
+    @CheckReturnValue
     public boolean similar(Object other) {
         if (!(other instanceof JSONArray)) {
             return false;
@@ -889,11 +932,12 @@ public class JSONArray {
      * @return a printable, displayable, transmittable representation of the
      *         array.
      */
+    @Override @CheckReturnValue
     public String toString() {
         try {
             return this.toString(0);
-        } catch (Exception e) {
-            return null;
+        } catch (JSONException e) {
+            return e.toString();
         }
     }
 
@@ -909,6 +953,7 @@ public class JSONArray {
      *         &nbsp;<small>(right bracket)</small>.
      * @throws JSONException
      */
+    @CheckReturnValue @Nonnull
     public String toString(int indentFactor) throws JSONException {
         StringWriter sw = new StringWriter();
         synchronized (sw.getBuffer()) {
@@ -922,6 +967,7 @@ public class JSONArray {
      * <p>
      * Warning: This method assumes that the data structure is acyclical.
      *
+     * @param writer
      * @return The writer.
      * @throws JSONException
      */

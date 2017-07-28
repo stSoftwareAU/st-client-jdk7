@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -235,37 +235,46 @@ public final class ReST
             for( String parameter: q.split("&"))
             {
                 String name;
-                String value="";
+                String[] valueList={""};
                 int pos=parameter.indexOf("=");
                 
                 if( pos != -1)
                 {
                     name=StringUtilities.decode(parameter.substring(0, pos));
-                    value=StringUtilities.decode(parameter.substring(pos + 1));
+                    String tmpEncodedValues=parameter.substring(pos + 1);
+                    ArrayList<String> list=new ArrayList();
+                    for( String encodedValue:tmpEncodedValues.split(","))
+                    {
+                        list.add(StringUtilities.decode(encodedValue));
+                    }
+                    valueList=new String[list.size()];
+                    list.toArray(valueList);
                 }
                 else
                 {
                     name=StringUtilities.decode(parameter);
                 }
                 
-                String values[]=args.get(name);
-                if( values == null)
+                String fullValues[]=args.get(name);
+                if( fullValues == null)
                 {
-                    values= new String[]{value};                
+                    fullValues= valueList;                
                 }
                 else
                 {
-                    List<String> list=new ArrayList<>(Arrays.asList(values));
-                    if( value != null && value.length()!=0)
+                    List<String> list=new ArrayList<>(Arrays.asList(fullValues));
+                    for( String tmpValue:valueList)
                     {
-                        list.add(value);                
+                        if( tmpValue != null && tmpValue.length()!=0)
+                        {
+                            list.add(tmpValue);                
+                        }
                     }
-
-                    values = new String[list.size()];
-                    list.toArray(values);
+                    fullValues = new String[list.size()];
+                    list.toArray(fullValues);
                 }
                 
-                args.put(name, values);
+                args.put(name, fullValues);
             }
             
             String tmp=url.toString();
@@ -476,7 +485,7 @@ public final class ReST
         }
         
         /**
-         * The maximum time to wait. If too long, a response with Status timed out will return.
+         * The maximum time to wait. If the request takes too long, a response with Status C504_TIMED_OUT_GATEWAY will return.
          *
          * @param timeoutPeriod the maximum time to block
          * @return this builder
@@ -484,6 +493,11 @@ public final class ReST
          */
         public @Nonnull Builder setTimeout( final @Nullable String timeoutPeriod) throws InvalidDataException
         {
+            if(StringUtilities.isBlank(timeoutPeriod))
+            {
+                timeoutMs=-1;
+                return this;
+            }
             long tmpMS=TimeUtil.convertDurationToMs(timeoutPeriod);
             if( tmpMS > Integer.MAX_VALUE)
             {
@@ -508,7 +522,7 @@ public final class ReST
         /**
          * Set the maximum time we are prepared to wait for a NEW result. If the call times out the previous result will be used. 
          * 
-         * The request will block forever if there is no old cache file. The max block period only has effect when there is a cached version available.
+         * The request will block forever(max request time ~60 mins) if there is no old cache file. The max block period only has effect when there is a cached version available.
          *
          * @param maxBlockPeriod the maximum time to block
          * @return this builder
@@ -702,6 +716,25 @@ public final class ReST
                 args=new LinkedHashMap<>();
             }
             String values[]= new String[]{value};                
+            
+            args.put(name, values);
+            
+            return this;
+        }
+        
+        /**
+         * set a boolean parameter
+         * @param name the name of the parameter
+         * @param value the value
+         * @return this
+         */
+        public @Nonnull Builder setParameter( final @Nonnull String name, final boolean value)
+        {
+            if( args == null)
+            {
+                args=new LinkedHashMap<>();
+            }
+            String values[]= new String[]{Boolean.toString(value)};                
             
             args.put(name, values);
             
@@ -1136,7 +1169,7 @@ public final class ReST
                         {
                             if( file.exists())
                             {
-                                String tmpCS=new String( StringUtilities.encodeBase64( FileUtil.generateCheckSum(file)));
+                                String tmpCS=new String( StringUtilities.encodeBase64( FileUtil.generateSHA1(file)));
                                 if( tmpCS.equals(cs)==false)
                                 {
                                     tmpCacheTimeToLiveMs=-1;
@@ -1168,7 +1201,7 @@ public final class ReST
             if( rr==null || tmpCacheTimeToLiveMs<=0 || propertiesFile.exists() == false || (expireTS - ( tmpCacheTimeToLiveMs/2)) < nowTime )
             {
                 assert timeoutMs<0||timeoutMs>0&&staleBlockMs<1&&maxBlockMs<1:"Should not set timeout and other timeouts";
-                int callTimeout=Math.max(Math.max(timeoutMs, Math.max( staleBlockMs, maxBlockMs)),0);
+                int callTimeout=Math.max(Math.max(timeoutMs, Math.max( staleBlockMs, (rr!=null ?maxBlockMs:-1))),0);
                 
                 callTimeout*=2;
                 
@@ -1263,6 +1296,10 @@ public final class ReST
                                 {
                                     rr=currentCall.fjt.get(staleBlockMs);
                                 }
+                                else if( maxBlockMs > 0)
+                                {
+                                    rr=currentCall.fjt.get(maxBlockMs);
+                                }
                                 else
                                 {
                                     rr=currentCall.fjt.get(DEFAULT_BLOCK_TIMEOUT);
@@ -1276,9 +1313,9 @@ public final class ReST
                         }
                         else
                         {
-                            if( maxBlockMs > 0)
+                            if( staleBlockMs > 0)
                             {
-                                rr=currentCall.fjt.get(maxBlockMs);
+                                rr=currentCall.fjt.get(staleBlockMs);
                             }
                             else
                             {

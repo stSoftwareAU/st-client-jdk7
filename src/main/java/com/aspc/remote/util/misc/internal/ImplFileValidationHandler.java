@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -78,7 +78,7 @@ public class ImplFileValidationHandler implements FileValidationHandler
             try
             {
                 byte checkSum[] = StringUtilities.decodeBase64( chk.getBytes("ascii") );
-                byte[] mresult = FileUtil.generateCheckSum( file);
+                byte[] mresult = FileUtil.generateSHA1( file);
 
                 matched = MessageDigest.isEqual(checkSum, mresult);
             }

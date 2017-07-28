@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import com.aspc.remote.util.misc.CLogger;
 import com.aspc.remote.util.net.*;
 import com.aspc.remote.database.InvalidDataException;
+import com.aspc.remote.database.selftest.DBTestUnit;
 import com.aspc.remote.util.misc.CProperties;
 import java.util.HashMap;
 import javax.mail.MessagingException;
@@ -132,7 +133,7 @@ public class TestEmailUtil extends TestCase
     }
 
     /**
-     * Check known good emails
+     * Check known GOOD email addresses.
      * @throws Exception a test failure.
      */
     public void testKnownGood() throws Exception
@@ -183,11 +184,14 @@ public class TestEmailUtil extends TestCase
     }
 
     /**
-     * Check known good emails
+     * Check known BAD email addresses.
      * @throws Exception a test failure.
      */
+    @SuppressWarnings("SleepWhileInLoop")
     public void testKnownBad() throws Exception
-    {
+    {        
+        if( DBTestUnit.hideKnownErrors()) return;
+        
         String emails[]={
             "sales@aspconverters.com.au",
             "Abc.example.com",
@@ -208,7 +212,12 @@ public class TestEmailUtil extends TestCase
         {
             try
             {
-                EmailUtil.validate(email, cache);
+                for( int attempt=0;attempt<12;attempt++)
+                {
+                    EmailUtil.validate(email, cache);
+                    cache.clear();
+                    Thread.sleep((long) (1000 * Math.random()));
+                }
                 fail( "invalid email should have failed " + email);
             }
             catch( InvalidDataException ide)
@@ -217,8 +226,6 @@ public class TestEmailUtil extends TestCase
             }
         }
     }
-
-
 
     private static final Log LOGGER = CLogger.getLog( "com.aspc.remote.util.net.selftest.TestEmailUtil");//#LOGGER-NOPMD
 }

@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@ import com.aspc.remote.util.misc.StringUtilities;
 import java.util.StringTokenizer;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import javax.annotation.RegEx;
 import org.apache.commons.logging.Log;
 
 /**
@@ -84,15 +85,51 @@ public class HTMLAnchor extends HTMLContainer implements HTMLAbstractAnchor
         showUnderline = true;
     }
 
+    private static final @RegEx String REGEX_GLOBAL_KEY="([0-9]{9,20}|([0-9a-zA-Z_/:\\+\\(\\)\\-\\.]|%(2[bBfFaA]|3[aA])){1,250}@[0-9]{1,10})~[0-9]{1,10}@[0-9]{1,10}";
     public static boolean validateHREF( final @Nonnull String href)
     {
+        if( href.matches(".*%[^0-9a-fA-F](|[^0-9a-fA-F]).*"))
+        {
+            LOGGER.warn( "Invalid characters in URL: " + href);
+            return false;
+        }
+        int pos = href.indexOf("GLOBAL_KEY=");
+        if( pos !=-1)
+        {
+            int end=href.indexOf("&", pos);
+            int end2=href.indexOf("'", pos);
+            if( (end2!=-1&&end2<end)||end==-1)
+            {
+                end=end2;
+            }
+            
+            if( end == -1)
+            {
+                end=href.length();
+            }
+            String ekey=href.substring(pos+11, end);
+            
+            if( StringUtilities.notBlank(ekey) && ekey.matches("@{10,15}")==false)
+            {
+                String key=StringUtilities.decode(ekey);
+                if( key.matches(REGEX_GLOBAL_KEY)==false)
+                {
+                    LOGGER.warn( "invalid global key: " + key);
+                    return false;
+                }
+            }
+        }
+        
         if( StringUtilities.URI_PATTERN.matcher(href).matches())
         {
             if( href.matches("http(s|):/+http(s|)://.*"))
             {
                 return false;
             }
-            
+            else if( href.matches("http(s|):/+javascript:.*"))
+            {
+                return false;
+            }
             return true;
         }
         else if( href.startsWith("javascript:") || href.startsWith("#"))
@@ -109,16 +146,91 @@ public class HTMLAnchor extends HTMLContainer implements HTMLAbstractAnchor
             {
                 return false;
             }
+            
+            int qPos=href.indexOf("?");
+            if( qPos!=-1)
+            {
+                String query=href.substring(qPos + 1);
+                for( String par:query.split("&"))
+                {
+                    int vPos=par.indexOf("=");
+                    
+                    if( vPos==-1)
+                    {
+                        if( StringUtilities.isNotEncoded(par))
+                        {
+                            LOGGER.warn( "Unencoded name: '" +par +"' in " + href);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        String ename=par.substring(0, vPos);
+                        
+                        if(StringUtilities.isNotEncoded(ename))
+                        {
+                            LOGGER.warn( "Unencoded name: '" +ename + "' in " + href);
+                            return false;
+                        }
+                        String evalue=par.substring(vPos +1);
+                        if( StringUtilities.isNotEncoded(evalue))
+                        {
+                            LOGGER.warn( "Unencoded value: '" +evalue + "' in " + href);
+                            return false;
+                        }
+                    }
+                }
+            }
             return true;
         }
         else 
         {
+            if( href.matches(".*[ ]+.*"))
+            {
+                LOGGER.warn( "Invalid characters in URL: " + href);
+                return false;
+            }
+            
+            int qPos=href.indexOf("?");
+            if( qPos!=-1)
+            {
+                String query=href.substring(qPos + 1);
+                for( String par:query.split("&"))
+                {
+                    int vPos=par.indexOf("=");
+                    
+                    if( vPos==-1)
+                    {
+                        if( StringUtilities.isNotEncoded(par))
+                        {
+                            LOGGER.warn( "Unencoded name: '" +par +"' in " + href);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        String ename=par.substring(0, vPos);
+                        
+                        if(StringUtilities.isNotEncoded(ename))
+                        {
+                            LOGGER.warn( "Unencoded name: '" +ename + "' in " + href);
+                            return false;
+                        }
+                        String evalue=par.substring(vPos +1);
+                        if( StringUtilities.isNotEncoded(evalue))
+                        {
+                            LOGGER.warn( "Unencoded value: '" +evalue + "' in " + href);
+                            return false;
+                        }
+                    }
+                }
+            }
+            
             if( StringUtilities.URI_PATTERN.matcher(href.replace("$", "_").replace("*", "_").replace( "+", " ").replace(" ", "%20").replace("{", "_").replace("}", "_").replace("'", "_").replace("[", "_").replace("]", "_")).matches())
             {
                 LOGGER.warn( "dodgy URL: " +href);
                 return true;
             }
-            
         }
         return false;
     }
@@ -681,10 +793,12 @@ public class HTMLAnchor extends HTMLContainer implements HTMLAbstractAnchor
                     } else
                     {
                         assert temp.contains("&amp;")==false: "invalid href " + temp;
+//                        LOGGER.info( temp);
                         link.append("javascript:");
                         link.append(function);
                         link.append("('");
                         link.append(temp.replace("&", "&amp;"));
+//                                .replace("%7c", "%257c")); // THIS IS WRONG...
                         link.append("','");
                         link.append(target);
                         link.append("',");
@@ -811,19 +925,21 @@ public class HTMLAnchor extends HTMLContainer implements HTMLAbstractAnchor
 
     /**
      *
-     * @param token The token
-     * @param value the value
+     * @param encodedToken The encoded token
+     * @param encodedValue the encoded value
      */
     @Override
-    public void addCallParameter(String token, String value)
+    public void addCallParameter(String encodedToken, String encodedValue)
     {
+        assert StringUtilities.isNotEncoded(encodedToken) == false : "token " + encodedToken + " is not encoded";
+        assert StringUtilities.isNotEncoded(encodedValue) == false : encodedValue + " is not encoded";
         if( !href.contains("?"))
         {
-            href += "?" + token + "=" + value;
+            href += "?" + encodedToken + "=" + encodedValue;
         }
         else
         {
-            href += "&" + token + "=" + value;
+            href += "&" + encodedToken + "=" + encodedValue;
         }
     }
 

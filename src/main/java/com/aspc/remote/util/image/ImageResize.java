@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -738,33 +738,29 @@ public class ImageResize
                          * http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6359243
                          * http://bugs.java.com/bugdatabase/view_bug.do?bug_id=5106305
                          */
-                        if( className.equals("com.sun.imageio.plugins.png.PNGImageWriter"))
-                        {
-                            double size=(double)ImageUtil.convertDPI(pixelSizeMM)/10/2.54;
-                            setPixelSizeMM( writeMeta, size );
-                        }
-                        else if( className.equals( "com.sun.imageio.plugins.jpeg.JPEGImageWriter"))
-                        {
-                            int tmpDPI =ImageUtil.convertDPI(pixelSizeMM);
-
-                            Element tree = (Element)writeMeta.getAsTree(ImageUtil.TREE_JPEG);
-
-                            NodeList app0JFIFList = tree.getElementsByTagName(ImageUtil.JPEG_SIGNATURE);
-                            if( app0JFIFList.getLength()>0)
-                            {
-                                Element jfif;
-                                jfif= (Element)app0JFIFList.item(0);
-
-                                jfif.setAttribute("Xdensity", Integer.toString(tmpDPI));
-                                jfif.setAttribute("Ydensity", Integer.toString(tmpDPI));
-                                jfif.setAttribute("resUnits", "1"); // density is dots per inch  
-
-                                writeMeta.mergeTree(ImageUtil.TREE_JPEG,tree);
-                            }
-                        }
-                        else
-                        {
-                            setPixelSizeMM( writeMeta, pixelSizeMM );
+                        switch (className) {
+                            case "com.sun.imageio.plugins.png.PNGImageWriter":
+                                double size=(double)ImageUtil.convertDPI(pixelSizeMM)/10/2.54;
+                                setPixelSizeMM( writeMeta, size );
+                                break;
+                            case "com.sun.imageio.plugins.jpeg.JPEGImageWriter":
+                                int tmpDPI =ImageUtil.convertDPI(pixelSizeMM);
+                                Element tree = (Element)writeMeta.getAsTree(ImageUtil.TREE_JPEG);
+                                NodeList app0JFIFList = tree.getElementsByTagName(ImageUtil.JPEG_SIGNATURE);
+                                if( app0JFIFList.getLength()>0)
+                                {
+                                    Element jfif;
+                                    jfif= (Element)app0JFIFList.item(0);
+                                    
+                                    jfif.setAttribute("Xdensity", Integer.toString(tmpDPI));
+                                    jfif.setAttribute("Ydensity", Integer.toString(tmpDPI));
+                                    jfif.setAttribute("resUnits", "1"); // density is dots per inch
+                                    
+                                    writeMeta.mergeTree(ImageUtil.TREE_JPEG,tree);
+                                }   break;
+                            default:
+                                setPixelSizeMM( writeMeta, pixelSizeMM );
+                                break;
                         }
                     }
                 }
@@ -853,7 +849,7 @@ public class ImageResize
 
             scaleOp.filter(originalImage, scaledBI);
         }
-        catch( ImagingOpException ioe)
+        catch( NullPointerException | ImagingOpException ioe)
         {        
             Graphics2D g = scaledBI.createGraphics();
             g.setRenderingHints(map);

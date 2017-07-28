@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -219,73 +219,8 @@ public class HTMLTextEditor extends HTMLTextArea
     @Override
     protected void compile( final ClientBrowser browser)
     {
-//        int majorVersion = getTinymceMajorVersion();
-//        if(majorVersion == 4)
-//        {       
-            compile4(browser);
-//        }        
-//        else
-//        {       
-//            compile3(browser);
-//        }
+        compile4(browser);
     }
-    
-//    protected void compile3( final ClientBrowser browser)
-//    {
-//        HTMLPage   page;
-//        appendStyleClass("mce");
-//        
-//        onChangeScripts = HashMapFactory.create();
-//        onChangeScripts.put( "teOnChanged", "");
-//
-//        page = getParentPage();
-//
-//        String funcExt = HTMLUtilities.makeValidName(page.doGenerateId());
-//        String completeCompName = "ONLOAD_COMPLETE_TINYMCE_" + funcExt;
-//        String funcName = "textEditorInit_" + funcExt;
-//        String onLoadScript = "\nfunction " + funcName + "(inst)\n" +
-//                              "{\n" +
-//                              // "alert(inst.editorId + \" is now initialized.\");\n"+
-//                               "updateFieldValue('"+ completeCompName +"', 'true');\n"+
-//                               "checkCurtain();\n"+
-//                               "}\n";
-//        page.addJavaScript(onLoadScript);
-//
-//        if(!Boolean.parseBoolean(page.getFlag(HAS_SET_HAS_HTML_EDITOR)))
-//        {
-//            page.addJavaScript("window.hasHTMLTextEditor=true;");
-////            if(screenVersion > 1)
-////            {
-//                page.addJavaScript("var htmlTextEditorIdArray = [];");
-////            }
-//            page.putFlag(HAS_SET_HAS_HTML_EDITOR, Boolean.TRUE.toString());
-//        }
-//
-//        String key = "HTML_AREA";
-//        String value;
-//        value = page.getFlag( key);
-//
-//        if( value.isEmpty() && tinymceVersion.startsWith("3_"))
-//        {
-//            page.addJavaScript( new ScriptLink( "/scripts/tinymce_"+ tinymceVersion +"/jscripts/tiny_mce/tiny_mce.js",ScriptLink.LoadType.BLOCKING ));
-//            page.putFlag(key, "DONE");
-//        }
-//
-//        HTMLInput completInputComp = new HTMLInput( completeCompName, "false");
-//        completInputComp.setInvisible( true);
-//
-////        if(screenVersion > 1)
-////        {
-//            page.addJavaScript("htmlTextEditorIdArray.push(\"" + completInputComp.getId() + "\");");
-////        }
-//        page.addComponent( completInputComp);
-//
-//        String initTinymce = getInitTinymceVERSIONV3(browser,page,funcName);
-//        page.addJavaScript(initTinymce);
-//        page.addJavaScript("teOnChange", getTeOnChangedScript());
-//
-//        super.compile( browser);
-//    }
 
     protected void compile4( final ClientBrowser browser)
     {
@@ -311,10 +246,9 @@ public class HTMLTextEditor extends HTMLTextArea
         if(!Boolean.parseBoolean(page.getFlag(HAS_SET_HAS_HTML_EDITOR)))
         {
             page.addJavaScript("window.hasHTMLTextEditor=true;");
-//            if(screenVersion > 1)
-//            {
-                page.addJavaScript("var htmlTextEditorIdArray = [];");
-//            }
+
+            page.addJavaScript("var htmlTextEditorIdArray = [];");
+
             page.putFlag(HAS_SET_HAS_HTML_EDITOR, Boolean.TRUE.toString());
         }
 
@@ -324,22 +258,14 @@ public class HTMLTextEditor extends HTMLTextArea
 
         if( value.isEmpty())
         {
-            //not the version from SiteScriptModule
-//            if( tinymceVersion.matches("4.x") == false)
-//            {        
-//                page.addJavaScript( new ScriptLink( "/scripts/tinymce_"+ tinymceVersion +"/js/tinymce/tinymce.min.js",ScriptLink.LoadType.BLOCKING ));
-//            }
-//            page.addModule("timymce");
             page.putFlag(key, "DONE");
         }
 
         HTMLInput completInputComp = new HTMLInput( completeCompName, "false");
         completInputComp.setInvisible( true);
 
-//        if(screenVersion > 1)
-//        {
-            page.addJavaScript("htmlTextEditorIdArray.push(\"" + completInputComp.getId() + "\");");
-//        }
+        page.addJavaScript("htmlTextEditorIdArray.push(\"" + completInputComp.getId() + "\");");
+
         page.addComponent( completInputComp);
 
         String initTinymce = getInitTinymceVERSIONV4(browser,page,funcName);
@@ -419,322 +345,6 @@ public class HTMLTextEditor extends HTMLTextArea
         }
     }
 
-    private void addFinderBrowser( final HTMLPage page)
-    {
-        if( page.getFlag("ADDED_FINDER_SCRIPT").startsWith("Y")==false)
-        {
-            page.putFlag("ADDED_FINDER_SCRIPT", "YES");
-            String script=
-                "function elFinderBrowser (field_name, url, type, win) {\n" +
-                "   var elfinder_url = '/doc_explorer?CALLED_BY=tinyMCE&height=780';\n" +    // use an absolute path!
-                "   var cmsURL = elfinder_url;\n" +    // script URL - use an absolute path!
-                "   if (cmsURL.indexOf(\"?\") < 0) {\n" +
-                //add the type as the only query parameter
-                "       cmsURL = cmsURL + \"?type=\" + type;\n" +
-                "   }else {\n" +
-                //add the type as an additional query parameter
-                // (PHP session ID is now included if there is one at all)
-                "       cmsURL = cmsURL + \"&type=\" + type;\n" +
-                "   }\n" +
-                "tinyMCE.activeEditor.windowManager.open({\n" +
-                "   file : cmsURL,\n" +
-                "   title : 'Cloud Files',\n" +
-                "   width : 650,\n" +
-                "   height : 800,\n" +
-                "   resizable : \"yes\",\n" +
-                "   inline : \"yes\",\n" +  // This parameter only has an effect if you use the inlinepopups plugin!
-                "   popup_css : false,\n" + // Disable TinyMCE's default popup CSS
-                "   close_previous : \"no\"\n" +
-                "}, {\n" +
-                "   window : win,\n" +
-                "   input : field_name\n" +
-                "   });\n" +
-                "   return false;\n" +
-                //"}\n" +
-                "}";
-            page.addJavaScript(script);
-        }
-    }
-
-    /**
-     * This method create a tinyMCE init function for tinyMCE version 3_1_0_1
-     * @param browser
-     * @param page
-     * @param funcName
-     * @return the TinyMCE init function
-     */
-//    private String getInitTinymceVERSIONV3(final ClientBrowser browser,final HTMLPage page,final String funcName)
-//    {
-//        StringBuilder init = new StringBuilder(1000);
-//
-//        StringBuilder tmpPlugins = new StringBuilder(300);
-//        init.append( "tinymce.init({");
-//
-//        init.append( "\nfile_browser_callback :'elFinderBrowser',\n");
-//
-//        StringBuilder oldPlugins=new StringBuilder();
-//        if( tinymceVersion.matches("(1|2|3_1|3_2|3_3|3_4).+"))
-//        {
-//            oldPlugins.append("safari");
-//        }
-//        addFinderBrowser( page);
-//
-//       // We need to hide the curtain after the last HTML editor is completed.
-//
-//        init.append("init_instance_callback : \"").append(funcName).append( "\",");
-//        
-//        init.append( "mode :\"exact\",");
-//
-//        init.append( "elements :\"");
-//        init.append( getId());
-//        init.append( "\",");
-//        init.append( "theme :\"advanced\",");            
-//        init.append( "skins: \"o2k7\",\n");
-//
-//        init.append("theme_advanced_toolbar_align :"+ "\"left\",");
-//
-//        String containers = "buttons1,buttons2,buttons3,mceEditor";
-//
-//        if( browser.isBrowserIPad())
-//        {
-//            containers = "buttons1,buttons2,mceEditor";
-//        }
-//        if( StringUtilities.isBlank( height) == false)
-//        {
-//            init.append("height  :" + "\"").append(height).append("\",");
-//        }
-//        init.append("force_br_newlines :\"true\",");
-//        init.append("force_p_newlines :\"false\",");
-//
-//        if( StringUtilities.notBlank(documentBaseURL))
-//        {
-//            init.append("document_base_url:\"").append(documentBaseURL).append("\",");
-//            init.append("remove_script_host:").append(removeScriptHost).append(",");
-//            init.append("relative_urls:").append(relativeURLs).append(",");
-//        }
-//        else
-//        {
-//            init.append("convert_urls : false,");
-//        }
-//
-//        if( readOnlyFg == true)
-//        {
-//            init.append( "theme_advanced_buttons1 :\"copy\",");
-//
-//            tmpPlugins.append("plugins : \"").append(oldPlugins);
-//
-//            if( showExtCharCount)
-//            {
-//                init.append("theme_advanced_container_customButtons :\"charcountext\",");
-//                if(StringUtilities.notBlank(charCountURL))
-//                {
-//                    init.append("st_charCountURL: \"").append(charCountURL).append("\",");
-//                }
-//                containers += ",customButtons";
-//                tmpPlugins.append(",charcountext");
-//            }
-//            init.append("theme_advanced_containers : \"").append(containers).append("\",");
-//            tmpPlugins.append(",").append(getPlugins());
-//            tmpPlugins.append("\",");
-//            init.append( tmpPlugins.toString());
-//            init.append( "readonly :"+ "\"true\"");
-//
-//        }
-//        else
-//        {
-//            if( StringUtilities.notBlank(contentCSS))
-//            {
-//                init.append( "content_css : \"").append(contentCSS.replace("\"", "\\\"")).append( "\",\n");
-//            }
-//            oldPlugins.append( "inlinepopups,xhtmlxtras,advimage,advlink,advhr,style");
-//            String spellcheckerPlugin="spellchecker";
-//            String contextmenuPlugin="contextmenu";
-//            if( ASpellWrapper.isSupported()==false)
-//            {
-//                spellcheckerPlugin="";
-//                contextmenuPlugin="";
-//            }
-//            tmpPlugins.append("plugins : \"")
-//                    .append(oldPlugins).append(",insertdatetime,table,fullscreen,")
-//                    .append(contextmenuPlugin)
-//                    .append(",paste,preview,media,searchreplace,")
-//                    .append( "print,wordcount,visualblocks,visualchars,nonbreaking,pagebreak,directionality,autolink,lists,")
-//                    .append(spellcheckerPlugin).append(",noneditable");
-////                "print,wordcount,visualblocks,visualchars,nonbreaking,pagebreak,directionality,autolink,lists,noneditable");
-//            
-//            tmpPlugins.append(",layer");
-//
-//            if( pluginAvailble("imgmap"))
-//            {
-//                tmpPlugins.append(",imgmap");                
-//            }
-//            if(pluginAvailble("acheck"))
-//            {
-//                tmpPlugins.append(",acheck");
-//            }
-//            /**
-//             * http://www.tinymce.com/wiki.php/Plugin:template
-//             */
-//            if( rowMap != null)
-//            {
-//                String buttons1 = getBtnsForRow(1, browser, null);
-//                String buttons2 = getBtnsForRow(2, browser, null);
-//                String buttons3 = getBtnsForRow(3, browser, null);
-//                init.append("theme_advanced_buttons1 :" + "\"").append(buttons1).append("\",");
-//                init.append("theme_advanced_buttons2 :" + "\"").append(buttons2).append("\",");
-//                init.append("theme_advanced_buttons3 :" + "\"").append(buttons3).append("\",");
-//
-//                if( hasButton( "CharCount"))
-//                {
-//                    tmpPlugins.append(",charcount");
-//                }
-//     //           if(hasButton("SpellChecker"))
-//     //           {
-//     //               init.append( "spellchecker_rpc_url: \"/spellcheck/tinymce\",\n" );
-//      //              init.append( "spellchecker_languages: \"English=en\",\n" );
-//      //          }
-//            }
-//            else
-//            {
-//               // String styleSheetButton="styleselect,";
-//                String cutButton="cut,";
-//                String copyButton="copy,";
-//                String pasteButton="paste,";
-//                String pasteTextButton="pastetext,";
-//                String pasteWordButton="pasteword,";
-//                if( browser.isBrowserIPad())
-//                {
-//               //     styleSheetButton="";
-//                    cutButton="";
-//                    copyButton="";
-//                    pasteButton="";
-//                    pasteTextButton="";
-//                    pasteWordButton="";
-//                }
-//
-//                String copyPasteOptions=cutButton + copyButton + pasteButton + pasteTextButton+pasteWordButton;
-//                if( StringUtilities.isBlank(copyPasteOptions) == false)
-//                {
-//                    copyPasteOptions+=",|,";
-//                }
-//                String  line1, 
-//                        line2;
-//                StringBuilder row3 = new StringBuilder(200);
-//                line1="undo,redo,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,|,forecolor,backcolor,|,bullist,numlist,|," + spellcheckerPlugin + ",acheck";
-//
-//                String imgmap="";
-//                if( pluginAvailble("imgmap"))
-//                {
-//                    imgmap=",imgmap";                
-//                }
-//
-//                line2= copyPasteOptions +"search,replace,|,outdent,indent,blockquote,abbr,cite,del,ins,attribs,styleprops,"+
-//                    "|,link,unlink,anchor,image" + imgmap + ",cleanup,|,preview,code,print,|,visualchars,nonbreaking,pagebreak";
-//
-//                if( browser.isBrowserIPad())
-//                {
-//                    line2+=",|,hr,emotions,sub,sup,removeformat";
-//                }
-//
-//                if( browser.isBrowserIPad()==false)
-//                {
-//                    if( browser.osMAC() == false)
-//                    {
-//                        row3.append("tablecontrols,|,");
-//                    }
-//                    // hr seems to be the same as advhr to me
-//                    row3.append("hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,media,advhr,|,ltr,rtl,|,insertlayer,moveforward,movebackward,absolute,|,fullscreen,");
-//                }
-//                
-//                init.append("theme_advanced_buttons1 :" + "\"").append(line1).append( "\",");
-//                init.append("theme_advanced_buttons2 :" + "\"").append(line2).append( "\",");
-//                init.append("theme_advanced_buttons3 :\"").append(row3.toString()).append("\",");
-//            }
-//
-//            if( showExtCharCount)
-//            {
-//                init.append("theme_advanced_container_customButtons:\"charcountext\",");
-//                if(StringUtilities.notBlank(charCountURL))
-//                {
-//                    init.append("st_charCountURL: \"").append(charCountURL).append("\",");
-//                }
-//                tmpPlugins.append(",charcountext");
-//
-//                containers += ",customButtons";
-//            }
-//
-//            tmpPlugins.append(",").append(getPlugins());
-//            tmpPlugins.append("\",");
-//            init.append("\n").append( tmpPlugins);
-//
-//            if( onChangeScripts != null)
-//            {
-//                for( String call: onChangeScripts.keySet())
-//                {
-//                    String script = onChangeScripts.get( call);
-//                    init.append("\nonchange_callback : \"").append(call).append("\",");
-//                    page.addJavaScript( script);
-//                }
-//            }
-//
-//            if(showContextPath || showExtCharCount)
-//            {
-//                containers += ",mceStatusbar";
-//            }
-//            else
-//            {
-//                init.append("theme_advanced_statusbar_location : \"none\",\n");
-//            }
-//
-//            init.append("theme_advanced_containers : \"").append(containers).append("\",");
-//
-//            init.append(
-//                "paste_auto_cleanup_on_paste : true,"+
-//                "paste_convert_headers_to_strong : true,"
-//            );
-//            init.append("theme_advanced_toolbar_location : \"top\",\n");
-//            init.append(
-//                "plugin_insertdate_dateFormat :"+ "\"%Y-%m-%d\","+
-//                "plugin_insertdate_timeFormat :"+ "\"%H:%M:%S\","+
-//                "extended_valid_elements :"+
-//                //"img[id|style|class|src|border|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name],"
-//                "\"a[id|class|name|href|target|title|onclick|style],"+
-//                "hr[id|class|width|size|noshade],font[face|size|color|style],span[id|class|align|style]\""
-//            );
-//        }
-//
-//        String function = "function(e){\n"
-//                + "if(!e) e = window.event;\n"
-//                + "if(e.stopPropagation){\n"
-//                + "e.stopPropagation();}\n"
-//                + "else{e.cancelBubble=true;}\n"
-//                + "ed.pasteAsPlainText = true;\n"
-//                + "ed.execCommand('paste', false, null);\n"
-//                + "return false;}\n";
-//        StringBuilder pastePatch = new StringBuilder();
-//        pastePatch.append("var id = ed.editorId + '_pastetext';\n");
-//        pastePatch.append("var p = document.getElementById(id);\n");
-//        pastePatch.append("if(p){\n");
-//        pastePatch.append("var s = p.childNodes[0];\n");
-//        pastePatch.append("if(s.addEventListener){\n");
-//        pastePatch.append("s.addEventListener('click', ").append(function).append(");");
-//        pastePatch.append("}\n");
-//        pastePatch.append("else if(s.attachEvent){\ns.attachEvent('onclick', ").append(function).append(");}\n");
-//        pastePatch.append("}\n");
-//        
-//        StringBuilder htmlValidationPatch = new StringBuilder();
-//        htmlValidationPatch.append("var editorId = ed.id.substring(ed.id.indexOf('_'));\n");
-//        htmlValidationPatch.append("var ofield = findElement('OFIELD' + editorId);\n");
-//        htmlValidationPatch.append("if(ofield){\n");
-//        htmlValidationPatch.append("ofield.value = ed.getContent();\n");
-//        htmlValidationPatch.append("}\n");
-//        
-//        init.append(",\nsetup : function(ed){\n ed.onInit.add(function(ed){").append(pastePatch.toString()).append(htmlValidationPatch.toString()).append("})}");
-//
-//        init.append( "});");
-//        return init.toString();
-//    }
-    
     private JSONArray customFormats=null;
     public void setCustomFormats( final @Nullable JSONArray customFormats)
     {
@@ -770,11 +380,6 @@ public class HTMLTextEditor extends HTMLTextArea
         addCustomFormats( init);
         init.append( "\nfile_browser_callback : elFinderBrowserV4,\n");
 
-       // StringBuilder oldPlugins=new StringBuilder();
-//        if( tinymceVersion.matches("(1|2|3_1|3_2|3_3|3_4).+"))
-//        {
-//            oldPlugins.append("safari");
-//        }
         addFinderBrowserV4( page);
 
        // We need to hide the curtain after the last HTML editor is completed.
@@ -1016,7 +621,8 @@ public class HTMLTextEditor extends HTMLTextArea
         init.append("teOnChanged(ed);\n");
         init.append("});\n");
 
-        init.append("}\n");
+        init.append("},\n");
+        init.append("branding: false");
 
         init.append( "});");
         return init.toString();

@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 1998-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -92,7 +92,8 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
      */
     public void stats( final @Nullable StatsCollector collector)
     {
-        rwLock.readLock().lock();
+        Lock l = rwLock.readLock();
+        l.lock();
         try
         {
             InterfaceEntry tmpData[]=(InterfaceEntry[]) data;
@@ -126,7 +127,7 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
         }
         finally
         {
-            rwLock.readLock().unlock();
+            l.unlock();
         }
     }
 
@@ -160,14 +161,16 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
     @CheckReturnValue @Nonnegative
     public final int size()
     {
-        rwLock.readLock().lock();
+        Lock l = rwLock.readLock();
+        l.lock();
+
         try
         {
             return count;
         }
         finally
         {
-            rwLock.readLock().unlock();
+            l.unlock();
         }
     }
 
@@ -179,14 +182,16 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
     @CheckReturnValue @Nonnegative
     public final int getHardLinkCount()
     {
-        rwLock.readLock().lock();
+        Lock l = rwLock.readLock();
+        l.lock();
+
         try
         {
             return count - unallocated;
         }
         finally
         {
-            rwLock.readLock().unlock();
+            l.unlock();
         }
     }
 
@@ -198,14 +203,16 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
     @CheckReturnValue
     public final boolean isEmpty()
     {
-        rwLock.readLock().lock();
+        Lock l = rwLock.readLock();
+        l.lock();
+
         try
         {
             return count == 0;
         }
         finally
         {
-            rwLock.readLock().unlock();
+            l.unlock();
         }
     }
 
@@ -220,7 +227,9 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
     @CheckReturnValue
     public final boolean containsValue( final @Nonnull V value)
     {
-        rwLock.readLock().lock();
+        Lock l = rwLock.readLock();
+        l.lock();
+
         try
         {
             if( data == null) return false;
@@ -248,7 +257,7 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
         }
         finally
         {
-            rwLock.readLock().unlock();
+            l.unlock();
         }
     }
 
@@ -257,7 +266,9 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
      */
     public final void clear()
     {
-        rwLock.writeLock().lock();
+        Lock l = rwLock.writeLock();
+        l.lock();
+
         try
         {
             data = createArray( INITIAL_CAPACITY);
@@ -269,7 +280,7 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
         }
         finally
         {
-            rwLock.writeLock().unlock();
+            l.unlock();
         }
     }
 
@@ -281,14 +292,16 @@ public abstract class CacheTableTemplate<V> implements MemoryHandler
     @Override @CheckReturnValue
     public final long getLastAccessed()
     {
-        rwLock.readLock().lock();
+        Lock l = rwLock.readLock();
+        l.lock();
+
         try
         {
             return lastAccessed * 1000L;
         }
         finally
         {
-            rwLock.readLock().unlock();
+            l.unlock();
         }
     }
 

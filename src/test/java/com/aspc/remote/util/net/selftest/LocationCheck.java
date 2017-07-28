@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -33,6 +33,7 @@
  */
 package com.aspc.remote.util.net.selftest;
 
+import com.aspc.remote.util.misc.FileUtil;
 import java.io.File;
 import java.io.FileWriter;
 import com.aspc.remote.util.net.*;
@@ -158,7 +159,7 @@ public class LocationCheck
     {
         String filler = "This is a test file for the LocationCheck class"
                 + "\n\nluke@stsoftware.com.au";
-        testFile = File.createTempFile("chk", null );
+        testFile = File.createTempFile("chk", null,FileUtil.makeQuarantineDirectory() );
         try (FileWriter fw = new FileWriter(testFile)) {
             fw.write(filler);
         }

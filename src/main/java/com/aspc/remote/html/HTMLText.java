@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -157,20 +157,20 @@ public class HTMLText extends HTMLComponent
         }
         else
         {
-            text = StringUtilities.replace( text, "<br>","<BR>");
+            text = text.replace( "<br>", "<BR>");
             /**
              * This is converting one a bit of HTML with no newlines to
              * have one. NL- 13 Oct 2004
              */
-            //text = StringUtilities.replace( text, "<BR>\n","\n");
-            //text = StringUtilities.replace( text, "<BR>","\n");
+            //text = text.replace( "<BR>\n", "\n");
+            //text = text.replace( "<BR>", "\n");
         }
-        text = StringUtilities.replace( text, "\t", "&#09;" );
+        text = text.replace( "\t", "&#09;" );
 
         // Inspect the text for the number of newline etc.
         String temp;
-        temp = StringUtilities.replace( text, "<BR>", "" );
-        temp = StringUtilities.replace( temp, "&nbsp;", "" );
+        temp = text.replace( "<BR>", "" );
+        temp = temp.replace( "&nbsp;", "" );
 
         containsVisibleText = !StringUtilities.isBlank(temp);
 
@@ -476,7 +476,7 @@ public class HTMLText extends HTMLComponent
         {
             if(bReplaceBrackets == true)
             {
-                realText = StringUtilities.replace(realText, " ", "&nbsp;");
+                realText = realText.replace( " ", "&nbsp;");
             }
         }
         else if( indent)
@@ -502,7 +502,7 @@ public class HTMLText extends HTMLComponent
 
                     String temp = realText.substring( lastPos, start);
 
-                    temp = StringUtilities.replace( temp, " ", "&nbsp;");
+                    temp = temp.replace( " ", "&nbsp;");
 
                     buffer2.append( temp);
                     lastPos = pos + 5;
@@ -518,7 +518,7 @@ public class HTMLText extends HTMLComponent
 
                 String temp = realText.substring( lastPos, start);
 
-                temp = StringUtilities.replace( temp, " ", "&nbsp;");
+                temp = temp.replace( " ", "&nbsp;");
 
                 buffer2.append( temp);
                 buffer2.append( realText.substring( start));

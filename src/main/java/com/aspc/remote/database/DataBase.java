@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -278,13 +278,13 @@ public class DataBase
 //        {
 //            driverClassName ="com.ibm.db2.jcc.DB2Driver";
 //        }
-        else if( type.startsWith( TYPE_MSSQL_NATIVE ) == true )
-        {
-            driverClassName = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-        }
+//        else if( type.startsWith( TYPE_MSSQL_NATIVE ) == true )
+//        {
+//            driverClassName = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+//        }
         else if( type.startsWith( TYPE_MSSQL ) == true )
         {
-            driverClassName = "net.sourceforge.jtds.jdbc.Driver";
+            driverClassName = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
         }
         else if( type.equals( TYPE_DERBY ) == true )
         {
@@ -559,14 +559,14 @@ public class DataBase
         {
             return "MSSQL";
         }
-        else if( type.equals( "MSSQL5" ) == true )
-        {
-            return "tempdb";
-        }
-        else if( type.equals( TYPE_MSSQL_NATIVE ) == true )
-        {
-            return TYPE_MSSQL_NATIVE;
-        }
+//        else if( type.equals( "MSSQL5" ) == true )
+//        {
+//            return "tempdb";
+//        }
+//        else if( type.equals( TYPE_MSSQL_NATIVE ) == true )
+//        {
+//            return TYPE_MSSQL_NATIVE;
+//        }
         else
         {
             throw new Exception( "No default database name found for type '" + type + "'");
@@ -753,15 +753,11 @@ public class DataBase
                     jdbcURL = "jdbc:mysql://" + url + "/";
                 }
             }
-            else if( type.equals( "MSSQL" ) == true || type.equals( "MSSQL5" ) == true )
-            {
-                jdbcURL = "jdbc:jtds:sqlserver://"+url+";useLOBs=false";
-            }
-            else if( type.equals( TYPE_MSSQL_NATIVE ) == true )
+            else if( type.equals( TYPE_MSSQL ) == true )
             {
                 if(url.startsWith("jdbc:sqlserver")==false)
                 {
-                    jdbcURL = "jdbc:sqlserver://"+url;
+                    jdbcURL = "jdbc:sqlserver://"+url.replace("/", ";databaseName=");
                 }
                 else
                 {
@@ -1079,29 +1075,28 @@ public class DataBase
      */
     public @CheckReturnValue String encodeString( final @Nonnull String javaString)
     {
-        assert javaString.matches("[\t\r\n -~]*"): "Invalid SQL value: " + StringUtilities.encode(javaString);
+//        assert javaString.matches("[\t\r\n -~]*"): "Invalid SQL value: " + StringUtilities.encode(javaString);
         String sqlString=javaString;
         if( javaString.contains("'") || javaString.contains("\\"))
         {
             if( getType().equalsIgnoreCase(DataBase.TYPE_POSTGRESQL))
             {
-                String temp = StringUtilities.replace(javaString, "\\", "\\\\");
+                String temp = javaString.replace( "\\", "\\\\");
 
-                temp = StringUtilities.replace(temp, "'", "\\'");
+                temp = temp.replace( "'", "\\'");
 
                 return "E'" + temp + "'";
             }
 
-            sqlString = StringUtilities.replace( javaString, "'", "''");
+            sqlString = javaString.replace( "'", "''");
 
             if( hasSQLEscape())
             {
-                sqlString = StringUtilities.replace( sqlString, "\\", "\\\\");
+                sqlString = sqlString.replace( "\\", "\\\\");
             }
         }
 
         return "'" + sqlString + "'";
-
     }
 
     /**

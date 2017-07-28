@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -162,7 +162,7 @@ public class TestImageResize extends TestCase
     
     public void testRaster() throws IOException 
     {
-        File srcFile=load( "smeg-raster", "https://www.smegateway.com.au/docs/web/images%20from%20Gaye/Dee-Logos/Hifrasergroup_Spot.jpg");
+        File srcFile=load( "smeg-raster", "https://jobtrack.smegateway.com.au/docs/web/images%20from%20Gaye/Dee-Logos/Hifrasergroup_Spot.jpg");
         
         //ImageIO.read(srcFile);
         process( srcFile, 50, 50,"", -1, -1,-1, -1);
@@ -273,7 +273,7 @@ public class TestImageResize extends TestCase
      */
     public void testHandleInconsistent2() throws IOException
     {
-        File srcFile=load( "smeg-bs", "http://www.smegateway.com.au/docs/web/smeg/capabilities/BUSINESS%20SUPPORT.jpeg");
+        File srcFile=load( "smeg-bs", "http://jobtrack.smegateway.com.au/docs/web/smeg/capabilities/BUSINESS%20SUPPORT.jpeg");
         process( srcFile, 150, 150,"", -1, -1,-1, -1);
     }
     
@@ -289,7 +289,7 @@ public class TestImageResize extends TestCase
     
     public void testMime() throws Exception
     {
-        File srcFile=load( "404.jpg", "http://www.stsoftware.com.au/images/404.jpg");
+        File srcFile=load( "404.jpg", "http://stSoftware.com.au/images/404.jpg");
 //        String src=System.getProperty("SRC_DIR") + "/webapps/st/images/404.jpg"
 //        File srcFile = new File( src);
         ImageResize ir=new ImageResize(srcFile);
@@ -389,7 +389,7 @@ public class TestImageResize extends TestCase
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNonImage() throws IOException, Exception
     {
-        File tmpFile=File.createTempFile("non-image", ".txt");
+        File tmpFile=File.createTempFile("non-image", ".txt",FileUtil.makeQuarantineDirectory());
         try{
             try (FileWriter fw = new FileWriter( tmpFile)) {
                 fw.write("Hello World");
@@ -417,7 +417,7 @@ public class TestImageResize extends TestCase
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNonExisting() throws IOException, Exception
     {
-        File tmpFile=File.createTempFile("image", ".png");
+        File tmpFile=File.createTempFile("image", ".png",FileUtil.makeQuarantineDirectory());
      
         try
         {

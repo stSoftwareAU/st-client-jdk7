@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2001-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -40,7 +40,7 @@ public final class MemoryUtil
     {
         String temp = text.trim().toUpperCase();
         temp = StringUtilities.replace( temp, ",", "");
-        temp = StringUtilities.replace( temp, " ", "");
+        temp = temp.replace( " ", "");
 
         long multiple = 1;
 

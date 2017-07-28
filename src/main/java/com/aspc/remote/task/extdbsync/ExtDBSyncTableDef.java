@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -96,7 +96,7 @@ public class ExtDBSyncTableDef
      */
     public ExtDBSyncFieldDef getFieldDef( String srcFieldName)
     {
-        return (ExtDBSyncFieldDef)fieldMap.get( srcFieldName);
+        return fieldMap.get( srcFieldName);
     }
 
     /**
@@ -277,7 +277,7 @@ public class ExtDBSyncTableDef
         return updateHandlerName;
     }
 
-    private ConcurrentHashMap<String, ExtDBSyncFieldDef> fieldMap= new ConcurrentHashMap();//MT fix: use concurrent hash map not HashMap
+    private final ConcurrentHashMap<String, ExtDBSyncFieldDef> fieldMap= new ConcurrentHashMap();//MT fix: use concurrent hash map not HashMap
 
     /**
      * the key field

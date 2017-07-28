@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2002-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -17,6 +17,7 @@ import com.aspc.remote.memory.internal.MemoryUtil;
 import com.aspc.developer.ThreadCop;
 import com.aspc.developer.ThreadCop.MODE;
 import com.aspc.developer.errors.ThreadCopError;
+import com.aspc.remote.memory.LargeLongArray;
 import com.aspc.remote.util.misc.CLogger;
 import com.aspc.remote.util.misc.SyncBlock;
 import java.util.Arrays;
@@ -53,6 +54,8 @@ public final class HashLongMapV8 implements HashLongMap, Cloneable
     private long keyArray[]; // default 0 + 8 bytes
     private long overflowKey[];// default 0 + 8 bytes
 
+    private LargeLongArray llaCache;
+    
     private final AtomicInteger status=new AtomicInteger( MASK_ARRAY_NULL );// 8 bytes
 
     private long keyArrayBrief[]; // 8 bytes
@@ -387,7 +390,7 @@ public final class HashLongMapV8 implements HashLongMap, Cloneable
     }
 
     /**
-     * create an array of the keys
+     * create an array of the keys <b>SHARED</b>. 
      *
      *
      * @return the array
@@ -1087,6 +1090,11 @@ public final class HashLongMapV8 implements HashLongMap, Cloneable
                 }
             }
 
+            if( llaCache!=null)
+            {
+                llaLastData=null;
+                llaCache.append(key);
+            }
             // Creates the new entry.
             Entry e = new Entry(hash, key, value, startEntry);
             table[index] = e;
@@ -1131,7 +1139,8 @@ public final class HashLongMapV8 implements HashLongMap, Cloneable
             if( rows == null || rows.length == 0) return;
 
             assert stateOfRows == State.UNKNOWN || rows.length < 2 || rows[0] != rows[1]: alert( "non-unique rows passed into putMultiRows " + rows[0]);
-
+            llaCache=null;
+            llaLastData=null;
             if( table == null)
             {
                 if( rows.length == 1)
@@ -1245,7 +1254,10 @@ public final class HashLongMapV8 implements HashLongMap, Cloneable
             if( table == null)
             {
                 if( containsKey(key) == false) return null;
-
+                
+                llaCache=null;
+                llaLastData=null;
+                
                 if( overflowKey != null && overflowKey[0] == key)
                 {
                     overflowKey=null;
@@ -1304,6 +1316,8 @@ public final class HashLongMapV8 implements HashLongMap, Cloneable
 
     private void clearLazyLoad()
     {
+        llaCache=null;
+        llaLastData=null;
         keyArray = null;
         keyArrayBrief=null;
         overflowKey=null;
@@ -1369,12 +1383,82 @@ public final class HashLongMapV8 implements HashLongMap, Cloneable
             size += MemoryUtil.sizeOf(table);
             size += MemoryUtil.sizeOf(keyArray);
             size += count * 16; // every Entry object is 16 bytes
+            if( llaCache!=null)
+            {
+                size += count * 12;
+            }
             return size;
         }
         finally
         {
             lock.release();
             assert ThreadCop.leave(this);
+        }
+    }
+
+    private final long[][] EMPTY=new long[0][];
+    private long[][] llaLastData;
+    
+    /*
+     *  key data array <B>SHARED</B>
+     */
+    @Override 
+    public long[][] getKeyData() {
+        
+        if( count==0)
+        {
+            return EMPTY;
+        }
+        lock.take();
+
+        try
+        {
+            if( llaLastData!=null)
+            {
+                return llaLastData;
+            }
+
+            LargeLongArray lla=llaCache;
+            if( lla==null)
+            {
+                llaLastData=null;
+                if( keyArray!=null)
+                {
+                    lla=LargeLongArray.factory(keyArray).setExpectedCapacity(count).build();
+                    
+                    if( overflowKey!=null)
+                    {
+                        for( long row: overflowKey)
+                        {
+                            lla.append(row);
+                        }
+                    }
+                }
+                else if( overflowKey!=null)
+                {
+                    lla=LargeLongArray.factory(overflowKey).setExpectedCapacity(count).build();                    
+                }
+                else
+                {
+                    lla=LargeLongArray.factory().setExpectedCapacity(count).build();
+                    Entry tab[] = table;
+                    for (Entry first : tab) {
+                        for (Entry e = first; e != null; e = e.next) {
+                            lla.append(e.key);
+                        }
+                    }
+                }
+
+                llaCache=lla;
+            }
+            
+            llaLastData= lla.repack();
+            
+            return llaLastData;
+        }
+        finally
+        {
+            lock.release();
         }
     }
 

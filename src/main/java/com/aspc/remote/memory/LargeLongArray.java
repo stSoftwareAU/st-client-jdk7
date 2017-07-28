@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 1999-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -46,10 +46,7 @@ public class LargeLongArray
     private boolean shallowCopied;
     private boolean fullCopied;
     private final boolean outputShared;
-    
-//    private long emptyValue;
-//    private boolean emptyValueUsed;
-    
+
     /**
      * The factory to create a new Large Long Array.
      * @param data the data.
@@ -143,7 +140,7 @@ public class LargeLongArray
                             }
                         }
                         
-                        assert row>=last: "unsorted rows at " + scanPos;                                
+                        assert row>=last: "unsorted rows at " + scanPos +" " + last + "->" + row;                                
                     }
                     if(row == 0)
                     {
@@ -186,11 +183,15 @@ public class LargeLongArray
         private boolean inputShared=true;
         private boolean outputShared=true;
         private Object sanity;
-//        private long blankValue=Long.MIN_VALUE;
-        
+
         private Builder( final long data[][])
         {
             this.data=data;
+        }
+
+        @Override
+        public String toString() {
+            return "Builder{" + ", checkIfZero=" + checkIfZero + ", checkIfUnique=" + checkIfUnique + ", assertIfZero=" + assertIfZero + ", assertIfUnique=" + assertIfUnique + ", segmentSize=" + segmentSize + ", inputShared=" + inputShared + ", outputShared=" + outputShared + ", sanity=" + sanity + '}';
         }
         
         /* 
@@ -350,6 +351,7 @@ public class LargeLongArray
     @Nonnull @CheckReturnValue
     public long[][] sort( )
     {
+        trimAppendData();
         boolean alreadySorted=true;
         long last=Long.MIN_VALUE;
         
@@ -403,7 +405,10 @@ public class LargeLongArray
             }
             if( repackSorted==false)
             {
-                factory(raw).build().quickSort( 0, size()-1);
+                factory(raw)
+                    .setInputShared(false)
+                    .build()
+                    .quickSort( 0, size()-1);
             }            
            
             sortedData=raw;
@@ -447,15 +452,7 @@ public class LargeLongArray
         }
         makePrivate(false);
         long segment[];
-//        int segmentPosition=nextAppendPosition;
-//        if( data.length==0)
-//        {
-//            segment=makeAppendSegment();
-//            data=new long[1][];
-    //            segmentPosition=0;
-//            data[0]=segment;
-//        }
-//        else 
+
         if( nextAppendPosition!=-1)
         {
             segment=data[data.length-1];

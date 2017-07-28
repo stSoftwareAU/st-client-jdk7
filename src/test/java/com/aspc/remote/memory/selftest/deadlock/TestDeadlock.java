@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2002-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -11,6 +11,7 @@
  */
 package com.aspc.remote.memory.selftest.deadlock;
 
+import com.aspc.remote.util.misc.ThreadUtil;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -79,7 +80,7 @@ public class TestDeadlock extends TestCase
         
         t2.join( 60000);
         
-        if( t2.isAlive())
+        if( ThreadUtil.isAliveOrStarting(t2))
         {
             fail( "MemoryManager.deregister()");
         }

@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -226,7 +226,7 @@ public class BenchMarkClient extends Item implements Runnable
     {
         if( t == null) return "Wait";
 
-        if( t.isAlive()) return "Run";
+        if( ThreadUtil.isAliveOrStarting(t)) return "Run";
         Task worstTask = worstTask();
 
         if( worstTask != null) 

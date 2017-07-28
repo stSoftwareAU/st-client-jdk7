@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -243,7 +243,7 @@ public class ExecutorPreparedStatement extends ExecutorStatement implements Prep
     @Override
     public void setString(int parameterIndex, String x) throws SQLException
     {
-        put(parameterIndex, "'" + StringUtilities.replace(x, "'", "\\'") + "'");
+        put(parameterIndex, "'" + x.replace( "'", "\\'") + "'");
     }
 
     /** {@inheritDoc} */
@@ -257,7 +257,7 @@ public class ExecutorPreparedStatement extends ExecutorStatement implements Prep
         }
         else
         {
-            put(parameterIndex,"'"+ StringUtilities.replace(new String(x),"'","\\'")+"'");
+            put(parameterIndex,"'"+ new String(x).replace( "'", "\\'")+"'");
         }
     }
 

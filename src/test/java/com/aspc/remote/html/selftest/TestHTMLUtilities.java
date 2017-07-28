@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@ import junit.textui.TestRunner;
 import com.aspc.remote.html.*;
 import com.aspc.remote.util.misc.CLogger;
 import java.net.URL;
+import static junit.framework.TestCase.assertEquals;
 import org.apache.commons.logging.Log;
 
 /**
@@ -92,25 +93,89 @@ public class TestHTMLUtilities extends TestCase
         checkHTTPS();
         checkHTTPS();
     }
-    
+
+    public void testSafeHTML()
+    {
+        String checks[][]={
+            {
+                "<UL> <LI>30 great rides throughout New Zealand,  <LI>Route descriptions, map and cue sheets for each ride</UL>",
+
+                "<ul> <li>30 great rides throughout New Zealand, </li><li>Route descriptions, map and cue sheets for each ride</li></ul>",
+            },
+            
+            {
+                "<p><span style=\"line-height: 1.45em;\">A poignant story of a remarkable relationship between Frank Stevens, an Australian soldier sent to the "+
+                "Vietnamese Highlands to recruit and train the local hill tribes during the Vietnam War, and his Vietnamese translator, Minh."+
+                "</span><br></p><p>Nearly fifty years later, Minh, now living in Australia and seriously ill, remembers the experiences that he shared with Frank,"+
+                " and discovers that even amongst his traumatic memories, there is consolation and joy.</p><p>Reviewed here on "+
+                "<a href=\"https://anzlitlovers.com/2016/04/19/seeing-the-elephant-by-portland-jones/\" target=\"_blank\">ANZ Litlovers blog</a></p>",
+                
+                "<p>A poignant story of a remarkable relationship between Frank Stevens, an Australian soldier sent to the "+
+                "Vietnamese Highlands to recruit and train the local hill tribes during the Vietnam War, and his Vietnamese translator, Minh."+
+                "<br></p><p>Nearly fifty years later, Minh, now living in Australia and seriously ill, remembers the experiences that he shared with Frank,"+
+                " and discovers that even amongst his traumatic memories, there is consolation and joy.</p><p>Reviewed here on "+
+                "<a href=\"https://anzlitlovers.com/2016/04/19/seeing-the-elephant-by-portland-jones/\">ANZ Litlovers blog</a></p>",
+            },
+            
+            {
+                "<div>Here's a wonderful review of&nbsp;<i>Collecting Ladies&nbsp;</i>in&nbsp;The Journal of Melbourne Royal Botanic Gardens,&nbsp;<i><a href=\"http://www.rbg.vic.gov.au/documents/MuelleriaVol_32_-_p173_Thurlow_review.pdf\">Muelleria</a></i><br></div>",
+                "Here's a wonderful review of&nbsp;<i>Collecting Ladies&nbsp;</i>in&nbsp;The Journal of Melbourne Royal Botanic Gardens,&nbsp;<i><a href=\"http://www.rbg.vic.gov.au/documents/MuelleriaVol_32_-_p173_Thurlow_review.pdf\">Muelleria</a></i><br>"                
+            },
+            {"<a href='http://apple.com'>apple</a>", "<a href=\"http://apple.com\">apple</a>"},
+            {"hello <b>world</b>","hello <b>world</b>"},
+            {"hacker <javascript>window.alert('hacked');</javascript>", "hacker"},
+            {"<a href='javascript:window.alert(\'HACK\')'>hack</a>", "hack"},           
+            {
+                "<p><a href=\"https://www.dropbox.com/s/he1b792nj2qka13/Mad%20Magpie%20Teacher%20Notes.pdf?dl=0\" target=\"_blank\">Teachers Notes</a> available.</p>",
+                "<a href=\"https://www.dropbox.com/s/he1b792nj2qka13/Mad%20Magpie%20Teacher%20Notes.pdf?dl=0\">Teachers Notes</a> available."
+            },
+            {
+                "<em>World Cruising Routes</em>",
+                "<em>World Cruising Routes</em>"
+            },
+            {
+                "<strong>World Cruising Routes</strong>",
+                "<strong>World Cruising Routes</strong>"
+            },
+            {
+                "<em>Emphasized text</em><br><strong>Strong text</strong><br><code>A piece of computer code</code><br><samp>Sample output from a computer program</samp><br><kbd>Keyboard input</kbd><br><var>Variable</var>",
+                "<em>Emphasized text</em><br><strong>Strong text</strong><br><code>A piece of computer code</code><br><samp>Sample output from a computer program</samp><br><kbd>Keyboard input</kbd><br><var>Variable</var>",
+            },
+            {
+                "<p>This text contains <sup>superscript</sup> text.</p>",
+                "This text contains <sup>superscript</sup> text."
+            }
+        };
+        
+        for( String check[]:checks)
+        {
+            String html=check[0];
+            String safeHTML=HTMLUtilities.makeSafeSegment(html).replace("\n", "");
+            
+            String expectedHTML=check[1];
+            
+            assertEquals( html, expectedHTML, safeHTML);
+        }
+    }
+        
     private void checkHTTPS() throws Exception
     {
-        URL url = HTMLUtilities.bestURL("http://www.stsoftware.com.au", true);
+        URL url = HTMLUtilities.bestURL("http://stSoftware.com.au", true);
 
         assertEquals("should have upgraded to SSL", "https", url.getProtocol());
-        assertEquals("Change to default port https", "https://www.stsoftware.com.au", url.toString());
+        assertEquals("Change to default port https", "https://stSoftware.com.au", url.toString());
 
-        url = HTMLUtilities.bestURL("http://www.stsoftware.com.au:8080/siteST", true);
+        url = HTMLUtilities.bestURL("http://stSoftware.com.au:8080/siteST", true);
         assertEquals("should have upgraded to SSL", "https", url.getProtocol());
-        assertEquals("Change to default port https", "https://www.stsoftware.com.au/siteST", url.toString());
-        url = HTMLUtilities.bestURL("http://www.stsoftware.com.au:80/siteST", true);
+        assertEquals("Change to default port https", "https://stSoftware.com.au/siteST", url.toString());
+        url = HTMLUtilities.bestURL("http://stSoftware.com.au:80/siteST", true);
 
         assertEquals("should have upgraded to SSL", "https", url.getProtocol());
-        url = HTMLUtilities.bestURL("https://www.stsoftware.com.au", true);
+        url = HTMLUtilities.bestURL("https://stSoftware.com.au", true);
 
         assertEquals("Already SSL no need to change", "https", url.getProtocol());
 
-        url = HTMLUtilities.bestURL("https://www.stsoftware.com.au", false);
+        url = HTMLUtilities.bestURL("https://stSoftware.com.au", false);
 
         assertEquals("Already SSL no need to change", "https", url.getProtocol());
     }
@@ -128,17 +193,17 @@ public class TestHTMLUtilities extends TestCase
     
     private void checkHTTP() throws Exception
     {
-        URL url = HTMLUtilities.bestURL("http://www.stsoftware.com.au/site/ST?X=Y", false);
+        URL url = HTMLUtilities.bestURL("http://stSoftware.com.au/site/ST?X=Y", false);
 
         assertEquals("Don't upgrade if not asked", "http", url.getProtocol());
 
-        assertEquals("Don't change", "http://www.stsoftware.com.au/site/ST?X=Y", url.toString());
+        assertEquals("Don't change", "http://stSoftware.com.au/site/ST?X=Y", url.toString());
 
-        url = HTMLUtilities.bestURL("http://www.stsoftware.com.au:80/site/ST?X=Y", false);
+        url = HTMLUtilities.bestURL("http://stSoftware.com.au:80/site/ST?X=Y", false);
 
         assertEquals("Don't upgrade if not asked", "http", url.getProtocol());
 
-        assertEquals("Don't change", "http://www.stsoftware.com.au/site/ST?X=Y", url.toString());
+        assertEquals("Don't change", "http://stSoftware.com.au/site/ST?X=Y", url.toString());
         
         url = HTMLUtilities.bestURL("http://60.241.239.222:8080", true);
 

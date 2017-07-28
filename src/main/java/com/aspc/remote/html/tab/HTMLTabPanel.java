@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -275,7 +275,7 @@ public class HTMLTabPanel extends HTMLComponent
                 href=baseUrl;
             }
 
-            href = StringUtilities.replace(href, "%MENU%", ti.getCode());
+            href = href.replace( "%MENU%", ti.getCode());
 
             if( !href.contains("javascript:"))
             {
@@ -386,8 +386,9 @@ public class HTMLTabPanel extends HTMLComponent
 
             parentPage.addJavaScript(
                 "$(function() {\n" +
-                "    $('#slider').tabs();\n" +
-                "    $('#slider').tabs('paging');\n" +
+                "var s=$('#slider');\n"+
+                "if(s && s.tabs){\n  s.tabs();\n" +
+                "  s.tabs('paging');\n}\n" +
                 "});"
             );
         }

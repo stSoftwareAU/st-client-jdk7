@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -156,12 +156,12 @@ public class HTMLPanel extends HTMLContainer
         Date now = new Date();
         String dirName = CProperties.getProperty("LOG_DIR") + "/pages/" + TimeUtil.format("yyyy/MMM/dd/HH/mm", now, TimeZone.getDefault());
         FileUtil.mkdirs(dirName);
-        String tmpTitle = StringUtilities.replace(title, " ", "_");
-        tmpTitle = StringUtilities.replace(tmpTitle, ":", "_");
+        String tmpTitle = title.replace( " ", "_");
+        tmpTitle = tmpTitle.replace( ":", "_");
         tmpTitle = StringUtilities.encode(tmpTitle);
         while( tmpTitle.contains("__"))
         {
-            tmpTitle = StringUtilities.replace(tmpTitle, "__", "_");
+            tmpTitle = tmpTitle.replace( "__", "_");
         }
 
         if( StringUtilities.isBlank(tmpTitle) || tmpTitle.length() < 3)

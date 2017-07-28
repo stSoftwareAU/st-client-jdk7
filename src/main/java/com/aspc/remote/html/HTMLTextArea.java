@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -58,13 +58,15 @@ public class HTMLTextArea extends HTMLFormComponent implements HTMLReadOnlyToggl
      * @param cols
      */
     public HTMLTextArea(
-        String name,
-        int rows,
-        int cols
+        final String name,
+        final int rows,
+        final int cols
     )
     {
         iSetName(name);
+        assert rows>0;
         this.rows = rows;
+        assert cols>0;
         this.cols = cols;
         appendClassName(STYLE_STS_FIELD);
     }
@@ -212,9 +214,12 @@ public class HTMLTextArea extends HTMLFormComponent implements HTMLReadOnlyToggl
             if(temp.length()>1)
             {
                 char c = temp.charAt(0);
-                if( Character.isWhitespace(c))
+                if( 
+                    Character.isWhitespace(c) 
+                    && c!=13 // issue: this causes "A numeric character reference expanded to carriage return" html validation error
+                )
                 {
-                    temp = "&#" +(int)c + ";" + temp.substring(1);
+                    temp = "&#" +(int)c + ";" + temp.substring(1); 
                 }
             }
 

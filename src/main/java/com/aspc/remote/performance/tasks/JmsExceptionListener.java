@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2000-2006 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *

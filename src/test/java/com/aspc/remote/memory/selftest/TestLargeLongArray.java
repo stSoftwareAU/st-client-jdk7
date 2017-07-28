@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2000-2004 ASP Converters pty ltd
  *
- *  www.aspconverters.com.au
+ *  www.stSoftware.com.au
  *
  *  All Rights Reserved.
  *
@@ -51,7 +51,7 @@ public class TestLargeLongArray extends TestCase
     {
         //parseArgs( args);
         Test test=suite();
-//        test=TestSuite.createTest(TestLargeLongArray.class, "testRemoveReAllocate");
+//        test=TestSuite.createTest(TestLargeLongArray.class, "testSortSegment");
         TestRunner.run(test);
     }
 
@@ -65,7 +65,91 @@ public class TestLargeLongArray extends TestCase
         TestSuite suite = new TestSuite(TestLargeLongArray.class);
         return suite;
     }
+    private int randomInt( final int min, final int max)
+    {
+        if( min >= max ) throw new IllegalArgumentException("the minimum value (" + min +") must be less than the max value (" + max + ")");
+        int range=(max + 1)-min;
+        
+        int randomDelta=(int)( range * Math.random());
+        randomDelta=Math.abs(randomDelta);
+        int value=min + randomDelta;
+        
+        assert value >= min: "the calculated random number "+ value +" is less than the minimum " + min;
+        assert value <= max: "the calculated random number "+ value +" is greater than the maximum " + max;
+        
+        return value;
+    }
+    
+    public void testValidateZeroAndExpectedCapacity()
+    {
+        int vars[][]={
+            {
+                123,
+                0
+            },
+            {
+                123,
+                0
+            },
+            {
+                1234,
+                1234
+            },
+            {
+                2049,
+                123
+            },
+            {
+                randomInt(1, 4096),
+                randomInt(1, 4096)
+            }
+        };
+        
+        for( int flags=0;flags<=0b00111111;flags++)
+        {
+            for( int var[]: vars)
+            {
+                LargeLongArray.Builder b = LargeLongArray
+                    .factory()
+                    .setExpectedCapacity(var[0])
+                    .assertNonZero(   (flags&0b00000001)!=0)
+                    .setOutputShared( (flags&0b00000010)!=0)
+                    .setInputShared(  (flags&0b00000100)!=0)
+                    .validateUnique(  (flags&0b00001000)!=0)
+                    .assertUnique(    (flags&0b00010000)!=0)
+                    .validateNonZero( (flags&0b00100000)!=0);
+                
+                LargeLongArray lla = b.build();
+                HashSet<Long> unique=new HashSet();
 
+                for( int pos=0;pos< var[1];pos++)
+                {
+                    int key=randomInt(Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    if( key == 0) continue;
+                    if( unique.add((long)key))
+                    {
+                        lla.append(key);
+                    }
+                }
+
+                long last=Long.MIN_VALUE;
+                long data[][]=lla.sort();
+                for( long[] values: data)
+                {
+                    for( long value: values)
+                    {
+                        boolean found=unique.remove(value);
+                        assertTrue( b + " remove: " + value, found);
+                        
+                        assertTrue( last +"->" + value, value>last);
+                        last=value;
+                    }
+                }
+
+                assertTrue( b + " should be now empty", unique.isEmpty());
+            }
+        }
+    }
     public void testReplaceValidate()
     {
         LargeLongArray lla = LargeLongArray.factory().validateUnique(true).build();
@@ -146,7 +230,7 @@ public class TestLargeLongArray extends TestCase
 //            fail( "should not have created as many arrays: " + counter);
 //        }        
     }
-    
+
     public void testCapacityMin()
     {
         LargeLongArray.Builder factory = LargeLongArray.factory();
@@ -827,6 +911,105 @@ public class TestLargeLongArray extends TestCase
         }
         
         assertEquals("Expected count", 10000, counter);
+    }
+    
+    private void swap( final int pos, long a[], long b[])
+    {
+        long tmp = a[pos];
+        a[pos]=b[pos];
+        b[pos]=tmp;
+    }
+    
+    public void testSortSegment()
+    {
+        StopWatch sw=new StopWatch();
+
+        long max=0;
+        for( int attempts=0;attempts<30;attempts++)
+        {
+            long seg1[]=new long[10000];
+            long seg2[]=new long[seg1.length];
+            long seg3[]=new long[seg1.length];
+            for( int pos=0;pos<seg1.length;pos++)
+            {
+                seg1[pos] = pos + 1;
+                seg2[pos] = seg1.length + pos + 1;
+                max=seg1.length + seg2.length + pos + 1;
+                seg3[pos] = max;
+            }
+            
+            for( int pos=0;pos<seg1.length;pos++)
+            {
+                int rand=(int)(Math.random()*10);
+                switch( rand)
+                {
+                    case 0:
+                        swap( pos, seg1, seg2);
+                        break;
+                    case 1:
+                        swap( pos, seg2, seg3);
+                        break;
+                    case 2:
+                        swap( pos, seg1, seg3);
+                        break;
+                    case 3:
+                        swap( pos, seg1, seg3);
+                        swap( pos, seg2, seg1);
+                        break;
+                }
+            }
+            long data[][]={
+                seg1,
+                seg2,
+                seg3
+            };
+
+            int rand=(int)(Math.random()*10);
+
+            LargeLongArray lla = LargeLongArray
+                    .factory(data)
+                    .setSegmentSize(rand < 7 ? seg1.length: rand==8?3333:12345)
+                    .assertNonZero(true)
+                    .assertUnique(true)
+                    .setOutputShared(rand %2==0)
+                    .setInputShared(rand %3==0)
+                    .build();
+            
+            switch( rand)
+            {
+                case 0:
+                    lla.append(++max);
+                    break;
+                case 1:
+                    lla.append(++max);                   
+                    lla.append(++max);                   
+                    break;
+                case 7:
+                    lla.remove(max--);
+                    break;
+            }
+            sw.start();
+
+            long sortedData[][]=lla.sort();
+            sw.stop();
+
+            long last=0; 
+            for( long rows[]:sortedData)
+            {
+                for( long row: rows)
+                {
+                    if( row<=last)
+                    {
+                        fail( row +"<=" + last);
+                    }
+                    last++;
+                }
+            }
+            
+            assertEquals( "Last == MAX", max, last);
+        }
+
+        LOGGER.info( sw.summary("sorting of segments"));
     }
     
     @SuppressWarnings("ResultOfMethodCallIgnored")

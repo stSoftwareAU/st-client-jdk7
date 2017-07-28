@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -45,6 +45,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  *  LinkConnection
@@ -100,6 +101,7 @@ public class LinkConnection
      *
      * @return the type
      */
+    @Nonnull @CheckReturnValue
     public LinkType getType()
     {
         return type;
@@ -109,6 +111,7 @@ public class LinkConnection
      * the number of times this connection has been checked out. 
      * @return the count.
      */
+    @CheckReturnValue
     public long getCheckOutCount()
     {
         return checkedOutCounter;
@@ -119,6 +122,7 @@ public class LinkConnection
      *
      * @return date of check out
      */
+    @Nullable @CheckReturnValue
     public Date getCheckedOutDate()
     {
         long tmpTime=checkedOutTime;
@@ -180,6 +184,7 @@ public class LinkConnection
      *
      * @return true if checked out
      */
+    @CheckReturnValue
     public boolean isCheckedOut()
     {
         return checkedOutTime != 0;
@@ -217,8 +222,10 @@ public class LinkConnection
      *
      * @return the ID
      */
+    @Nonnull @CheckReturnValue
     public String getId()
     {
+        assert id!=null;
         return id;
     }
 
@@ -227,8 +234,10 @@ public class LinkConnection
      *
      * @return the client object
      */
+    @Nonnull @CheckReturnValue
     public Object getClient()
     {
+        assert client!=null;
         return client;
     }
 
@@ -237,7 +246,7 @@ public class LinkConnection
      *
      * @return the description
      */
-    @Override
+    @Override @Nonnull @CheckReturnValue
     public String toString()
     {
         return "LinkConnection{" + "client=" + client + ", markedAsClosed=" + markedAsClosed + ", type=" + type + '}';
@@ -248,6 +257,7 @@ public class LinkConnection
      *
      * @return TRUE if closed
      */
+    @CheckReturnValue
     public boolean isClosed() {
         return markedAsClosed;
     }
@@ -319,7 +329,7 @@ public class LinkConnection
         }
         catch( Exception e)
         {
-            LOGGER.error( "Line test of '" + client + "' failed", e);
+            LOGGER.warn( "Line test of '" + client + "' failed", e);
             throw e;
         }
         finally{
@@ -347,6 +357,15 @@ public class LinkConnection
             if( now - lastAccess > maxIdle * 1000)//MT WARN: Unsynchronized
             {
                 throw new TimeoutException("Max idle");
+            }
+        }
+        
+        if( client instanceof Connection)
+        {
+            Connection connection=(Connection)client;
+            if( connection.isValid(30)==false)
+            {
+                throw new SQLException("connection no longer valid");
             }
         }
     }

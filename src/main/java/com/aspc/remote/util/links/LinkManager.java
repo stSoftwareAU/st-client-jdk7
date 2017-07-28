@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -60,7 +61,7 @@ import org.apache.commons.logging.Log;
  */
 public final class LinkManager
 {
-    private static boolean shuttingDown=false;
+    private static final AtomicBoolean SHUTTING_DOWN=new AtomicBoolean(false);
     private static final long MAX_CHECK_TIME = 10L * 60L * 1000L;
 
     /**
@@ -475,16 +476,26 @@ public final class LinkManager
     @CheckReturnValue
     public static boolean isRunning()
     {
-        if( shuttingDown || thread == null || thread.isAlive() == false)
+        return isRunning(LAST_CHECKED.get());
+    }
+
+        /**
+     * Returns true if Link Manager thread is running
+     * @return the value
+     */
+    @CheckReturnValue
+    private static boolean isRunning(final long lastChecked)
+    {
+        if( SHUTTING_DOWN.get() || thread == null || thread.getState()== Thread.State.TERMINATED)
         {
             return false;
         }
 
         long now=System.currentTimeMillis();
         
-        return now - LAST_CHECKED.get() <= MAX_CHECK_TIME;
+        return now - lastChecked <= MAX_CHECK_TIME;
     }
-
+    
     /**
     * Check if Link Manager is running.
     */
@@ -502,42 +513,48 @@ public final class LinkManager
     */
     private static synchronized void startUp()
     {
-        // Check again it may have been
-        // restarted since our first check.
-        if( shuttingDown== false && isRunning() == false)
+        if( SHUTTING_DOWN.get()==false)
         {
-            
-            if( thread != null)
+            long lastChecked = LAST_CHECKED.get();
+            // Check again it may have been
+            // restarted since our first check.
+            if( isRunning(lastChecked) == false)
             {
-                LOGGER.fatal(
-                    "LinkManager restarted - loop test has taken " +
-                    TimeUtil.getDiff(LAST_CHECKED.get())
-                );
+                if( SHUTTING_DOWN.get()==false) // double check as shutdown isn't sync'd
+                {
+                    if( thread != null)
+                    {
+                        LOGGER.fatal(
+                            "LinkManager restarted - loop test has taken " +
+                            TimeUtil.getDiff(lastChecked)
+                        );
 
-                thread.setName("DEAD - LinkManager");
-                thread.interrupt();
+                        thread.setName("DEAD - LinkManager");
+                        thread.interrupt();
 
-                StringBuilder buffer = new StringBuilder();
+                        StringBuilder buffer = new StringBuilder();
 
-                CLogger.requestDump( buffer);
-                LOGGER.fatal(buffer);
+                        CLogger.requestDump( buffer);
+                        LOGGER.fatal(buffer);
+                    }
+                    LinkManager lm=new LinkManager();
+                    LinkManagerRunner lmr=new LinkManagerRunner(lm);
+                    LinkManagerShutdownListener lmsl=new LinkManagerShutdownListener();
+                    Shutdown.addListener(lmsl);
+                    Thread tmpThread = new Thread(
+                        lmr,
+                        "LinkManager"
+                    );
+
+                    tmpThread.setDaemon(  true);
+                    tmpThread.setPriority(Thread.MIN_PRIORITY);
+                    LAST_CHECKED.set(System.currentTimeMillis());
+
+                    tmpThread.start();
+
+                    thread=tmpThread;
+                }
             }
-            LinkManager lm=new LinkManager();
-            LinkManagerRunner lmr=new LinkManagerRunner(lm);
-            LinkManagerShutdownListener lmsl=new LinkManagerShutdownListener();
-            Shutdown.addListener(lmsl);
-            Thread tmpThread = new Thread(
-                lmr,
-                "LinkManager"
-            );
-
-            tmpThread.setDaemon(  true);
-            tmpThread.setPriority(Thread.MIN_PRIORITY);
-            LAST_CHECKED.set(System.currentTimeMillis());
-
-            tmpThread.start();
-            
-            thread=tmpThread;
         }
     }
 
@@ -550,7 +567,7 @@ public final class LinkManager
 
         for (String key : TYPES.keySet()) 
         {
-            if( shuttingDown) break;
+            if( SHUTTING_DOWN.get()) break;
             LinkType lt;
             lt = TYPES.get(key);
             
@@ -569,7 +586,7 @@ public final class LinkManager
 
     public static void shutdown()
     {
-        shuttingDown=true;
+        SHUTTING_DOWN.set(true);
         thread=null;
         
         ForkJoinPool pool=new ForkJoinPool();

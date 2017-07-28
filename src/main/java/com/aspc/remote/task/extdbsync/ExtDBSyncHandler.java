@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2006  stSoftware Pty Ltd
  *
- *  www.stsoftware.com.au
+ *  stSoftware.com.au
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -389,10 +389,10 @@ public class ExtDBSyncHandler implements TaskHandler
         {
             if (db.hasSQLEscape())
             {
-                value = StringUtilities.replace(value, "\\", "\\\\");
+                value = value.replace( "\\", "\\\\");
             }
 
-            value = StringUtilities.replace(value, "'", "''");
+            value = value.replace( "'", "''");
 
             value = "'" + value + "'";
         }
@@ -576,7 +576,7 @@ public class ExtDBSyncHandler implements TaskHandler
      */
     protected DataBase getDataBase( final String name)
     {
-        DataBase db = (DataBase)databases.get( name);
+        DataBase db = databases.get( name);
         return db;
     }
 
@@ -675,7 +675,7 @@ public class ExtDBSyncHandler implements TaskHandler
         String srcClassKey = srcClassName.toLowerCase();
 
         // Add new table def to a list of table defs for source name
-        ArrayList t = (ArrayList)classHandlerMap.get( srcClassKey);
+        ArrayList t = classHandlerMap.get( srcClassKey);
         if( t == null)
         {
             t = new ArrayList();
@@ -714,7 +714,7 @@ public class ExtDBSyncHandler implements TaskHandler
         String srcClassKey=srcClassName.toLowerCase();
         ArrayList<ExtDBSyncTableDef> tmpList = new ArrayList<>();
 
-        ArrayList t = (ArrayList)classHandlerMap.get( srcClassKey);
+        ArrayList t = classHandlerMap.get( srcClassKey);
         if( t != null)
         {
             tmpList.addAll(t);
