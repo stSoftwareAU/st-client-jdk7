@@ -135,8 +135,7 @@ public class RestCallHTTP extends RestCall
                 c.setRequestProperty("Accept-Encoding", "gzip");
             }
             out=new FileOutputStream(tmpFile);
-           
-            int status=c.getResponseCode();
+
             in=c.getErrorStream();
             if( in == null)
             {
@@ -193,7 +192,20 @@ public class RestCallHTTP extends RestCall
             if( propertiesFile.exists())
             {
                 p.load(new StringReader(( FileUtil.readFile(propertiesFile))));
+            }            
+            
+            int statusCode=c.getResponseCode();
+            Status status=Status.find(statusCode);
+            String redirection=null;
+            switch( status)
+            {
+                case C301_REDIRECT_MOVED_PERMANENTLY:
+                case C302_REDIRECT_FOUND:
+                case C303_REDIRECT_SEE_OTHER:
+                    redirection=c.getHeaderField(HEADER_LOCATION);
+                    p.setProperty(HEADER_LOCATION, redirection);
             }
+                        
             String cacheControl=c.getHeaderField(RestTransport.CACHE_CONTROL);
             if( StringUtilities.notBlank(cacheControl))
             {
@@ -211,7 +223,7 @@ public class RestCallHTTP extends RestCall
             
             p.setProperty( RestTransport.MIME_TYPE, mimeType);
             
-            p.setProperty( RestTransport.STATUS, Integer.toString(status));
+            p.setProperty( RestTransport.STATUS, Integer.toString(statusCode));
 
             p.setProperty( RestTransport.CHECKSUM, tmpCS);
             long lastModified= c.getHeaderFieldDate("Last-Modified", 0);
@@ -228,7 +240,7 @@ public class RestCallHTTP extends RestCall
             cacheFile.setReadOnly();
             FileUtil.replaceTargetWithTempFile(tmpPropertiesFile, propertiesFile);
             
-            return Response.builder(Status.find(status),mimeType, cacheFile).setTrace(trace).make();
+            return Response.builder(status,mimeType, cacheFile).setRedirection(redirection).setTrace(trace).make();
         }
         catch( Exception e)
         {
@@ -417,7 +429,7 @@ public class RestCallHTTP extends RestCall
             
             ByteArrayOutputStream out=new ByteArrayOutputStream(); 
            
-            int status=c.getResponseCode();
+            int statusCode=c.getResponseCode();
             in=c.getErrorStream();
             if( in == null)
             {
@@ -449,8 +461,17 @@ public class RestCallHTTP extends RestCall
                 trace=Trace.FETCHED_UNCOMPRESSED;
                 data=new String( out.toByteArray(), StandardCharsets.UTF_8 );
             }
-            
-            return Response.builder(Status.find(status),mimeType, data).setTrace(trace).make();
+            String redirection=null;
+            Status status = Status.find(statusCode);
+            switch( status)
+            {
+                case C301_REDIRECT_MOVED_PERMANENTLY:
+                case C302_REDIRECT_FOUND:
+                case C303_REDIRECT_SEE_OTHER:
+                    redirection=c.getHeaderField(HEADER_LOCATION);
+            }
+            return Response.builder(status,mimeType, data).setRedirection(redirection).setTrace(trace).make();
+            //return Response.builder(Status.find(status),mimeType, data).setTrace(trace).make();
 //            return new Response(data, trace, mimeType, Status.find(status));
         }
         catch( Exception e)
