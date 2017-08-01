@@ -136,6 +136,7 @@ public class RestCallHTTP extends RestCall
             }
             out=new FileOutputStream(tmpFile);
 
+            int statusCode=c.getResponseCode();
             in=c.getErrorStream();
             if( in == null)
             {
@@ -194,7 +195,6 @@ public class RestCallHTTP extends RestCall
                 p.load(new StringReader(( FileUtil.readFile(propertiesFile))));
             }            
             
-            int statusCode=c.getResponseCode();
             Status status=Status.find(statusCode);
             String redirection=null;
             switch( status)
