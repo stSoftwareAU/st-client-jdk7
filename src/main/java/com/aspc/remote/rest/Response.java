@@ -65,7 +65,6 @@ public final class Response
 {
     private final File file;
     private final String data;
-    public final @Nullable String redirection;
     public final Trace trace;
     public final String mimeType;
     public final String cacheControl;
@@ -101,14 +100,8 @@ public final class Response
         private final String mimeType;
         private String cacheControl="no-cache";
         private final Status status;
-        private String redirection;
         
-        private Builder( 
-            final @Nonnull Status status, 
-            final @Nonnull String mimeType,
-            final @Nonnull File file,
-            final @Nullable String data
-        )
+        private Builder( final @Nonnull Status status, final @Nonnull String mimeType, final @Nonnull File file, final @Nullable String data)
         {
             if( status==null) throw new IllegalArgumentException("status is mandatory");
 //            if( file, final @Nullable String data==null) throw new IllegalArgumentException("file is mandatory");
@@ -132,12 +125,6 @@ public final class Response
             
             return this;
         }
-
-        public @Nonnull Builder setRedirection( final @Nullable String redirection)
-        {
-            this.redirection=redirection;
-            return this;
-        }
         
         /**
          * Set the cache control for this call.
@@ -159,7 +146,7 @@ public final class Response
         
         public @Nonnull Response make() throws IllegalArgumentException
         {            
-            return new Response( file, data, trace, mimeType, status, cacheControl,redirection);
+            return new Response( file, data, trace, mimeType, status, cacheControl);
         }
     }
 
@@ -169,8 +156,7 @@ public final class Response
         final @Nonnull Trace trace, 
         final @Nonnull String mimetype, 
         final @Nonnull Status status,
-        final @Nonnull String cacheControl,
-        final @Nullable String redirection
+        final @Nonnull String cacheControl
     )
     {
         this.data=data;
@@ -194,7 +180,6 @@ public final class Response
         if( cacheControl==null) throw new IllegalArgumentException("cacheControl is mandatory");
         
         this.cacheControl=cacheControl;
-        this.redirection=redirection;
         
     }
     
@@ -333,14 +318,6 @@ public final class Response
     @Nonnull
     public String checkStatus() throws FileNotFoundException, ReSTException
     {
-//        switch( status)
-//        {
-//            case C301_REDIRECT_MOVED_PERMANENTLY:
-//            case C302_REDIRECT_FOUND:
-//            case C303_REDIRECT_SEE_OTHER:
-//                throw new RedirectionRestException( status, redirection);
-//        }
-
         try{
             return status.check();
         }

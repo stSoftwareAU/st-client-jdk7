@@ -21,8 +21,6 @@ import javax.annotation.Nullable;
  */
 public abstract class RestCall implements Callable<Response>
 {
-    public static final String HEADER_LOCATION = "Location";
-        
     public ReSTTask fjt;
 
     protected final File propertiesFile;
