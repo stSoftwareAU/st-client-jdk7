@@ -321,7 +321,7 @@ public final class MemoryManager
     /**
      * The minimum tenured percentage
      */
-    private static int tenuredMinPercent;
+    private static int tenuredMinPercent=50;
 
     private static long tenuredMemorySize = -1;//MT CHECKED
 
@@ -758,6 +758,7 @@ public final class MemoryManager
             }
         }
 
+        assert tenuredMinPercent>=5 && tenuredMinPercent<=95: "Tenured percentage out of range 5..95 was: " + tenuredMinPercent;
         LOGGER.info("MemoryManager." + TENURED_PERCENT + "= " + tenuredMinPercent + "%");
     }
 
@@ -909,9 +910,12 @@ public final class MemoryManager
     public static long getTotalMemory()
     {
         MemoryUsage heapMemoryUsage = getHeapMemoryUsage();
-        return getTotalMemory(heapMemoryUsage);
+        long max= getTotalMemory(heapMemoryUsage);
+        assert max>0:"max must be positive: " + max;
+        return max;
     }
     
+    @CheckReturnValue @Nonnegative
     private static long getTotalMemory(final MemoryUsage heapMemoryUsage)
     {
         if( maxDefined)
@@ -1041,6 +1045,7 @@ public final class MemoryManager
         return getTenuredFreePercent( usage);
     }
 
+    @CheckReturnValue @Nonnegative
     private static float getTenuredFreePercent( final @Nonnull MemoryUsage usage)
     {
         assert usage!=null;
@@ -1089,19 +1094,14 @@ public final class MemoryManager
         return getFreeMemory(heapMemoryUsage);
     }
     
+    @CheckReturnValue @Nonnegative
     private static long getFreeMemory(final @Nonnull MemoryUsage heapMemoryUsage)
     {        
         long max = heapMemoryUsage.getMax();
         long used = heapMemoryUsage.getUsed();
-
-//        long padding = getPaddingMemory();
-//        if( padding > used)
-//        {
-//            padding=0;
-//        }
         
         long free=max-used;
-//        free = max - (used - padding);
+
         assert free<=max:"free (" + free + ") more than max (" + max + ")";
         if( free > max) free = max;
         
@@ -1355,6 +1355,7 @@ public final class MemoryManager
         
         return usage;
     }
+    
     @CheckReturnValue @Nonnegative
     private static long getUsed(final @Nonnull MemoryUsage usage)
     {
@@ -1477,6 +1478,11 @@ public final class MemoryManager
         }
     }
     
+    /** 
+     * Record the an issue which has occurred by an background process. 
+     * @param msg the message
+     * @param cause the cause.
+     */
     public static void lastError( final String msg, final Throwable cause)
     {
         lastIssue=new Issue( msg, cause);
@@ -1491,7 +1497,7 @@ public final class MemoryManager
      */
     @SuppressWarnings("null")
     @CheckReturnValue @Nonnegative
-    public static long estimateLevel( final Cost cost) throws InterruptedException
+    public static long estimateLevel( final @Nonnull Cost cost) throws InterruptedException
     {
         long estimate=0;
         MemoryHandler list[]=listHandlers(cost);
@@ -1515,7 +1521,7 @@ public final class MemoryManager
     /**
      * Call the listeners
      */
-    private static void callListeners( final Cost cost)
+    private static void callListeners( final @Nonnull Cost cost)
     {
         totalClearedCount++;
 
@@ -1853,7 +1859,9 @@ public final class MemoryManager
             {
                 if( tempSize > getTotalMemory())
                 {
-                    setMaxMemory( tempSize/tenuredMinPercent * 100);
+                    assert tenuredMinPercent>=5 && tenuredMinPercent<=95: "Tenured percentage out of range 5..95 was: " + tenuredMinPercent;
+
+                    setMaxMemory( tempSize/(long)tenuredMinPercent * 100L);
                 }
             }
 
@@ -1883,6 +1891,8 @@ public final class MemoryManager
     @CheckReturnValue @Nonnegative
     public static long calculatedTenuredThreshold()
     {
+        assert tenuredMinPercent>=5 && tenuredMinPercent<=95: "Tenured percentage out of range 5..95 was: " + tenuredMinPercent;
+
         long percent = tenuredMinPercent;
         
         long tempMax;
@@ -1929,7 +1939,9 @@ public final class MemoryManager
         
         long max = getTotalMemory();
 
-        long tenuredMinSize = max/100L * tenuredMinPercent;
+        assert tenuredMinPercent>=5 && tenuredMinPercent<=95: "Tenured percentage out of range 5..95 was: " + tenuredMinPercent;
+
+        long tenuredMinSize = max/100L * (long)tenuredMinPercent;
         assert  tenuredMinSize > 0;
         if( tenuredMinSize > tenuredCommitted || tenuredCommitted <= 0)
         {
@@ -2322,6 +2334,7 @@ public final class MemoryManager
 
             if( call)
             {
+                assert maxLevel!=null;
                 callListeners( maxLevel);
 
                 long diff = sw.durationMS();
@@ -2469,7 +2482,7 @@ public final class MemoryManager
     }
 
     @CheckReturnValue @Nonnull
-    private static MemoryHandler[] listHandlers( final Cost cost) throws InterruptedException
+    private static MemoryHandler[] listHandlers( final @Nonnull Cost cost) throws InterruptedException
     {
         //assert cost >=0 && cost < LEVELS.length: "Invalid level: " + cost;
         WeakHashMap<MemoryHandler, String> map = LEVELS[ cost.level];
@@ -2623,7 +2636,6 @@ public final class MemoryManager
 
     /**
      * 1/2 meg to do some work
-//     * @return the rainy day fund
      */
     @Nullable
     public static void makeRainyDay()
@@ -2641,10 +2653,7 @@ public final class MemoryManager
                 }
             }
         }
-
-//        return temp;
     }
-
 
     /**
      * The panic count

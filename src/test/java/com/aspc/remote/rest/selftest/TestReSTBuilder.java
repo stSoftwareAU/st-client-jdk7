@@ -240,7 +240,7 @@ public class TestReSTBuilder extends TestCase
     
     public void testDemo2() throws Exception
     {
-        String address="https://demo2.jobtrack.com.au/ReST/v3/class/DBFolder?fields=name&q=" + StringUtilities.encode("name='web'");
+        String address="https://demo2.jobtrack.com.au/ReST/v8/class/DBFolder?fields=name&q=" + StringUtilities.encode("name='web'");
         
         URL url =new URL(address);
         
@@ -258,7 +258,7 @@ public class TestReSTBuilder extends TestCase
     }
     public void testLogin() throws Exception
     {
-        String url="https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder?fields=name&q=" + StringUtilities.encode("name='modules'");
+        String url="https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder?fields=name&q=" + StringUtilities.encode("name='modules'");
 
         ReST.Builder call = ReST.builder( url).setAuthorization("admin", "admin");
         
@@ -291,7 +291,7 @@ public class TestReSTBuilder extends TestCase
     @SuppressWarnings("UseSpecificCatch")
     public void testMixedMethod() throws Exception
     {
-        String url = "https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder?_method=GET";
+        String url = "https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder?_method=GET";
         ReST.Builder call = ReST.builder( url).setAuthorization("admin", "admin");
         try
         {
@@ -306,9 +306,9 @@ public class TestReSTBuilder extends TestCase
     
     public void testGZip() throws Exception 
     {
-        String url = "https://demo1.jobtrack.com.au/ReST/v3/class/Country";
+        String url = "https://demo1.jobtrack.com.au/ReST/v8/class/Country";
         ReST.Builder b = ReST.builder( url);
-        
+        b.setMinCachePeriod("30 min");
         String text=b.getContentAsString();
         LOGGER.info( text);
         JSONObject json=new JSONObject(text);
@@ -319,7 +319,7 @@ public class TestReSTBuilder extends TestCase
     }
     public void testGZipXML() throws Exception 
     {
-        String url = "https://demo1.jobtrack.com.au/ReST/v4/class/Country";
+        String url = "https://demo1.jobtrack.com.au/ReST/v8/class/Country";
         ReST.Builder b = ReST.builder( url);
         b.addParameter("_accept", "xml");
         String text=b.getContentAsString();
@@ -335,7 +335,7 @@ public class TestReSTBuilder extends TestCase
     public void testGETBody() throws Exception
     {
         File file = File.createTempFile("test", "test",FileUtil.makeQuarantineDirectory());
-        String url = "https://demo1.jobtrack.com.au/ReST/v4/class/DBFolder?_method=GET";
+        String url = "https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder?_method=GET";
         ReST.Builder call = ReST.builder( url).setAuthorization("admin", "admin");
         try
         {
@@ -347,7 +347,7 @@ public class TestReSTBuilder extends TestCase
             //expected
         }
         
-        url = "https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder?_method=POST";
+        url = "https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder?_method=POST";
         call = ReST.builder( url).setAuthorization("admin", "admin");
         try
         {
@@ -358,7 +358,7 @@ public class TestReSTBuilder extends TestCase
             fail("should pass here");
         }
         
-        url = "https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder";
+        url = "https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder";
         call = ReST.builder( url).setAuthorization("admin", "admin");
         call.setMethod(Method.GET);
         try
@@ -371,7 +371,7 @@ public class TestReSTBuilder extends TestCase
             //expected
         }
 
-        url = "https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder";
+        url = "https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder";
         call = ReST.builder( url).setAuthorization("admin", "admin");
         call.setMethod(Method.POST);
         try
@@ -383,7 +383,7 @@ public class TestReSTBuilder extends TestCase
             fail("should pass here");
         }
         
-        url = "https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder";
+        url = "https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder";
         call = ReST.builder( url).setAuthorization("admin", "admin");
         call.setBody(file);
         try
@@ -396,7 +396,7 @@ public class TestReSTBuilder extends TestCase
             //expected
         }
 
-        url = "https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder";
+        url = "https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder";
         call = ReST.builder( url).setAuthorization("admin", "admin");
         call.setBody(file);
         try
@@ -411,7 +411,7 @@ public class TestReSTBuilder extends TestCase
 
     public void testWrongPassword() throws Exception
     {
-        String url="https://demo1.jobtrack.com.au/ReST/v3/class/DBFolder?fields=name&q=" + StringUtilities.encode("name='modules'");
+        String url="https://demo1.jobtrack.com.au/ReST/v8/class/DBFolder?fields=name&q=" + StringUtilities.encode("name='modules'");
 
         ReST.Builder call = ReST.builder( url).setAuthorization("admin", "admin");
 

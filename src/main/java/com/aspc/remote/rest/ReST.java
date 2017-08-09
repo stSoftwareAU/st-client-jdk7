@@ -1158,6 +1158,13 @@ public final class ReST
                             }
                         }
                         Response.Builder rb = Response.builder(status,mimetype, file).setTrace( Trace.CACHED);
+                        switch( status)
+                        {
+                            case C301_REDIRECT_MOVED_PERMANENTLY:
+                            case C302_REDIRECT_FOUND:
+                            case C303_REDIRECT_SEE_OTHER:
+                                rb.setRedirection(p.getProperty(RestCall.HEADER_LOCATION));
+                        }
                         if( cacheControl!=null)
                         {
                             rb.setCacheControl(cacheControl);
@@ -1269,8 +1276,15 @@ public final class ReST
 
                     if( propertiesFile.exists() && expireTS > nowTime && rr != null )
                     {
-                        rr = Response.builder(rr.status, rr.mimeType, rr.getContentAsFile()).setTrace( Trace.PREFETCH).make();
-
+                        Response.Builder rb = Response.builder(rr.status, rr.mimeType, rr.getContentAsFile()).setTrace( Trace.PREFETCH);
+                        switch( rr.status)
+                        {
+                            case C301_REDIRECT_MOVED_PERMANENTLY:
+                            case C302_REDIRECT_FOUND:
+                            case C303_REDIRECT_SEE_OTHER:
+                                rb.setRedirection(rr.redirection);
+                        }
+                        rr = rb.make();
                         LOGGER.info( "prefetch next version due in " + TimeUtil.getDiff(nowTime, expireTS) + " for " + realURL  );
                     }
                     else
@@ -1307,7 +1321,8 @@ public final class ReST
                             }
                             catch( TimeoutException toe)
                             {
-                                rr=Response.builder(rr.status, rr.mimeType, rr.getContentAsFile()).setTrace(Trace.STALE).make();
+                                rr = Response.builder(rr.status, rr.mimeType, rr.getContentAsFile()).setRedirection(rr.redirection).setTrace( Trace.STALE).make();                                
+
                                 LOGGER.warn( "Old (" + TimeUtil.getDiff(modTS) + ") version used of " + realURL, toe);
                             }
                         }
