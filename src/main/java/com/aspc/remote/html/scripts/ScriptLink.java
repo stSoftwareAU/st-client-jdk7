@@ -163,11 +163,42 @@ public class ScriptLink extends JavaScript
         //escape &, <, >, " and '
         tmpURL = tmpURL.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");
 //        tmpURL = StringUtilities.encodeHTML(tmpURL); //encodeHTML method encode too many characters, it makes url looks hard for human being
-        buffer.append("\n<script ").append(qualifier).append( "src=\"").append(tmpURL).append( "\"></script>");
+        buffer.append("\n<script ").append(qualifier).append( "src=\"").append(tmpURL).append( "\"");
+        
+        /**
+         * add crossorigin="anonymous" property for the script link if the domain support cross domain script request,
+         * so that our st-error could track the details of the javascript error instead of just log a useless "Script error." message
+         */
+        if(knownSupportCORS(tmpURL))
+        {
+            buffer.append(" crossorigin=\"anonymous\"");
+        }
+        buffer.append("></script>");
         
         if( StringUtilities.notBlank(cdnFallBackScript))
         {
             buffer.append("\n<script>\n").append(cdnFallBackScript.trim()).append( "\n</script>");            
         }
     }
+    
+    private boolean knownSupportCORS(final @Nonnull String tmpURL)
+    {
+        for(String domain : DOMAIN_SUPPORT_CORS)
+        {
+            if(tmpURL.contains(domain))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * these domain support cross-domain script
+     */
+    private static final String[] DOMAIN_SUPPORT_CORS = {
+        "//cdnjs.cloudflare.com/",
+        "//maxcdn.bootstrapcdn.com/",
+        "//ajax.googleapis.com/"
+    };
 }
