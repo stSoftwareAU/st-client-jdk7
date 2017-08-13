@@ -40,7 +40,6 @@ import com.aspc.remote.util.misc.CLogger;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -57,12 +56,12 @@ public class TestASpellWrapper  extends TestCase{
 
         ASpellWrapper aSpell = new ASpellWrapper("en");
         List<SpellCheckResult> result = aSpell.checkString("This is eeb test");
-        Assert.assertEquals(1, result.size());
+        assertEquals(1, result.size());
         if (result.size() == 1){
             System.out.println(result);
-            Assert.assertEquals("eeb", result.get(0).getWord());
-            Assert.assertEquals(2, result.get(0).getWordIndex());
-            Assert.assertEquals(8, result.get(0).getStartIndex());
+            assertEquals("eeb", result.get(0).getWord());
+            assertEquals(2, result.get(0).getWordIndex());
+            assertEquals(8, result.get(0).getStartIndex());
         }
     }
 
@@ -103,12 +102,12 @@ public class TestASpellWrapper  extends TestCase{
         ASpellWrapper aSpell = new ASpellWrapper("en");
         List<SpellCheckResult> result = aSpell.checkString(text);
 
-        Assert.assertEquals(1, result.size());
+        assertEquals(1, result.size());
         if (result.size() == 1){
             System.out.println(result);
-            Assert.assertEquals("teleporters", result.get(0).getWord());
-            Assert.assertEquals(75, result.get(0).getWordIndex());
-            Assert.assertEquals(179, result.get(0).getStartIndex());
+            assertEquals("teleporters", result.get(0).getWord());
+            assertEquals(75, result.get(0).getWordIndex());
+            assertEquals(179, result.get(0).getStartIndex());
         }
     }
 
