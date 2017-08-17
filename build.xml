@@ -17,12 +17,12 @@
     
     <target name="-init-libs" depends="-init">   
         <!--<property name="lib.source.dir" value="${lib.cache.dir}"/>-->     
-        <ant antfile="${BASE_DIR}/../../bin/build_ivy.xml" target="-init-jars" >
+        <ant antfile="${BASE_DIR}/build_ivy.xml" target="-init-jars" >
             <property name="lib.dir" value="${lib.dir}"/>
             <property name="lib.cache.dir" value="${lib.cache.dir}"/>
             <property name="ivy-conf" value="tests"/>
             
-            <property name="ivy.dep.file" value="${BASE_DIR}/../../bin/ivy.xml" /> 
+            <property name="ivy.dep.file" value="${BASE_DIR}/ivy.xml" /> 
         </ant>
     </target> 
     
@@ -132,7 +132,6 @@
     </target>
     <target name="maven-test" depends="skipTest" unless="skip.test">
         <ant target="test"></ant>
-        <!--<ant antfile="../../bin/launcher.xml" target="test_email-results"></ant>-->
     </target>
 
 </project>

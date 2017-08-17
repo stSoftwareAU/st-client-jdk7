@@ -36,8 +36,8 @@ package com.aspc.remote.util.misc;
 import com.aspc.remote.database.InvalidDataException;
 //SERVER-START
 import com.aspc.remote.rest.ReST;
-import com.aspc.remote.rest.errors.ReSTException;
 import com.aspc.remote.rest.Response;
+import com.aspc.remote.rest.Status;
 import com.aspc.remote.rest.internal.ReSTUtil;
 //SERVER-END
 import org.apache.commons.logging.Log;
@@ -492,61 +492,79 @@ public final class CUtilities
     {
         return checkWebsiteURL(websiteUrl, "15 Secs", "1 hour");
     }
-    
-    @CheckReturnValue
-    public static boolean checkWebsiteURL(final String websiteUrl, final String maxBlockPeriod, final String errorCachePeriod)
+        //SERVER-START        
+
+    @CheckReturnValue @Nonnull
+    public static Status checkURL(final String websiteUrl, final String maxBlockPeriod, final String errorCachePeriod)
     {
-//SERVER-START        
-        try 
-        {
-            if (StringUtilities.notBlank(websiteUrl))
-            {                
-                if( websiteUrl.toLowerCase().matches("http(s|)://.*\\..*"))
+
+        if (StringUtilities.notBlank(websiteUrl))
+        {                
+            if( websiteUrl.toLowerCase().matches("http(s|)://.*\\..*"))
+            {
+                String tmpURL=websiteUrl;
+                int anchorPos = tmpURL.indexOf("#");
+                if( anchorPos!=-1)
                 {
-                    String tmpURL=websiteUrl;
-                    int anchorPos = tmpURL.indexOf("#");
-                    if( anchorPos!=-1)
-                    {
-                        tmpURL=tmpURL.substring(0, anchorPos);
-                    }
-                    if( ReSTUtil.validateURL(tmpURL))
-                    {
-                        Response rr=ReST
+                    tmpURL=tmpURL.substring(0, anchorPos);
+                }
+                if( ReSTUtil.validateURL(tmpURL))
+                {
+                    Response rr;
+                
+                    try{
+                        rr=ReST
                             .builder(tmpURL)
                             .setErrorCachePeriod(errorCachePeriod)
                             .setMinCachePeriod("3 month")
                             .setAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36")
                             .setMaxBlockPeriod(maxBlockPeriod)
                             .getResponse();
+                    }
+                    catch( InvalidDataException | MalformedURLException e)
+                    {
+                        LOGGER.warn("invalid URL: " + websiteUrl,e);
+                        
+                        return Status.C400_ERROR_BAD_REQUEST;
+                    }
 
-//                        if( rr.status == Status.C403_ERROR_FORBIDDEN)
-//                        {
-//                            LOGGER.info( "Forbidden URL (assuming it's valid): " + websiteUrl );
-//                            return true;
-//                        }
-                        
-                        String status =rr.checkStatus();
-                        
-                        LOGGER.debug( status + " status for website: " + websiteUrl );
-                        return true;
+                    Status status = rr.status;
+
+                    if( status.isError())
+                    {
+                        LOGGER.info( status + ") " + websiteUrl );
                     }
-                    else{
-                        LOGGER.info( "Invalid website: " + websiteUrl );
-                        return false;
-                    }
+
+                    return status;
                 }
-                else
-                {
-                    LOGGER.warn( "not a valid website: " + websiteUrl);
+                else{
+                    LOGGER.info( "Invalid URL: " + websiteUrl );
+                    return Status.C400_ERROR_BAD_REQUEST;
                 }
             }
+            else
+            {
+                LOGGER.warn( "Invalid URL: " + websiteUrl);
+            }
         }
-        catch (FileNotFoundException | MalformedURLException | InvalidDataException | ReSTException e)
+
+        return Status.C400_ERROR_BAD_REQUEST;
+    }
+//SERVER-END        
+
+    
+    @CheckReturnValue
+    public static boolean checkWebsiteURL(final String websiteUrl, final String maxBlockPeriod, final String errorCachePeriod)
+    {
+        //SERVER-START        
+        Status status=checkURL(websiteUrl, maxBlockPeriod, errorCachePeriod);
+        
+        if( status.isError())
         {
-            LOGGER.warn("Check URL " + websiteUrl, e);
+            return false;
         }
 //SERVER-END        
-        return false; 
+        return true;
     }
 
     private static MediaTracker TRACKER;//NOPMD

@@ -184,4 +184,11 @@ public interface NetClient
      * SFTP url
      */
     public static final String PREFIX_SFTP="sftp://";
+    
+    
+    /**
+     * S3 url
+     */
+    public static final String PREFIX_S3="s3://";
+
 }

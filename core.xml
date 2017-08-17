@@ -229,7 +229,8 @@
             
             -XX:+PrintFlagsFinal
         -->
-        <property name="SERVER_ARGS" value="-server ${_assert}${_disable}${_enable}${_headless}${_scroller_version}${_statement_version}${_hash_long_version}${_st_properties}"/>
+        <property name="_mantainablity" value="-XX:-OmitStackTraceInFastThrow "/>
+        <property name="SERVER_ARGS" value="-server ${_assert}${_disable}${_enable}${_headless}${_mantainablity}${_scroller_version}${_statement_version}${_hash_long_version}${_st_properties}"/>
 
         <!--
             Options to trace performance

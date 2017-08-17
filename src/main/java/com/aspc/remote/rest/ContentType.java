@@ -19,6 +19,7 @@ public class ContentType
     public final static ContentType APPLICATION_XML=new ContentType( "application/xml");
     public final static ContentType APPLICATION_JSON=new ContentType( "application/json");
     public final static ContentType APPLICATION_JAVASCRIPT=new ContentType( "application/javascript");
+    public final static ContentType APPLICATION_OCTET_STREAM=new ContentType( "application/octet-stream");
     
     public final String mimeType;
 

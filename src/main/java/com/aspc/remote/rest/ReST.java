@@ -149,7 +149,9 @@ public final class ReST
         private boolean disableURLLengthCheck = false;
         private boolean enableValidateCharactersInURL;
         private boolean disableGZIP = false;
-
+        private ContentType contentType;
+        private DispositionType dispositionType;
+        
         private ReSTAuthorizationInterface auth;
         private Builder(final @Nonnull URL url, final @Nonnull RestTransport transport) throws InvalidDataException
         {
@@ -432,14 +434,46 @@ public final class ReST
          */
         public @Nonnull Builder setBody( final @Nullable File body) throws InvalidDataException
         {
-            if(method == Method.GET && body != null)
+            if( body == null)
+            {
+                this.body=null;
+                return this;
+            }
+            else
+            {
+                return setBody(body, ContentType.APPLICATION_OCTET_STREAM, DispositionType.FORM_DATA);
+            }
+        }
+
+        /**
+         * Set the body of this POST/PUT request.
+         * @param body the body to send.
+         * @param contentType the content type to send
+         * @param dispositionType the disposition type. 
+         * @return this
+         * @throws InvalidDataException The method must not be GET
+         */
+        public @Nonnull Builder setBody( 
+            final @Nonnull File body, 
+            final @Nonnull ContentType contentType,
+            final @Nonnull DispositionType dispositionType 
+        ) throws InvalidDataException
+        {
+            if( body==null) throw new IllegalArgumentException("body file is mandatory");
+            if( contentType==null) throw new IllegalArgumentException("Content Type is mandatory");
+            if( dispositionType==null) throw new IllegalArgumentException("Disposition Type is mandatory");
+            
+            if(method == Method.GET)
             {
                 throw new InvalidDataException("body is not allowed for method GET");
             }
+            
             this.body = body;
+            this.contentType=contentType;
+            this.dispositionType=dispositionType;
             return this;
         }
-
+        
         /**
          * Set the body of this POST/PUT request.
          * @param bodyXML the body to send.
@@ -1171,7 +1205,7 @@ public final class ReST
                         }
                         rr=rb.make();                            
                         
-                        String cs=p.getProperty(RestTransport.CHECKSUM);
+                        String cs=p.getProperty(RestTransport.RESULTS_SHA1);
                         if( StringUtilities.notBlank(cs)) 
                         {
                             if( file.exists())
@@ -1221,7 +1255,9 @@ public final class ReST
                     null,
                     callTimeout,
                     disableGZIP,
-                    FRIEND
+                    FRIEND,
+                    contentType,
+                    dispositionType
                 );
 
                 /** Are we already processing this GET request ? */
@@ -1433,7 +1469,9 @@ public final class ReST
                     tmpBody,
                     callTimeout,
                     disableGZIP,
-                    FRIEND
+                    FRIEND,
+                    contentType,
+                    dispositionType
                 );
                 return r.call();
             }

@@ -76,6 +76,14 @@ public final class NetUtil
     
     public static final String KNOWN_INVALID_PASSWORD = "********";
     
+    /** The default cache period to use when fetching files */
+    public static final ThreadLocal<String>CACHE_PERIOD=new ThreadLocal<String>(){
+        @Override
+        protected String initialValue() {
+            return ""; 
+        }        
+    };
+    
     /**
      * Local host name
      */

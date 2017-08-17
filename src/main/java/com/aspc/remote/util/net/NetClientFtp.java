@@ -182,7 +182,7 @@ public class NetClientFtp implements NetClient, CopyStreamListener
                     {
                         fos.close();
                     }
-                    catch( Exception e )
+                    catch( IOException e )
                     {
                         deadConnection=true;                        
                         // ensure that ftp.completePendingCommand still gets called
@@ -196,7 +196,7 @@ public class NetClientFtp implements NetClient, CopyStreamListener
                     {
                         is.close();
                     }
-                    catch( Exception e )
+                    catch( IOException e )
                     {
                         deadConnection=true;                        
                         // enusre that ftp.completePendingCommand still get called
@@ -428,7 +428,7 @@ public class NetClientFtp implements NetClient, CopyStreamListener
                     }
                 }
             }
-            catch( Exception e )
+            catch( IOException e )
             {
                 deadConnection=true;
                 LOGGER.warn( "NetClientFtp: connected, but unable to change directory to "+path + " reply: " + ftp.getReplyString(),e );
@@ -581,18 +581,18 @@ public class NetClientFtp implements NetClient, CopyStreamListener
             {
                 ftp.logout();
             }
-            catch( Exception ignore )
+            catch( IOException ignore )
             {
-                ; // dont care
+                // dont care
             }
             
             try
             {
                 ftp.disconnect();
             }
-            catch( Exception ignore )
+            catch( IOException ignore )
             {
-                ; // dont care
+                // dont care
             }
         }
     }

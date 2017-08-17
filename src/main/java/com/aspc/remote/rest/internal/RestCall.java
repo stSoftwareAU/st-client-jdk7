@@ -1,5 +1,7 @@
 package com.aspc.remote.rest.internal;
 
+import com.aspc.remote.rest.ContentType;
+import com.aspc.remote.rest.DispositionType;
 import com.aspc.remote.rest.Method;
 import com.aspc.remote.rest.Response;
 import com.aspc.remote.util.misc.FileUtil;
@@ -34,6 +36,8 @@ public abstract class RestCall implements Callable<Response>
     public final int timeoutMS;
     protected final Friend friend;
     protected final boolean disableGZIP;
+    protected final ContentType contentType;
+    protected final DispositionType dispositionType;
     
     /**
      * The ReST call. 
@@ -47,6 +51,8 @@ public abstract class RestCall implements Callable<Response>
      * @param timeoutMS the timeout in milliseconds ( if any) 
      * @param disableGZIP true to NOT accept GZIP encoding, default is false
      * @param friend the friend
+     * @param contentType the content type
+     * @param dispositionType the disposition type
      */
     public RestCall(
         final @Nonnull Method method, 
@@ -57,7 +63,9 @@ public abstract class RestCall implements Callable<Response>
         final @Nullable File body,
         final @Nonnegative int timeoutMS,
         final boolean disableGZIP,
-        final @Nullable Friend friend
+        final @Nullable Friend friend,
+        final @Nullable ContentType contentType,
+        final @Nullable DispositionType dispositionType
     )
     {
         if( method == null)
@@ -81,6 +89,8 @@ public abstract class RestCall implements Callable<Response>
         {
             throw new IllegalArgumentException( "ReST friend is mandatory");
         }
+        this.contentType = contentType;
+        this.dispositionType = dispositionType;
     }
 
     @CheckReturnValue @Nonnull

@@ -1164,6 +1164,19 @@ public final class FileUtil
     }
     
     /**
+     * Generates MD5.
+     *
+     * @param file The input file
+     * @return digest
+     * @throws IOException If something went wrong
+     */
+    @CheckReturnValue @Nonnull
+    public static byte[] generateMD5( final @Nonnull File file) throws IOException
+    {
+        return generateDigest(file, "MD5");
+    }
+    
+    /**
      * Generates SHA1.
      *
      * @param file The input file
