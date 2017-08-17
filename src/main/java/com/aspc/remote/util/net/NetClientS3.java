@@ -88,10 +88,15 @@ public class NetClientS3 implements NetClient
 
         String url=makeURL( fetchPath);
 
+        String cachePeriod="";
+        if( NetUtil.REPAIR_MODE.get()==false)
+        {
+            cachePeriod =NetUtil.CACHE_PERIOD.get();
+        }
         File tmpFile = ReST
             .builder(url)
             .setMethod(Method.GET)
-            .setMinCachePeriod(NetUtil.CACHE_PERIOD.get())
+            .setMinCachePeriod(cachePeriod)
 //            .setBody(new File("/home/nigel/Pictures/smiling-star.png"),new ContentType("image/png"), DispositionType.ATTACHMENT)
             .setAuthorization(new AWSReSTAuthorization(accessKeyID,secretAccessKey))
             .getResponseAndCheck()
