@@ -55,7 +55,7 @@
                 <configuration>
                     <target>
                         <echo>testing...${main.basedir}</echo>
-                        <property name="test.xml.dir" value="${main.basedir}/tests/xml"/>
+                        <property name="test.xml.dir" value="${main.basedir}/../tests/xml"/>
                         <property name="ST_HOME" value="${main.basedir}"/>
                         <property name="mail.smtp.user" value="${mail.smtp.user}"/>
                         <property name="mail.smtp.password" value="${mail.smtp.password}"/>

@@ -69,6 +69,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import javax.annotation.*;
 import org.apache.commons.logging.Log;
@@ -1108,6 +1109,97 @@ public final class ReST
             return r;
         }
         
+        @CheckReturnValue
+        private Response makeCacheResponse(final @Nonnull File propertiesFile, final @Nonnull AtomicLong TTL)
+        {
+//            long tmpCacheTimeToLiveMs=minCacheTimeToLiveMs;
+            if( propertiesFile.exists()) {
+                Properties p = new Properties();
+                try {
+                    try (FileReader fr = new FileReader(propertiesFile)) {
+                        p.load(fr);
+                    }
+                    String cacheControl = p.getProperty("cache-control", "");
+                    if (errorCacheTimeToLiveMs > 0 || minCacheTimeToLiveMs > 0 || cacheControl.contains("max-age")||maxBlockMs>0||staleBlockMs>0) {
+                        String fileList[] = p.getProperty(RestTransport.FILE_LIST, "").split(",");
+                        String cacheFileName;
+                        cacheFileName = fileList[fileList.length - 1];
+                        if (StringUtilities.notBlank(cacheFileName)) {
+                            String sha1 = p.getProperty(RestTransport.RESULTS_SHA1);
+
+                            if (StringUtilities.notBlank(sha1)) {
+                                File cachedFile = new File(propertiesFile.getParentFile(), cacheFileName);
+
+                                if (cachedFile.isFile()) {
+                                    String tmpCS = new String(StringUtilities.encodeBase64(FileUtil.generateSHA1(cachedFile)));
+                                    if (tmpCS.equals(sha1)) {
+                                        String mimetype = p.getProperty(RestTransport.MIME_TYPE);
+                                        Status status = Status.find(Integer.parseInt(p.getProperty(RestTransport.STATUS, "200")));
+//                                        String cacheControl=null;
+                                        if (status.isError()) {
+                                            TTL.set(errorCacheTimeToLiveMs);
+                                        } else {
+                                            TTL.set(minCacheTimeToLiveMs);
+//                                            cacheControl=p.getProperty("cache-control");
+                                            if (StringUtilities.notBlank(cacheControl)) {
+                                                if (cacheControl.contains("max-age")) {
+                                                    int equalsPos = cacheControl.indexOf("=");
+                                                    if (equalsPos != -1) {
+                                                        String maxAge = cacheControl.substring(equalsPos + 1);
+                                                        int commaPos = maxAge.indexOf(",");
+                                                        if (commaPos != -1) {
+                                                            maxAge = maxAge.substring(0, commaPos);
+                                                        }
+                                                        maxAge = maxAge.trim();
+                                                        if (maxAge.matches("[0-9]+")) {
+                                                            long serverCacheTime = Long.parseLong(maxAge) * 1000L;
+
+                                                            if (minCacheTimeToLiveMs < serverCacheTime) {
+                                                                TTL.set( serverCacheTime);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        Response.Builder rb = Response.builder(status, mimetype, cachedFile).setTrace(Trace.CACHED);
+                                        switch (status) {
+                                            case C301_REDIRECT_MOVED_PERMANENTLY:
+                                            case C302_REDIRECT_FOUND:
+                                            case C303_REDIRECT_SEE_OTHER:
+                                                rb.setRedirection(p.getProperty(RestCall.HEADER_LOCATION));
+                                        }
+                                        if (cacheControl != null) {
+                                            rb.setCacheControl(cacheControl);
+                                        }
+                                        return rb.make();
+
+                                    } else {
+//                                        tmpCacheTimeToLiveMs = -1;
+                                        LOGGER.warn("Cache SHA1 was: " + tmpCS + "expected: " + sha1);
+                                    }
+                                } else {
+//                                    tmpCacheTimeToLiveMs = -1;
+                                    LOGGER.warn("No cache file missing " + cachedFile);
+                                }
+                            } else {
+//                                tmpCacheTimeToLiveMs = -1;
+                                LOGGER.warn("No cache file specified ");
+                            }
+                        } else {
+//                            tmpCacheTimeToLiveMs = -1;
+                            LOGGER.warn("No SHA1");
+                        }
+                    }
+                } catch (IOException io) {
+                    LOGGER.warn("could not load ", io);
+//                    tmpCacheTimeToLiveMs = -1;
+                }
+            }
+            
+            return null;
+        }
+        
         @SuppressWarnings("ThrowableResultIgnored") @CheckReturnValue @Nonnull
         private Response readResponse()
         {
@@ -1137,109 +1229,15 @@ public final class ReST
             int pos = fileName.lastIndexOf('.');
             File propertiesFile = new File(feedPath + fileName.substring(0, pos) + ".properties");
 
-            Response rr=null;
+            Response rr;
             
-            long tmpCacheTimeToLiveMs=minCacheTimeToLiveMs;
-            if( propertiesFile.exists())
-            {
-                Properties p= new Properties();
-                try
-                {
-                    try(FileReader fr=new FileReader(propertiesFile))
-                    {
-                        p.load( fr);
-                    }
-                    String fileList[]= p.getProperty(RestTransport.FILE_LIST, "").split(",");
-                    String cacheFileName;
-                    cacheFileName=fileList[fileList.length -1];
-                    if( StringUtilities.notBlank(cacheFileName))
-                    {
-                        File file=new File( propertiesFile.getParentFile(), cacheFileName);
-                        String mimetype=p.getProperty(RestTransport.MIME_TYPE);
-                        Status status =Status.find(Integer.parseInt(p.getProperty(RestTransport.STATUS, "200")));
-                        String cacheControl=null;
-                        if( status.isError())
-                        {
-                            tmpCacheTimeToLiveMs=errorCacheTimeToLiveMs;                        
-                        }
-                        else{
-                            cacheControl=p.getProperty("cache-control");
-                            if( StringUtilities.notBlank(cacheControl))
-                            {
-                                if( cacheControl.contains("max-age"))
-                                {
-                                    int equalsPos=cacheControl.indexOf("=");
-                                    if( equalsPos!=-1)
-                                    {
-                                        String maxAge=cacheControl.substring(equalsPos + 1);
-                                        int commaPos=maxAge.indexOf(",");
-                                        if( commaPos!=-1)
-                                        {
-                                            maxAge=maxAge.substring(0, commaPos);
-                                        }
-                                        maxAge=maxAge.trim();
-                                        if( maxAge.matches("[0-9]+"))
-                                        {
-                                            long serverCacheTime=Long.parseLong(maxAge) * 1000L;
-                                            
-                                            if( tmpCacheTimeToLiveMs< serverCacheTime)
-                                            {
-                                                tmpCacheTimeToLiveMs=serverCacheTime;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Response.Builder rb = Response.builder(status,mimetype, file).setTrace( Trace.CACHED);
-                        switch( status)
-                        {
-                            case C301_REDIRECT_MOVED_PERMANENTLY:
-                            case C302_REDIRECT_FOUND:
-                            case C303_REDIRECT_SEE_OTHER:
-                                rb.setRedirection(p.getProperty(RestCall.HEADER_LOCATION));
-                        }
-                        if( cacheControl!=null)
-                        {
-                            rb.setCacheControl(cacheControl);
-                        }
-                        rr=rb.make();                            
-                        
-                        String cs=p.getProperty(RestTransport.RESULTS_SHA1);
-                        if( StringUtilities.notBlank(cs)) 
-                        {
-                            if( file.exists())
-                            {
-                                String tmpCS=new String( StringUtilities.encodeBase64( FileUtil.generateSHA1(file)));
-                                if( tmpCS.equals(cs)==false)
-                                {
-                                    tmpCacheTimeToLiveMs=-1;
-                                    LOGGER.warn( "checksum failure expected " + cs + " was " + tmpCS);                            
-                                }
-                            }
-                            else
-                            {
-                                tmpCacheTimeToLiveMs=-1;
-                                LOGGER.warn( "Cache file not found " + file);       
-                            }
-                        }
-                    }
-                    else
-                    {
-                        tmpCacheTimeToLiveMs=-1;
-                        LOGGER.warn( "No cache file specified ");       
-                    }
-                }
-                catch( IOException io)
-                {
-                    LOGGER.warn("could not load ", io);
-                    tmpCacheTimeToLiveMs=-1;
-                }
-            }
+            AtomicLong tmpCacheTimeToLiveMS=new AtomicLong(-1);
+            rr=makeCacheResponse( propertiesFile, tmpCacheTimeToLiveMS);
+//            if( rr!=null) return rr;
 
             long modTS=propertiesFile.lastModified();
-            long expireTS=modTS+tmpCacheTimeToLiveMs;
-            if( rr==null || tmpCacheTimeToLiveMs<=0 || propertiesFile.exists() == false || (expireTS - ( tmpCacheTimeToLiveMs/2)) < nowTime )
+            long expireTS=modTS+tmpCacheTimeToLiveMS.get();
+            if( rr==null || tmpCacheTimeToLiveMS.get()<=0 || propertiesFile.exists() == false || (expireTS - ( tmpCacheTimeToLiveMS.get()/2)) < nowTime )
             {
                 assert timeoutMs<0||timeoutMs>0&&staleBlockMs<1&&maxBlockMs<1:"Should not set timeout and other timeouts";
                 int callTimeout=Math.max(Math.max(timeoutMs, Math.max( staleBlockMs, (rr!=null ?maxBlockMs:-1))),0);
@@ -1428,7 +1426,6 @@ public final class ReST
             return rr;
         }
         
-            
         private String validateCharactersInURL( final @Nonnull URL checkURL)
         {
             return NetUrl.validateCharactersInURL(checkURL.toString());

@@ -12,7 +12,7 @@
         <property name="lib.dir" value="${BASE_DIR}/../../webapps/st/WEB-INF/lib/"/>
         <property file="${ST_HOME}/conf/common.properties"/>
         <echo>dbtype=${DBTYPE}</echo>
-        <property name="log.dir" value="${ST_HOME}/logs"/>
+        <property name="log.dir" value="${ST_HOME}/../logs"/>
     </target>
     
     <target name="-init-libs" depends="-init">   

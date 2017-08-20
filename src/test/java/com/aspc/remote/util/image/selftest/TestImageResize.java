@@ -33,6 +33,8 @@
  */
 package com.aspc.remote.util.image.selftest;
 
+import com.aspc.remote.rest.ReST;
+import com.aspc.remote.rest.Response;
 import com.aspc.remote.util.image.ImageResize;
 import com.aspc.remote.util.image.ImageUtil;
 import junit.framework.Test;
@@ -45,12 +47,8 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLConnection;
 import javax.imageio.ImageIO;
 
@@ -101,7 +99,7 @@ public class TestImageResize extends TestCase
         return suite;
     }
     
-    public void testScaleSVG() throws IOException 
+    public void testScaleSVG()throws Exception 
     {
         File srcFile=new File( System.getProperty("SRC_DIR"), "/com/aspc/remote/util/image/selftest/play.svg");
            
@@ -109,10 +107,9 @@ public class TestImageResize extends TestCase
         ir.setMaxWidth(200);
         File scaledImage = ir.process();
         assertTrue("don't scale SVG", scaledImage.exists());
-    }
+    }    
     
-    
-     public void testXIcon() throws IOException 
+    public void testXIcon() throws Exception 
     {
         //image/x-icon
         File srcFile=load( "favicon", "http://www.sydneyshardrockstory.com/docs/web/shr/favicon.ico");
@@ -124,24 +121,8 @@ public class TestImageResize extends TestCase
         LOGGER.info( scaledImage);
         assertTrue("should exist", scaledImage.exists());
     }
-     
-//    public void testScale() throws IOException 
-//    {
-//        File srcFile=load( "scale", "https://moelis.jobtrack.com.au/docs/web/images/Moelis-logo_transp_white-matt.png");
-//           
-//        ImageResize ir = new ImageResize(srcFile);
-//        ir.setMaxWidth(200);
-//        File scaledImage = ir.process();
-//        BufferedImage targetImage ;
-//                
-//        targetImage = ImageIO.read(scaledImage);
-//        
-//        int h=targetImage.getHeight();
-//        
-//        assertEquals( "rounding up of scaled height", 14, h);
-//    }
-    
-    public void testScaleJPG() throws IOException 
+
+    public void testScaleJPG()throws Exception 
     {
         File srcFile=load( "scaleJPG", "https://aspc.jobtrack.com.au/docs/web/images/avatar/Tina_2010[1].jpg?height=100");
            
@@ -153,61 +134,20 @@ public class TestImageResize extends TestCase
         
         assertEquals( "rounding up of scaled height", 100, h);
     }
-    
-//    public void testAntiAlias() throws IOException 
-//    {
-//        File srcFile=load( "anti-alias", "https://moelis.jobtrack.com.au/docs/web/images/Moelis-logo_transp_white-matt.png");
-//        process( srcFile, -1, -1,"", 200, -1,-1, -1);
-//    }
-    
-    public void testRaster() throws IOException 
+
+    public void testRaster()throws Exception 
     {
         File srcFile=load( "smeg-raster", "https://jobtrack.smegateway.com.au/docs/web/images%20from%20Gaye/Dee-Logos/Hifrasergroup_Spot.jpg");
         
         //ImageIO.read(srcFile);
         process( srcFile, 50, 50,"", -1, -1,-1, -1);
     }
-//    
-//    public void testPJEG() throws IOException 
-//    {
-//        File srcFile=load( 
-//            "srl-job5", 
-//            "http://shawreynolds.com/docs/web/srl/Photo%20I%20-%20Job%204%20(reduced%20%26%20optimised).jpg"
-//        );
-//        
-//        File destFile=new File( srcFile.getParentFile(), "unknown.dat");
-//        srcFile.renameTo(destFile );
-//       
-//        ImageResize ir = new ImageResize(destFile, "image/pjeg");
-//        
-//        ir.setFormat("png");
-//        
-//        ir.process();
-//        String mimeType = ir.getMimeType();
-//        assertEquals("change mime", "image/png", mimeType);
-//    }
-//    
-//    public void testUnknown() throws IOException 
-//    {
-//        File srcFile=load( "srl-job6", "http://shawreynolds.com/docs/web/srl/Photo%20I%20-%20Job%204%20(reduced%20%26%20optimised).jpg");
-//        
-//        File destFile=new File( srcFile.getParentFile(), "unknown.dat");
-//        srcFile.renameTo(destFile );
-//       
-//        ImageResize ir = new ImageResize(destFile, null);
-//        
-//        ir.setFormat("png");
-//        
-//        ir.process();
-//        String mimeType = ir.getMimeType();
-//        assertEquals("change mime", "image/png", mimeType);
-//    }
-//    
+
     /**
      * Checks we handle Bit maps
      * @throws IOException if an IO exception occurs.
      */
-    public void testBMP() throws IOException
+    public void testBMP()throws Exception
     {
         File srcFile=load( 
             "srl-Brochure", 
@@ -223,55 +163,12 @@ public class TestImageResize extends TestCase
         process( srcFile, 555, 320,"", -1, -1,-1, 300);
         process( srcFile, -1, -1,"jpg", -1, -1,-1, -1);
     }
-    /**
-     * Check we can pass in mime type
-     * @throws IOException if an IO exception occurs.
-     */
-//    public void testMimeType() throws IOException
-//    {
-//        File srcFile=load( "srl-Brochure", "http://shawreynolds.com/docs/web/images/MODE11429_IWP_Brochure_S5A.pdf%20-%20Adobe%20Reader.bmp");
-//        File destFile=new File( srcFile.getParentFile(), "unknown.dat");
-//        srcFile.renameTo(destFile );
-//       
-//        ImageResize ir = new ImageResize(destFile, "image/bmp");
-//        
-//        ir.setFormat("png");
-//        
-//        ir.process();
-//        String mimeType = ir.getMimeType();
-//        assertEquals("change mime", "image/png", mimeType);
-//    }
-    /**
-     * Checks we handle ICO
-     * @throws IOException if an IO exception occurs.
-     *
-    public void testICO() throws IOException, Exception
-    {
-        File srcFile=load( "srl-Brochure", "http://vicdata.jobtrack.com.au/docs/web/vic/favicon.ico");
-       
-        ImageResize ir=new ImageResize(srcFile);
-        
-        ir.setFormat("png");
-        File targetFile = ir.process();
-        
-        assertTrue( "should at least return the orginal", FileUtil.doesContentMatch(srcFile, targetFile));
-    }*/
-    
+
     /**
      * Check we handle inconsistent meta data.
      * @throws IOException if an IO exception occurs.
      */
-//    public void testHandleInconsistent() throws IOException
-//    {
-//        File srcFile=load( "srl-job4", "http://shawreynolds.com/docs/web/srl/Photo%20I%20-%20Job%204%20(reduced%20%26%20optimised).jpg");
-//        process( srcFile, 555, 320,"", -1, -1,-1, -1);
-//    }
-        
-    /**
-     * Check we handle inconsistent meta data.
-     * @throws IOException if an IO exception occurs.
-     */
-    public void testHandleInconsistent2() throws IOException
+    public void testHandleInconsistent2()throws Exception
     {
         File srcFile=load( "smeg-bs", "http://jobtrack.smegateway.com.au/docs/web/smeg/capabilities/BUSINESS%20SUPPORT.jpeg");
         process( srcFile, 150, 150,"", -1, -1,-1, -1);
@@ -281,7 +178,7 @@ public class TestImageResize extends TestCase
      * Checks large image to small
      * @throws IOException if an IO exception occurs.
      */
-    public void testGlyphIcons() throws IOException
+    public void testGlyphIcons()throws Exception
     {
         File logo=load( "glyphicons", "http://aspc.jobtrack.com.au/docs/web/images/glyphicons-halflings.png");
         process( logo, 48, 48,"", -1, -1,-1, -1);
@@ -290,8 +187,7 @@ public class TestImageResize extends TestCase
     public void testMime() throws Exception
     {
         File srcFile=load( "404.jpg", "http://stSoftware.com.au/images/404.jpg");
-//        String src=System.getProperty("SRC_DIR") + "/webapps/st/images/404.jpg"
-//        File srcFile = new File( src);
+
         ImageResize ir=new ImageResize(srcFile);
 
         ir.setFormat("");
@@ -387,7 +283,7 @@ public class TestImageResize extends TestCase
      * @throws IOException if an IO exception occurs.
      */
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testNonImage() throws IOException, Exception
+    public void testNonImage()throws Exception, Exception
     {
         File tmpFile=File.createTempFile("non-image", ".txt",FileUtil.makeQuarantineDirectory());
         try{
@@ -415,7 +311,7 @@ public class TestImageResize extends TestCase
      * @throws IOException if an IO exception occurs.
      */
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testNonExisting() throws IOException, Exception
+    public void testNonExisting()throws Exception, Exception
     {
         File tmpFile=File.createTempFile("image", ".png",FileUtil.makeQuarantineDirectory());
      
@@ -437,7 +333,7 @@ public class TestImageResize extends TestCase
      * Checks 24->48
      * @throws IOException if an IO exception occurs.
      */
-    public void testClose24by24() throws IOException
+    public void testClose24by24()throws Exception
     {
         File logo=load( "close", "http://aspc.jobtrack.com.au/docs/web/images/close_24x24.png");
         process( logo, 48, 48,"", -1, -1,-1,-1);
@@ -447,7 +343,7 @@ public class TestImageResize extends TestCase
      * Checks 32->48 & 32->1
      * @throws IOException if an IO exception occurs.
      */
-    public void testRedo32by32() throws IOException
+    public void testRedo32by32()throws Exception
     {
         File image=load( "redo", "http://aspc.jobtrack.com.au/docs/web/images/redo-disabled.png");
         process( image, 48, 48,"", -1, -1,-1, -1);
@@ -524,7 +420,7 @@ public class TestImageResize extends TestCase
      * 
      * @throws java.lang.Exception A serious problem
      */
-    public void setUp() throws IOException
+    public void setUp()throws Exception
     {
         if( firstRun)
         {
@@ -540,105 +436,61 @@ public class TestImageResize extends TestCase
         }
     }
 
-  /*  private File load( final String name, final String src) throws MalformedURLException, IOException
-    {
-        try
-        {
-            return tryLoad( name, src);
-        }
-        catch( IOException io)
-        {
-            return tryLoad( name, src);            
-        }
-    }*/
-    
     @SuppressWarnings("SleepWhileInLoop")
-    private File load( final String name, final String src) throws MalformedURLException, IOException
-    {
-        for( int attempt=0;true;attempt++)
+    private File load( final String name, final String src) throws Exception
+    {                
+        File dir= new File( FileUtil.getCachePath() + "/test/resize");
+        dir.mkdirs();
+        Response r=null;
+        for( int attempt=0;attempt<3;attempt++)
         {
-            File orginal=null;
-            try
-            {
-                File dir= new File( FileUtil.getCachePath() + "/test/resize");
-                dir.mkdirs();
-
-                URL url=new URL( src);
-                
-                URLConnection c = url.openConnection();
-                c.setDoOutput(false);
-                c.setReadTimeout(10* 60000);
-                c.setConnectTimeout(2*60000);
-                c.setUseCaches(false);
-                try
-                (InputStream in = c.getInputStream()) 
-                {
-
-                    String format;
-                    String mimeType = c.getContentType();
-                    if(mimeType.endsWith("png"))
-                    {
-                        format="png";
-                    }
-                    else if(mimeType.endsWith("jpeg") || mimeType.endsWith("jpg") )
-                    {
-                        format="jpg";
-                    }
-                    else if(mimeType.endsWith("gif"))
-                    {
-                        format="gif";
-                    }
-                    else if(mimeType.endsWith("bmp"))
-                    {
-                        format="bmp";
-                    }
-                    else if(
-                        mimeType.endsWith("image/vnd.microsoft.icon")||
-                        mimeType.endsWith("image/x-icon")
-                    )
-                    {
-                        format="ico";
-                    }
-                    else
-                    {
-                        throw new IOException( "unknown type " + mimeType);
-                    }
-
-                    orginal = new File( dir, name + "." + format);
-
-                    try (FileOutputStream out = new FileOutputStream( orginal)) 
-                    {
-                        byte array[]=new byte[2048];
-                        while( true)
-                        {
-                            int len = in.read(array);
-                            if( len <=0) break;
-
-                            out.write(array, 0, len);
-                        }
-                    }
-                }
-
-                return orginal;
-            }
-            catch( IOException ioe)
-            {
-                if( orginal != null) orginal.delete();
-                LOGGER.warn( src, ioe);
-                if( attempt>5)
-                {
-                    throw ioe;
-                }
-                else
-                {
-                    try {
-                        Thread.sleep((long) (5000 * Math.random()));
-                    } catch (InterruptedException ex) {
-                        LOGGER.warn( "doesn't happen", ex);
-                    }
-                }
-            }
+            r = ReST.builder(src).setMinCachePeriod("7 days").getResponse();
+            
+            if( r.status.isError()==false) break;
         }
+        assert r!=null;
+        r.checkStatus();
+        
+        String redirect=r.redirection;
+        if( redirect!=null && StringUtilities.notBlank(redirect))
+        {
+            r=ReST.builder(redirect).setMinCachePeriod("7 days").getResponseAndCheck();
+        }
+
+        String format;
+        if(r.mimeType.endsWith("png"))
+        {
+            format="png";
+        }
+        else if(r.mimeType.endsWith("jpeg") || r.mimeType.endsWith("jpg") )
+        {
+            format="jpg";
+        }
+        else if(r.mimeType.endsWith("gif"))
+        {
+            format="gif";
+        }
+        else if(r.mimeType.endsWith("bmp"))
+        {
+            format="bmp";
+        }
+        else if(
+            r.mimeType.endsWith("image/vnd.microsoft.icon")||
+            r.mimeType.endsWith("image/x-icon")
+        )
+        {
+            format="ico";
+        }
+        else
+        {
+            throw new IOException( "unknown type " + r.mimeType);
+        }
+
+        File orginal = new File( dir, name + "." + format);
+
+        FileUtil.copy(r.getContentAsFile(), orginal);
+        
+        return orginal;
     }
 
     private void process(
@@ -650,7 +502,7 @@ public class TestImageResize extends TestCase
         final int mh,
         final float quality,
         final int dpi
-    ) throws IOException
+    ) throws Exception
     {
         ImageResize ir = new ImageResize( srcFile);
         ir.setWidth(w);

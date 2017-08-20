@@ -83,6 +83,7 @@ public class NetClientS3 implements NetClient
 
         return "https://"+tmpPath;
     }
+    
     @Override
     public void fetch(String fetchPath, File target) throws Exception {
 
