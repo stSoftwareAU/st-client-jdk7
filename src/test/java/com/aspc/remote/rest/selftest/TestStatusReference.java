@@ -44,7 +44,7 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
 /**
- * check the email utilities
+ * Check that the status references are valid. 
  *  <br>
  *  <i>THREAD MODE: SINGLE-THREADED test case</i>
  *
@@ -96,7 +96,7 @@ public class TestStatusReference extends TestCase
             String url=status.reference;
             if( url!=null)
             {
-                Response r = ReST.builder(url).setMinCachePeriod("5 min").getResponse();
+                Response r = ReST.builder(url).setMinCachePeriod("31 days").getResponse();
                 if( r.status.isError())
                 {
                     fail( url + " status: " + r.status);

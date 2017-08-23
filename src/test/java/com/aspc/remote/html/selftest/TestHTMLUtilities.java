@@ -144,6 +144,10 @@ public class TestHTMLUtilities extends TestCase
             {
                 "<p>This text contains <sup>superscript</sup> text.</p>",
                 "This text contains <sup>superscript</sup> text."
+            },
+            {
+                "<u>Ignore underline allow <b>bold</b> text.</u>",
+                "Ignore underline allow <b>bold</b> text."
             }
         };
         

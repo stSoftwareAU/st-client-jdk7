@@ -184,6 +184,7 @@ public final class HTMLUtilities
                         
                         break;
                     case "SPAN":
+                    case "U": // <u> underlined, it could be confused for a hyperlink.
                     case "DIV":
                         for( Node n2:e.childNodes())
                         {
