@@ -620,13 +620,13 @@ public class NetClientFtp implements NetClient, CopyStreamListener
         ftp = new FTPClient();
         //ftp.setDefaultTimeout( NetUtil.getMaxWaitTime());
         ftp.connect( server );
-        
+
         if( !ftp.login( userName, password ) )
         {
             deadConnection=true;
             throw new Exception( "NetClientFtp: connected to server but unable to login for "+ StringUtilities.stripPasswordFromURL(url)  );
         }
-        
+
         if( baseDir.length() > 0 )
         {
             if( !changeDirectory( baseDir, true ) )

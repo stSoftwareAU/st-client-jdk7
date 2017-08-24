@@ -95,8 +95,8 @@ public class URLParser
 
             if( c == '%' && i + 2 < s.length())
             {
-                char c1 = (char) s.charAt(i + 1);
-                char c2 = (char) s.charAt(i + 2);
+                char c1 = s.charAt(i + 1);
+                char c2 = s.charAt(i + 2);
 
                 int b;
                 b = Character.digit(c1, 16);

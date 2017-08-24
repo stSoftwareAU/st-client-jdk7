@@ -126,7 +126,7 @@ public class NetClientFactory implements PoolableObjectFactory
             nc = new NetClientFtp();
             nc.make( url );
         }
-        if( url.startsWith( NetClient.PREFIX_S3 ) )
+        else if( url.startsWith( NetClient.PREFIX_S3 ) )
         {
             nc = new NetClientS3();
             nc.make( url );
