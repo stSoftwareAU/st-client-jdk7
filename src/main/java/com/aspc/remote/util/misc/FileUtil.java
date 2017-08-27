@@ -595,6 +595,44 @@ public final class FileUtil
     }
 
     /**
+     * Delete a pattern from a directory
+     * @param directory the directory to scan.
+     * @param fileNameRegEx the file name pattern
+     * @param recursive check directories recursively.
+     * @return the count of files deleted.
+     * @throws java.io.IOException could not delete.
+     */
+    @Nonnegative    
+    public static int deleteFromDirectory( final @Nonnull File directory, final @Nonnull @RegEx String fileNameRegEx, final boolean recursive) throws IOException
+    {
+        if( directory==null) throw new IllegalArgumentException("mandatory directory");
+        if( StringUtilities.isBlank(fileNameRegEx)) throw new IllegalArgumentException("mandatory fileNameRegEx");
+        if( directory.isDirectory()==false)
+        {
+            throw new IllegalArgumentException("not a directory: " + directory);
+        }
+        
+        int count=0;
+        
+        for( File file: directory.listFiles())
+        {
+            if( file.isDirectory())
+            {
+                if( recursive )
+                {
+                    count+=deleteFromDirectory(file, fileNameRegEx, recursive);
+                }
+            }
+            else if( file.getName().matches(fileNameRegEx))
+            {
+                deleteAll(file);
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    /**
      * Delete all from a directory ( including the directory) or simple file. 
      * This method will throw an IOException if the directory/file is not removed for some reason. 
      * 

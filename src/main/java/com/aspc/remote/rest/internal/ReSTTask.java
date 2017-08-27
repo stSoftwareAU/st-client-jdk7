@@ -59,71 +59,67 @@ public class ReSTTask
      * The maximum number of concurrent requests to be run at one time. 
      */
     public static final int MAX_CONCURRENT_REST_CALLS;
-    public static final BlockingQueue<RestCall> WAITING_CALLS=new LinkedBlockingQueue();
+    private static final BlockingQueue<RestCall> WAITING_CALLS=new LinkedBlockingQueue();
     @CheckReturnValue @Nonnull
     public static ReSTTask submit( final @Nonnull RestCall call, final @Nonnegative long timeout) throws InterruptedException,TimeoutException
     {
         if( timeout<=0) throw new IllegalArgumentException( "Timeout must be positive was: " + timeout);
         
         long start=0;
-            
+        ReSTTask t=new ReSTTask(call);
+
         COUNTER_LOCK.lock();
         try
         {
-            while( CURRENT_CALL_COUNT.get() >=MAX_CONCURRENT_REST_CALLS)
-            {
-                if( start==0)
+            try{
+                while( CURRENT_CALL_COUNT.get() >=MAX_CONCURRENT_REST_CALLS)
                 {
-                    start=System.currentTimeMillis();
-                    WAITING_CALLS.add(call);
-                    LOGGER.info("queuing ReST call: " + call);
-                }
-                else
-                {
-                    LOGGER.info("polling: " + TimeUtil.getDiff(start) + " call: " + call);
-                }
-                
-                Date deadline=new Date( start + timeout);
-                if( COUNTER_CONDITION.awaitUntil(deadline)==false)
-                {
-                    throw new TimeoutException( "Timeout after: " + TimeUtil.getDiff(start) + " call: " + call);
-                }
-                
-                RestCall peekCall = WAITING_CALLS.peek();
-                
-                if( peekCall!=call)
-                {
-                    /* Your call is Not the next one to run */
-                    COUNTER_CONDITION.await(5000, TimeUnit.MILLISECONDS);
+                    if( start==0)
+                    {
+                        start=System.currentTimeMillis();
+                        WAITING_CALLS.add(call);
+                        LOGGER.info("queuing ReST call: " + call);
+                    }
+                    else
+                    {
+                        LOGGER.info("polling: " + TimeUtil.getDiff(start) + " call: " + call);
+                    }
+
+                    Date deadline=new Date( start + timeout);
+                    if( COUNTER_CONDITION.awaitUntil(deadline)==false)
+                    {
+                        throw new TimeoutException( "Timeout after: " + TimeUtil.getDiff(start) + " call: " + call);
+                    }
+
+                    RestCall peekCall = WAITING_CALLS.peek();
+
+                    if( peekCall!=call)
+                    {
+                        /* Your call is Not the next one to run */
+                        COUNTER_CONDITION.await(5000, TimeUnit.MILLISECONDS);
+                    }
                 }
             }
-        }
-        finally
-        {
-            CURRENT_CALL_COUNT.incrementAndGet();
-            COUNTER_LOCK.unlock();
-            if( start!=0)
+            finally
             {
                 WAITING_CALLS.remove(call);
+            }
+
+            if( start!=0)
+            {
                 LOGGER.info("blocked: " + TimeUtil.getDiff(start) + " call: " + call);
             }
-        }
 
-        boolean successful=false;
-        try{
-            ReSTTask t=new ReSTTask(call);
             Runner r= new Runner(t);
+            CURRENT_CALL_COUNT.incrementAndGet();
             ThreadPool.schedule(r);
-            successful=true;
-            return t;
         }
         finally
         {
-            if( successful==false)
-            {
-                CURRENT_CALL_COUNT.decrementAndGet();
-            }
+            COUNTER_LOCK.unlock();
         }
+
+        return t;
     }
 
     private static void increment()
@@ -134,6 +130,7 @@ public class ReSTTask
             int count=CURRENT_CALL_COUNT.incrementAndGet();
             COUNTER_CONDITION.signalAll();
             assert count>=0: "Counter should never be negative was: " + count;
+            assert count <= MAX_CONCURRENT_REST_CALLS: "Counter should never be more than the max rest calls was: " + count;
         }
         finally
         {
@@ -226,8 +223,10 @@ public class ReSTTask
             {
                 decrement();
             }
-
-            SLEEPING.remove();
+            else
+            {
+                SLEEPING.remove();
+            }
 
             lock.lock();
             try
