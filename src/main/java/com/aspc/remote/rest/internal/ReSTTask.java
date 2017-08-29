@@ -38,7 +38,18 @@ public class ReSTTask
     private static final Condition COUNTER_CONDITION;
     private static final Lock COUNTER_LOCK=new ReentrantLock();
     private static final AtomicInteger CURRENT_CALL_COUNT=new AtomicInteger();
-    private static final ThreadLocal<Boolean>SLEEPING=new ThreadLocal<>();
+    private static final ThreadLocal<Boolean>ASYNC_REST_CALL=new ThreadLocal<Boolean>(){
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }        
+    };
+    private static final ThreadLocal<Boolean>SLEEPING=new ThreadLocal<Boolean>(){
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
     private ReSTTask(final @Nonnull RestCall call) {
         this.call=call;
 
@@ -58,67 +69,75 @@ public class ReSTTask
     /**
      * The maximum number of concurrent requests to be run at one time. 
      */
-    public static final int MAX_CONCURRENT_REST_CALLS;
+    public static final int MAX_ASYNC_REST_CALLS;
     private static final BlockingQueue<RestCall> WAITING_CALLS=new LinkedBlockingQueue();
     @CheckReturnValue @Nonnull
     public static ReSTTask submit( final @Nonnull RestCall call, final @Nonnegative long timeout) throws InterruptedException,TimeoutException
     {
         if( timeout<=0) throw new IllegalArgumentException( "Timeout must be positive was: " + timeout);
-        
+
         long start=0;
         ReSTTask t=new ReSTTask(call);
 
-        COUNTER_LOCK.lock();
-        try
+        if(ASYNC_REST_CALL.get())
         {
-            try{
-                while( CURRENT_CALL_COUNT.get() >=MAX_CONCURRENT_REST_CALLS)
-                {
-                    if( start==0)
+//            increment();
+            t.process();
+        }
+        else
+        {
+            COUNTER_LOCK.lock();
+            try
+            {
+                try{
+                    while( CURRENT_CALL_COUNT.get() >=MAX_ASYNC_REST_CALLS)
                     {
-                        start=System.currentTimeMillis();
-                        WAITING_CALLS.add(call);
-                        LOGGER.info("queuing ReST call: " + call);
-                    }
-                    else
-                    {
-                        LOGGER.info("polling: " + TimeUtil.getDiff(start) + " call: " + call);
-                    }
+                        if( start==0)
+                        {
+                            start=System.currentTimeMillis();
+                            WAITING_CALLS.add(call);
+                            LOGGER.info("queuing ReST call: " + call);
+                        }
+                        else
+                        {
+                            LOGGER.info("polling: " + TimeUtil.getDiff(start) + " call: " + call);
+                        }
 
-                    Date deadline=new Date( start + timeout);
-                    if( COUNTER_CONDITION.awaitUntil(deadline)==false)
-                    {
-                        throw new TimeoutException( "Timeout after: " + TimeUtil.getDiff(start) + " call: " + call);
-                    }
+                        Date deadline=new Date( start + timeout);
+                        if( COUNTER_CONDITION.awaitUntil(deadline)==false)
+                        {
+                            throw new TimeoutException( "Timeout after: " + TimeUtil.getDiff(start) + " call: " + call);
+                        }
 
-                    RestCall peekCall = WAITING_CALLS.peek();
+                        RestCall peekCall = WAITING_CALLS.peek();
 
-                    if( peekCall!=call)
-                    {
-                        /* Your call is Not the next one to run */
-                        COUNTER_CONDITION.await(5000, TimeUnit.MILLISECONDS);
+                        if( peekCall!=call)
+                        {
+                            /* Your call is Not the next one to run */
+                            COUNTER_CONDITION.await(5000, TimeUnit.MILLISECONDS);
+                        }
                     }
                 }
+                finally
+                {
+                    WAITING_CALLS.remove(call);
+                }
+
+                if( start!=0)
+                {
+                    LOGGER.info("blocked: " + TimeUtil.getDiff(start) + " call: " + call);
+                }
+
+                Runner r= new Runner(t);
+                CURRENT_CALL_COUNT.incrementAndGet();
+                ThreadPool.schedule(r);
             }
             finally
             {
-                WAITING_CALLS.remove(call);
+                COUNTER_LOCK.unlock();
             }
-
-            if( start!=0)
-            {
-                LOGGER.info("blocked: " + TimeUtil.getDiff(start) + " call: " + call);
-            }
-
-            Runner r= new Runner(t);
-            CURRENT_CALL_COUNT.incrementAndGet();
-            ThreadPool.schedule(r);
         }
-        finally
-        {
-            COUNTER_LOCK.unlock();
-        }
-
+        
         return t;
     }
 
@@ -130,7 +149,7 @@ public class ReSTTask
             int count=CURRENT_CALL_COUNT.incrementAndGet();
             COUNTER_CONDITION.signalAll();
             assert count>=0: "Counter should never be negative was: " + count;
-            assert count <= MAX_CONCURRENT_REST_CALLS: "Counter should never be more than the max rest calls was: " + count;
+            assert count <= MAX_ASYNC_REST_CALLS: "Counter should never be more than the max ASYNC rest calls was: " + count;
         }
         finally
         {
@@ -140,6 +159,7 @@ public class ReSTTask
 
     private static void decrement()
     {
+        assert ASYNC_REST_CALL.get():"should only be called in async mode";
         COUNTER_LOCK.lock();
         try
         {
@@ -159,7 +179,11 @@ public class ReSTTask
         if(sleeping!=null && sleeping==true)
         {
             SLEEPING.set(Boolean.FALSE);
-            increment();
+
+            if( ASYNC_REST_CALL.get())
+            {
+                increment();
+            }
         }
     }
 
@@ -169,7 +193,10 @@ public class ReSTTask
         if(sleeping!=null&& sleeping==false)
         {
             SLEEPING.set(Boolean.TRUE);
-            decrement();
+            if( ASYNC_REST_CALL.get())
+            {
+                decrement();
+            }
         }
     }
 
@@ -208,6 +235,7 @@ public class ReSTTask
     
     private void process()
     {
+        assert SLEEPING.get()==false: "Should not be 'sleeping' as we are actively making a call";
         SLEEPING.set(Boolean.FALSE);
         try{
            response=call.call();
@@ -219,14 +247,9 @@ public class ReSTTask
         }
         finally
         {
-            if( SLEEPING.get()==false)
-            {
-                decrement();
-            }
-            else
-            {
-                SLEEPING.remove();
-            }
+            assert SLEEPING.get()==false: "Should not be 'sleeping' as we are actively making a call";
+
+            SLEEPING.remove();
 
             lock.lock();
             try
@@ -251,7 +274,16 @@ public class ReSTTask
         
         @Override
         public void run() {
-            t.process();           
+            try{
+                ASYNC_REST_CALL.set(true);
+            
+                t.process();           
+            }
+            finally
+            {
+                decrement();
+                ASYNC_REST_CALL.set(false);
+            }
         }
     }
     
@@ -268,7 +300,7 @@ public class ReSTTask
         {
             tmpMaxCalls=Runtime.getRuntime().availableProcessors() * 2;
         }
-        MAX_CONCURRENT_REST_CALLS=tmpMaxCalls;
+        MAX_ASYNC_REST_CALLS=tmpMaxCalls;
 
         COUNTER_LOCK.lock();
         try
