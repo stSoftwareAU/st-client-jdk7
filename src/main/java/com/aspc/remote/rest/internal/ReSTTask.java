@@ -2,10 +2,9 @@ package com.aspc.remote.rest.internal;
 
 import com.aspc.remote.rest.Response;
 import com.aspc.remote.util.misc.CLogger;
-import com.aspc.remote.util.misc.CProperties;
-import com.aspc.remote.util.misc.StringUtilities;
 import com.aspc.remote.util.misc.ThreadPool;
 import com.aspc.remote.util.misc.TimeUtil;
+import com.aspc.remote.util.misc.VersionENV;
 import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -28,6 +27,11 @@ import org.apache.commons.logging.Log;
  */
 public class ReSTTask 
 {
+    /**
+     * The maximum number of concurrent requests to be run at one time. 
+     */
+    public static final int MAX_ASYNC_REST_CALLS;
+    
     private final RestCall call;
     private Response response;
     private Exception exception;
@@ -66,10 +70,6 @@ public class ReSTTask
 
     private static final String PROPERTY_MAX_CONCURRENT_REST_CALLS="MAX_CONCURRENT_REST_CALLS";
     
-    /**
-     * The maximum number of concurrent requests to be run at one time. 
-     */
-    public static final int MAX_ASYNC_REST_CALLS;
     private static final BlockingQueue<RestCall> WAITING_CALLS=new LinkedBlockingQueue();
     @CheckReturnValue @Nonnull
     public static ReSTTask submit( final @Nonnull RestCall call, final @Nonnegative long timeout) throws InterruptedException,TimeoutException
@@ -81,7 +81,6 @@ public class ReSTTask
 
         if(ASYNC_REST_CALL.get())
         {
-//            increment();
             t.process();
         }
         else
@@ -90,7 +89,7 @@ public class ReSTTask
             try
             {
                 try{
-                    while( CURRENT_CALL_COUNT.get() >=MAX_ASYNC_REST_CALLS)
+                    while( CURRENT_CALL_COUNT.get() >MAX_ASYNC_REST_CALLS)
                     {
                         if( start==0)
                         {
@@ -120,7 +119,10 @@ public class ReSTTask
                 }
                 finally
                 {
-                    WAITING_CALLS.remove(call);
+                    if( WAITING_CALLS.remove(call))
+                    {
+                        COUNTER_CONDITION.signalAll();
+                    }
                 }
 
                 if( start!=0)
@@ -128,9 +130,9 @@ public class ReSTTask
                     LOGGER.info("blocked: " + TimeUtil.getDiff(start) + " call: " + call);
                 }
 
-                Runner r= new Runner(t);
-                CURRENT_CALL_COUNT.incrementAndGet();
+                Runner r= new Runner(t);              
                 ThreadPool.schedule(r);
+                CURRENT_CALL_COUNT.incrementAndGet();
             }
             finally
             {
@@ -143,6 +145,7 @@ public class ReSTTask
 
     private static void increment()
     {
+        assert ASYNC_REST_CALL.get():"should only be called in async mode";
         COUNTER_LOCK.lock();
         try
         {
@@ -235,8 +238,11 @@ public class ReSTTask
     
     private void process()
     {
-        assert SLEEPING.get()==false: "Should not be 'sleeping' as we are actively making a call";
-        SLEEPING.set(Boolean.FALSE);
+        if( SLEEPING.get())
+        {
+            assert false: "Should not be 'sleeping' as we are actively making a call";
+            SLEEPING.remove();
+        }
         try{
            response=call.call();
         }
@@ -247,9 +253,11 @@ public class ReSTTask
         }
         finally
         {
-            assert SLEEPING.get()==false: "Should not be 'sleeping' as we are actively making a call";
-
-            SLEEPING.remove();
+            if( SLEEPING.get())
+            {
+                assert false: "Should not be 'sleeping' as we are actively making a call";
+                SLEEPING.remove();
+            }
 
             lock.lock();
             try
@@ -289,19 +297,13 @@ public class ReSTTask
     
     static{
 
-        String maxCalls=CProperties.getProperty(PROPERTY_MAX_CONCURRENT_REST_CALLS);
-        int tmpMaxCalls=0;
-        if( StringUtilities.notBlank(maxCalls))
-        {
-            tmpMaxCalls=Integer.parseInt(maxCalls);
-        }
+        int cores=Runtime.getRuntime().availableProcessors();
+        
+        VersionENV tmp= new VersionENV( PROPERTY_MAX_CONCURRENT_REST_CALLS, cores*4, 2, 32072 );
+        LOGGER.debug( tmp);
 
-        if( tmpMaxCalls<=0)
-        {
-            tmpMaxCalls=Runtime.getRuntime().availableProcessors() * 2;
-        }
-        MAX_ASYNC_REST_CALLS=tmpMaxCalls;
-
+        MAX_ASYNC_REST_CALLS=tmp.calculateVersion();
+        
         COUNTER_LOCK.lock();
         try
         {
