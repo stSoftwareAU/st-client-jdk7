@@ -580,6 +580,72 @@ public final class QueueLog implements Log
      * @param msg the message
      * @return the value
      */
+    public static String maskLogMessageV2(final String msg)
+    {
+        if( masks.length==0 || StringUtilities.isBlank(msg))
+        {
+            return msg;
+        }
+
+        String tmpMsg = msg;
+
+        for( PatternMask patternMask: masks)
+        {
+            StringBuilder sb=new StringBuilder( tmpMsg.length());
+
+            for( String line: tmpMsg.split("[\n\r]+"))
+            {
+                if( sb.length()>0)
+                {
+                    sb.append("\n");
+                }
+//                StringBuilder result=null;
+                int index = 0;
+
+                Matcher matcher = patternMask.pattern.matcher(line);
+
+                while (matcher.find())
+                {
+//                    if( result == null)
+//                    {
+//                         result= new StringBuilder();
+//                    }
+                    int groupNumber = patternMask.groupNumber;
+
+                    if (groupNumber > 0)
+                    {
+                        int start = matcher.start(groupNumber);
+                        int end = matcher.end(groupNumber);
+                        sb.append(line.substring(index, start ) );
+                        sb.append(patternMask.mask);
+                        index = end;
+                    }
+                    else
+                    {
+                        int start = matcher.start();
+                        int end = matcher.end();
+                        sb.append(line.substring(index, start ) );
+                        sb.append(patternMask.mask);
+                        index = end;
+                    }
+                }
+//                if( result!=null)
+//                {
+                    sb.append(line.substring(index));
+//                    line = result.toString();
+//                }
+            }
+            tmpMsg=sb.toString();
+        }
+        
+        return tmpMsg;
+    }
+
+    /**
+     * Mask log message
+     * @param msg the message
+     * @return the value
+     */
     public static String maskLogMessage(final String msg)
     {
         String tmpMsg = msg;
