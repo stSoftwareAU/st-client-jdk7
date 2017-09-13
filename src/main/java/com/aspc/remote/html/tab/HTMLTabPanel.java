@@ -239,6 +239,25 @@ public class HTMLTabPanel extends HTMLComponent
         return null;
     }
 
+    @Override
+    protected void compile(ClientBrowser browser) {
+        super.compile(browser); 
+        
+        HTMLPage page = getParentPage();
+        if( page!=null)
+        {
+            HashMap<String, String> onLoadScripts = getSelectedLoadScripts();
+            if( onLoadScripts!=null)
+            {
+                for( String function:onLoadScripts.keySet())
+                {
+                    page.addJavaScript(onLoadScripts.get(function));
+                    page.addOnLoadScript( function, function+"()");
+                }
+            }
+        }
+    }
+
     /**
      * 
      *
@@ -261,7 +280,7 @@ public class HTMLTabPanel extends HTMLComponent
          */
         buffer.append("<div id='slider'>\n");
         buffer.append("<ul class=\"tabs\">\n");
-
+        
         for( TabItem ti: list)
         {
             String href;
@@ -302,27 +321,27 @@ public class HTMLTabPanel extends HTMLComponent
 
             buffer.append("<li>" );
 
-            boolean isOldIE = false;
-            if(browser.canHandleCSS3() == false)
-            {
-                isOldIE = true;
-            }
-
-            if(isOldIE)
-            {
-                buffer.append("<div class='tab-button-left");
-                if(ti == selectedItem)
-                {
-                    buffer.append( "-selected");
-                }
-                buffer.append("'></div>");
-                buffer.append("<div class='tab-button-center");
-                if(ti == selectedItem)
-                {
-                    buffer.append( "-selected");
-                }
-                buffer.append("'>");
-            }
+//            boolean isOldIE = false;
+//            if(browser.canHandleCSS3() == false)
+//            {
+//                isOldIE = true;
+//            }
+//
+//            if(isOldIE)
+//            {
+//                buffer.append("<div class='tab-button-left");
+//                if(ti == selectedItem)
+//                {
+//                    buffer.append( "-selected");
+//                }
+//                buffer.append("'></div>");
+//                buffer.append("<div class='tab-button-center");
+//                if(ti == selectedItem)
+//                {
+//                    buffer.append( "-selected");
+//                }
+//                buffer.append("'>");
+//            }
 
             buffer.append( "<a");
 
@@ -340,7 +359,7 @@ public class HTMLTabPanel extends HTMLComponent
             buffer.append(call).append(";\"");
             buffer.append(" href=\"#").append(ti.getCode()).append( "\" ");
             
-            if(isOldIE == false && ti == selectedItem)
+            if(ti == selectedItem)
             {
                 buffer.append( " class=\"selected\"");
             }
@@ -353,16 +372,16 @@ public class HTMLTabPanel extends HTMLComponent
 
             buffer.append("</a>");
 
-            if(isOldIE)
-            {
-                buffer.append("</div>");
-                buffer.append("<div class='tab-button-right");
-                if(ti == selectedItem)
-                {
-                    buffer.append( "-selected");
-                }
-                buffer.append("'></div>");
-            }
+//            if(isOldIE)
+//            {
+//                buffer.append("</div>");
+//                buffer.append("<div class='tab-button-right");
+//                if(ti == selectedItem)
+//                {
+//                    buffer.append( "-selected");
+//                }
+//                buffer.append("'></div>");
+//            }
 
             buffer.append("</li>\n");
         }
