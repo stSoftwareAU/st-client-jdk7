@@ -59,6 +59,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -72,6 +73,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import javax.annotation.*;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLProtocolException;
 import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
 
@@ -1387,43 +1390,70 @@ public final class ReST
                 } 
                 catch( ExecutionException e)
                 {
+                    Status currentStatus=Status.C520_UNKNOWN_ERROR;
                     Throwable cause=e;
                     for( int loop=0;loop<100;loop++)
                     {
                         Throwable tmpCause=cause.getCause();
                         if( tmpCause == null) break;
+                        
+                        currentStatus=moreExplicitStatus( currentStatus, tmpCause);
                         cause=tmpCause;
                     }
 
-                    if( cause instanceof UnknownHostException)
-                    {
-                        LOGGER.warn( realURL.toString(), cause);
-
-                        rr=Response.builder( Status.C503_SERVICE_UNAVAILABLE, "text/plan", cause.toString()).make();
-                    }
-                    else if( cause instanceof CertificateException)
-                    {
-                        LOGGER.warn( realURL.toString(), cause);
-
-                        rr=Response.builder(Status.C526_SSL_INVALID_CERTIFICATE, "text/plan", cause.toString() ).make();
-                    }
-                    else if( cause instanceof SocketException)
-                    {
-                        LOGGER.warn( realURL.toString(), cause);
-
-                        rr=Response.builder(Status.C521_WEB_SERVER_IS_DOWN,"text/plan", cause.toString()).make();
-                    }
-                    else
+                    if( currentStatus == Status.C520_UNKNOWN_ERROR)
                     {
                         LOGGER.error( realURL.toString(), cause);
 
-                        rr=Response.builder(Status.C520_UNKNOWN_ERROR, "text/plan", cause.toString()).make();                        
+                        rr=Response.builder(Status.C520_UNKNOWN_ERROR, "text/plan", cause.toString()).make();                               
                     }
-                } 
+                    else
+                    {
+                        LOGGER.warn( realURL.toString(), cause);
+
+                        rr=Response.builder( currentStatus, "text/plan", cause.toString()).make();
+                    }                    
+                }
             }
             assert rr!=null: "No response";
             
             return rr;
+        }
+        
+        private Status moreExplicitStatus( Status status, Throwable cause)
+        {
+            Status explicitStatus=status;
+            
+            if( cause instanceof UnknownHostException)
+            {
+                explicitStatus=Status.C503_SERVICE_UNAVAILABLE;
+            }
+            else if( cause instanceof CertificateException)
+            {
+                explicitStatus=Status.C526_SSL_INVALID_CERTIFICATE;
+            }
+            else if( cause instanceof SocketException)
+            {
+                explicitStatus=Status.C521_WEB_SERVER_IS_DOWN;
+            }
+            else if( cause instanceof SSLProtocolException)
+            {
+                explicitStatus=Status.C526_SSL_INVALID_CERTIFICATE;
+            }
+            else if( cause instanceof SSLException)
+            {
+                explicitStatus=Status.C525_SSL_HANDSHAKE_FAILED;
+            }
+            else if( cause instanceof CertificateException)
+            {
+                explicitStatus=Status.C526_SSL_INVALID_CERTIFICATE;
+            }
+            else if( cause instanceof SocketTimeoutException)
+            {
+                explicitStatus=Status.C598_TIMED_OUT_SERVER_NETWORK_READ;
+            }                    
+
+            return explicitStatus;
         }
         
         private String validateCharactersInURL( final @Nonnull URL checkURL)

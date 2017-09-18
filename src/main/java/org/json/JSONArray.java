@@ -81,18 +81,18 @@ import javax.annotation.Nullable;
  * @author JSON.org
  * @version 2014-05-03
  */
-public class JSONArray {
+public final class JSONArray{
 
     /**
      * The arrayList where the JSONArray's properties are kept.
      */
-    private final ArrayList<Object> myArrayList;
+    private final ArrayList<Object> myArrayList= new ArrayList<>();
 
     /**
      * Construct an empty JSONArray.
      */
     public JSONArray() {
-        this.myArrayList = new ArrayList<Object>();
+        
     }
 
     /**
@@ -155,7 +155,7 @@ public class JSONArray {
      *            A Collection.
      */
     public JSONArray(Collection<Object> collection) {
-        this.myArrayList = new ArrayList<Object>();
+//        this.myArrayList = new ArrayList<Object>();
         if (collection != null) {
             Iterator<Object> iter = collection.iterator();
             while (iter.hasNext()) {
@@ -167,6 +167,7 @@ public class JSONArray {
     /**
      * Construct a JSONArray from an array
      *
+     * @param array
      * @throws JSONException
      *             If not an array.
      */
@@ -598,6 +599,9 @@ public class JSONArray {
     @Nonnull @CheckReturnValue
     public String optString(int index, String defaultValue) {
         Object object = this.opt(index);
+        
+        if( object==null) return defaultValue;
+        
         return JSONObject.NULL.equals(object) ? defaultValue : object
                 .toString();
     }
