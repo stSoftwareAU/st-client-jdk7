@@ -237,8 +237,8 @@ public final class EmailUtil
             Properties p=session.getProperties();
             p.setProperty("mail.smtp.connectiontimeout", "10000");
             p.setProperty("mail.smtp.timeout", "10000");
-            Transport transport = session.getTransport("smtp");
-            transport.connect();
+            try (Transport transport = session.getTransport("smtp")) {
+                transport.connect();
 //            if( port>0)
 //            {
 //                transport.connect(host, port, username, password);
@@ -247,8 +247,15 @@ public final class EmailUtil
 //            {
 //                transport.connect(host, username, password);
 //            }
-            
-            transport.close();
+            }
+//            if( port>0)
+//            {
+//                transport.connect(host, port, username, password);
+//            }
+//            else
+//            {
+//                transport.connect(host, username, password);
+//            }
 
         } catch(AuthenticationFailedException e) {
             LOGGER.warn("SMTP: Authentication Failed " + host, e);
@@ -257,9 +264,9 @@ public final class EmailUtil
         } catch(MessagingException e) {
             LOGGER.warn("SMTP: Messaging Exception Occurred " + host, e);
             throw e;
-        } catch (InvalidDataException e) {
+        } catch (IllegalArgumentException | InvalidDataException e) {
             String msg=e.getMessage();
-            LOGGER.error(msg, e);
+            LOGGER.warn(msg, e);
             throw new MessagingException( msg, e);
         }
     }

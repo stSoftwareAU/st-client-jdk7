@@ -38,7 +38,9 @@ import com.aspc.remote.util.net.*;
 import com.aspc.remote.database.InvalidDataException;
 import com.aspc.remote.database.selftest.DBTestUnit;
 import com.aspc.remote.util.misc.CProperties;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import javax.mail.MessagingException;
 
 import junit.framework.Test;
@@ -136,6 +138,7 @@ public class TestEmailUtil extends TestCase
      * Check known GOOD email addresses.
      * @throws Exception a test failure.
      */
+    @SuppressWarnings("SleepWhileInLoop")
     public void testKnownGood() throws Exception
     {
         String emails[]={
@@ -167,19 +170,34 @@ public class TestEmailUtil extends TestCase
             "ganeshkarki1@inditimes.com",
             "bijan-ahmadian@hotmail.com " // tollerate trailing spaces
         };
-
-        HashMap cache=new HashMap();
-        for( String email: emails)
+        HashSet<String> checks=new HashSet();
+        checks.addAll(Arrays.asList(emails));
+        
+        for( int attempts=0;attempts<12;attempts++)
         {
-            try
+            HashMap cache=new HashMap();
+            for( String email: emails)
             {
-                EmailUtil.validate(email, cache);
+                if( checks.contains(email))
+                {
+                    try
+                    {
+                        EmailUtil.validate(email, cache);
+                        checks.remove(email);
+                    }
+                    catch( InvalidDataException ide)
+                    {
+                        Thread.sleep((long) (5000 * Math.random()));
+    //                    EmailUtil.validate(email, null);
+                        LOGGER.warn( email, ide);
+                    }
+                }
             }
-            catch( InvalidDataException ide)
-            {
-                EmailUtil.validate(email, null);
-                fail( email + " caused " + ide.getMessage());
-            }
+        }
+        
+        if( checks.isEmpty()==false)
+        {
+            fail( "Invalid: " + checks);            
         }
     }
 
