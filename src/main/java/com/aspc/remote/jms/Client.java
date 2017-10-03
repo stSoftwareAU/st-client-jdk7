@@ -47,6 +47,7 @@ import java.util.TimeZone;
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.management.JMSConnectionStatsImpl;
@@ -332,7 +333,7 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
 
             startJMS( requiredJmsContext, requiredJmsProviderURL );
         }
-        catch( Throwable e)
+        catch( Exception e)
         {
             LOGGER.fatal( "Failed to start JMS", e);
         }
@@ -554,9 +555,9 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
                             "TopicConnectionFactory"
                         );
                     }
-                    catch(Exception e)
+                    catch(NamingException e)
                     {
-                        ;
+                        LOGGER.warn( "could not create topic factory", e);
                     }
 
                     // if we can't find the factory then throw an exception
@@ -620,9 +621,9 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
                         topic = (Topic)context.lookup( "jms/topic/ASPC:MASTERDB");
 
                     }
-                    catch(Exception e)
+                    catch(NamingException e)
                     {
-                        ;
+                        LOGGER.warn( "could not create topic", e);
                     }
 
                     if (topic == null)
