@@ -117,8 +117,8 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5</version>
-      <scope>compile</scope>
+      <version>4.5.3</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -688,12 +688,6 @@
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
       <version>1.11.205</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>amazon-sqs-java-messaging-lib</artifactId>
-      <version>1.0.4</version>
       <optional>true</optional>
     </dependency>
     <dependency>

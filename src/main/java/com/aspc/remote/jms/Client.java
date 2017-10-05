@@ -44,6 +44,8 @@ import java.net.ServerSocket;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.TimeZone;
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -423,6 +425,7 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
      * The current the client ID
      * @return the client ID
      */
+    @Nonnull @CheckReturnValue
     public String getCurrentClientID()
     {
         Connection tempConnection = currentConnection;
