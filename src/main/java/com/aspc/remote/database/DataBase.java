@@ -528,6 +528,21 @@ public class DataBase
     }
 
     /**
+     * Some databases can not be shared by multiple JVM.
+     * 
+     * @return false if the database can only be accessed by one process. 
+     */
+    @CheckReturnValue
+    public boolean supportsMultipleJVMs()
+    {
+        if( TYPE_HSQLDB.equals(type))
+        {
+            return false;
+        }
+        
+        return true; 
+    }
+    /**
      *
      * @param inType the database type
      * @throws Exception a serious problem
