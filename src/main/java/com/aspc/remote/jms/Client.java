@@ -104,7 +104,11 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
      * The time that this message was sent.
      */
     public static final String ATTRIBUTE_SENT_MS="sent_ms";
-
+    
+    /*
+     * The number of records in this transaction.
+    */
+    public static final String ATTRIBUTE_RECORD_COUNT="record_cnt";
     /**
      * The transaction for this message.
      */
