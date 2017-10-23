@@ -138,7 +138,7 @@ public final class TableUtil
      */
     public synchronized void clearCache()
     {
-        LOGGER.info( "clearCache() for database '" + dBase.getUrl() + "'");
+        LOGGER.debug( "clearCache() for database '" + dBase.getUrl() + "'");
         holderAllTables = null;
         holderAllProcedures=null;
         holdIndexes.clear();
@@ -2008,7 +2008,10 @@ public final class TableUtil
         }
         catch (SQLException e)
         {
-            LOGGER.warn("Renaming index " + oldIndexName, e);
+            String msg="Renaming index " + oldIndexName;
+            LOGGER.warn(msg, e);
+            
+            assert false: msg;
         }
     }
 

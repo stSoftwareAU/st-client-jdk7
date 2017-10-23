@@ -2726,7 +2726,7 @@ public final class StringUtilities
     /**
      * get the Adler32 checksum value of this string
      * @param str String
-     * @return checksum value in hex
+     * @return checksum value as hex ( 8 characters).
      */
     @CheckReturnValue
     public static String checkSumAdler32(final String str)
@@ -2740,9 +2740,9 @@ public final class StringUtilities
     }
 
     /**
-     * get the Adler32 checksum value of this byte array
+     * calculates the Adler32 checksum value of this byte array 
      * @param data byte array
-     * @return checksum value in hex
+     * @return checksum 32-bit integer in hex
      */
     @CheckReturnValue
     public static String checkSumAdler32(final byte[] data)

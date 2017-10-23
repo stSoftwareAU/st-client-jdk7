@@ -127,7 +127,7 @@
 
         <!-- JDBC --> 
         <!--dependency org="mysql" name="mysql-connector-java" rev="5.1.38" conf="runtime->master"/-->
-        <dependency org="mysql" name="mysql-connector-java" rev="5.1.39" conf="runtime->master"/>
+        <dependency org="mysql" name="mysql-connector-java" rev="6.0.6" conf="runtime->master"/>
         
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency org="org.postgresql" name="postgresql" rev="42.0.0" conf="runtime->master"/>
