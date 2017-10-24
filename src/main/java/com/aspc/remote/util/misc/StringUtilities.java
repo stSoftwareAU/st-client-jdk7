@@ -87,7 +87,7 @@ public final class StringUtilities
     /**
      * URI pattern matching 
      */
-    public static final Pattern URI_PATTERN=Pattern.compile("^([a-z]{3,5}://([a-z0-9\\+/\\-_\\.]+:[a-z0-9\\+/\\-_\\.:]+@|)|/)([!',a-z0-9\\+\\(\\)/\\-_\\.~\\\\:]|%([0-9a-f][0-9a-e]|[013-9a-f]f))*(|:[0-9]+)/*(|\\?[\\w\\-:;,'./%&=~@\\+\\(\\)\\*]*)(|\\#[\\w\\-:;,'./%&=~@\\+\\(\\)\\*]*)$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern URI_PATTERN=Pattern.compile("^(([a-z]{3,5}|s3)://([a-z0-9\\+/\\-_\\.]+:[a-z0-9\\+/\\-_\\.:]+@|)|/)([!',a-z0-9\\+\\(\\)/\\-_\\.~\\\\:]|%([0-9a-f][0-9a-e]|[013-9a-f]f))*(|:[0-9]+)/*(|\\?[\\w\\-:;,'./%&=~@\\+\\(\\)\\*]*)(|\\#[\\w\\-:;,'./%&=~@\\+\\(\\)\\*]*)$", Pattern.CASE_INSENSITIVE);
 
     /**
      * valid phone regular expression

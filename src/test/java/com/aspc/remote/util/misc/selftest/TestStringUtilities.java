@@ -489,7 +489,8 @@ public class TestStringUtilities extends TestCase
             "http://www.penguin.com.au/products/9781925355239/brett-whiteley:-art,-life-and-the-other/",
             "http://www.penguin.com.au/products/9781925355741/beach-at-night,-the/",
             "http://www.penguin.com.au/products/9781922182128/hello,-beautiful!:-scenes-from-a-life/",
-            "http://www.penguin.com.au/products/9781921922244/careful,-he-might-hear-you:-text-classic/"
+            "http://www.penguin.com.au/products/9781921922244/careful,-he-might-hear-you:-text-classic/",
+            "s3://AABBDSFSDFSDF:jlasdWE23823oiasdfS@sie-docs.s3-ap-southeast-2.amazonaws.com/"
         };
         
         for( String uri: list)

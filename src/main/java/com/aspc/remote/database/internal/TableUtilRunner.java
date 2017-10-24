@@ -94,7 +94,7 @@ public final class TableUtilRunner implements Runnable
             {
                 wait( 120000);
             }
-            catch( Exception e)
+            catch( InterruptedException e)
             {
                 theError = e;
             }
@@ -146,16 +146,16 @@ public final class TableUtilRunner implements Runnable
                     {
                         Thread.sleep( 1000);
                     }
-                    catch( Exception e)
+                    catch( InterruptedException e)
                     {
-                        ;
+                        
                     }
                     continue;
                 }
 
                 theError = dl;
             }
-            catch( Throwable e)
+            catch( SQLException e)
             {
                 LOGGER.error( statement, e);
                 theError = e;
