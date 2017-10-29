@@ -105,6 +105,7 @@ public final class NetUtil
      */
     public static void sendData( final @Nonnull File rawFile, final @Nonnull String URLs, final @Nonnull String path) throws Exception
     {
+        assert URLs.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(URLs);
         StringTokenizer st= new StringTokenizer( URLs, ",");
 
         boolean success = false;
@@ -147,6 +148,7 @@ public final class NetUtil
      */
     public static void removeData( final @Nonnull String URLs, final @Nonnull String path) throws Exception
     {
+        assert URLs.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(URLs);
         StringTokenizer st= new StringTokenizer( URLs, ",");
 
         Exception lastE=null;
@@ -193,6 +195,8 @@ public final class NetUtil
         final @Nullable String checksum
     ) throws Exception
     {
+        assert URLs.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(URLs);
+
         File cacheFile = FileUtil.makeCacheFile( URLs, path );
 
         if( cacheFile.exists() )
@@ -230,6 +234,8 @@ public final class NetUtil
      */
     public static void retrieveData( final @Nonnull String URLs, final @Nonnull String path, final @Nonnull File targetFile, final boolean haMode, final @Nullable String checksum) throws Exception
     {
+        assert URLs.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(URLs);
+        
         File tmpFile = File.createTempFile( targetFile.getName(), ".tmp", targetFile.getParentFile() );
         StringTokenizer fileStores= new StringTokenizer( URLs, "|");
         while( fileStores.hasMoreTokens())
@@ -374,6 +380,8 @@ public final class NetUtil
      */
     public static void renameData(final @Nonnull String URLs, final @Nonnull String originalPath, final @Nonnull String newPath ) throws Exception
     {
+        assert URLs.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(URLs);
+
         StringTokenizer st = new StringTokenizer( URLs, "," );
 
         boolean success = false;
@@ -445,7 +453,8 @@ public final class NetUtil
     }
 
     /**
-     * Checks if the file denoted by the given uri physically exists
+     * Checks if the file denoted by the given URI physically exists.
+     * 
      * @return boolean true if the file exists
      * @param path the file path
      * @param uri the full uri to the file
@@ -454,6 +463,8 @@ public final class NetUtil
     @CheckReturnValue
     public static boolean exists( final @Nonnull String uri, final @Nonnull String path ) throws Exception
     {
+        assert uri.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(uri);
+
         boolean found = false;
 
         NetClient client = null;
@@ -481,6 +492,7 @@ public final class NetUtil
     @CheckReturnValue
     public static boolean canConnect( final @Nonnull String uri) throws Exception
     {
+        assert uri.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(uri);
 
         boolean connected = false;
 
@@ -507,6 +519,8 @@ public final class NetUtil
     @CheckReturnValue
     public static NetClient borrowClient( final @Nonnull String url) throws Exception
     {
+        assert url.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(url);
+
         int maxAttempts=RETRY_ATTEMPTS.get();
         for( int attempt=0; true; attempt++)
         {
@@ -618,14 +632,16 @@ public final class NetUtil
     }
 
     /**
-     * Retrieve a list of file names from a url passed
-     * @param url the url
+     * Retrieve a list of file names from a URL passed.
+     * @param url the URL
      * @throws Exception A serious problem
      * @return the file list
      */
     @CheckReturnValue @Nonnull
     public static String[] retrieveFileList( final @Nonnull String url) throws Exception
     {
+        assert url.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(url);
+        
         String fileNames[];
 
         NetClient client = null;

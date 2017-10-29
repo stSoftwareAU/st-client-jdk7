@@ -346,7 +346,7 @@ public final class DocumentUtil
         if( indent < 0) throw new IllegalArgumentException( "indent must not be zero or more");
 
         Transformer transformer = newTransformer();
-        
+        transformer.reset();
         DOMSource source = new DOMSource(node);
         StreamResult result = new StreamResult(w);
 
@@ -429,7 +429,7 @@ public final class DocumentUtil
     public static Transformer newTransformer() throws TransformerConfigurationException
     {
         Transformer transformer= TRANSFORMER_LOCAL.get();
-        if( transformer == null)
+        if(transformer == null)
         {
             transformer=TRANSFORMER_FACTORY.newTransformer();
 

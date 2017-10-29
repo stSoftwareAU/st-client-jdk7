@@ -272,7 +272,8 @@ public class DataBase
         }
         else if( type.equals( TYPE_MYSQL ) == true )
         {
-            driverClassName ="com.mysql.jdbc.Driver";
+//            driverClassName ="com.mysql.jdbc.Driver";
+            driverClassName="com.mysql.cj.jdbc.Driver";
         }
 //        else if( type.equals( "DB2" ) == true )
 //        {

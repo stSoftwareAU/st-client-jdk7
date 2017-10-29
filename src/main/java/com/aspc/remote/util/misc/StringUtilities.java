@@ -3130,6 +3130,10 @@ public final class StringUtilities
         {
             return "";
         }
+        else if( url.contains(":")==false)
+        {
+            return url;
+        }
         //"sftp://docmgr:docmgr1@devserver/docs/2/2/6/6140/"
 
         String cleanURL=url;

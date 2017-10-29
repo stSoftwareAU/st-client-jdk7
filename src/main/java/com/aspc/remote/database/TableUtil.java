@@ -869,8 +869,8 @@ public final class TableUtil
                 {
                     schema=dBase.getUser().toUpperCase();
                 }
-
-                r = dbMeta.getTables( null, schema, "%", usertables);
+                String catalog=connection.getCatalog();
+                r = dbMeta.getTables( catalog, schema, "%", usertables);
 
                 while(r.next())
                 {
@@ -956,8 +956,8 @@ public final class TableUtil
                 {
                     schema=dBase.getUser();
                 }
-
-                r = dbMeta.getProcedures( null, schema, "%");
+                String catalog=connection.getCatalog();
+                r = dbMeta.getProcedures( catalog, schema, "%");
 
                 while(r.next())
                 {
@@ -1055,9 +1055,9 @@ public final class TableUtil
                     DatabaseMetaData dbMeta;
 
                     dbMeta = connection.getMetaData();
-
+                    String catalog=connection.getCatalog();
                     indexies = dbMeta.getIndexInfo(
-                        null,               // catalog,
+                        catalog,               // catalog,
                         schema,             // schema,
                         searchTableName,    // table
                         false,              // unique,
