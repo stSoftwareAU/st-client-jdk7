@@ -221,16 +221,18 @@ public class TestCleintBrowserAll extends TestCase
                     .addParameter("getJSON", "all")
                     .getResponse();
             sw.stop();
+            JSONObject json;
             try
             {
                 res.checkStatus();
+                json = res.getContentAsJSON();
             }
             catch( FileNotFoundException | ReSTException e)
             {
                 LOGGER.warn( agent, e);
                 continue;
             }
-            JSONObject json = res.getContentAsJSON();
+//            JSONObject json = res.getContentAsJSON();
             String info=agent + "->" + json.toString(2);
             String agentName=json.getString("agent_name");
             String osName=json.getString("os_name");

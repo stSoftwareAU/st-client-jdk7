@@ -297,7 +297,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
     }
 
     /**
-     *
+     * Lock the database connection
      * @throws SQLException a serious problem
      */
     public void lockConnection() throws SQLException
@@ -310,8 +310,20 @@ public final class CSQL extends SResultSet implements ResultsLoader
             }
             catch( Exception e)
             {
-                throw new SQLException( e.getMessage());
+                throw new SQLException( e.getMessage(),e);
             }
+        }
+    }
+
+    /**
+     * Unlock the database connection.
+     */
+    public void unlockConnection()
+    {
+        Connection c=lockedConnection;
+        if( c != null)
+        {
+            dataBase.checkInConnection(c);
         }
     }
 
@@ -559,6 +571,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 catch( SQLException e)
                 {
                     LOGGER.warn( "close batch statement",e);
+                    assert false: e.toString();
                 }
                 batchStatement = null;
                 batchStatementText=null;
@@ -576,6 +589,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                         catch( SQLException sqlE)
                         {
                             LOGGER.warn( "close of prepared statement", sqlE);
+                            assert false: sqlE.toString();
                         }
                     });
                 }
@@ -597,6 +611,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 catch( SQLException e)
                 {
                     LOGGER.warn( "Rollback",e);
+                    assert false: e.toString();
                 }
                 finally
                 {
@@ -612,6 +627,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                         catch( SQLException t)
                         {
                             LOGGER.error( "closing connection",t);
+                            assert false: t.toString();
                         }
 
                         HashMap current = (HashMap)CONNECTIONS.get();
@@ -699,27 +715,6 @@ public final class CSQL extends SResultSet implements ResultsLoader
     }
 
     /**
-     * returns the index of the column Name, -1 if not found
-     * @param name the column name
-     * @return the column number
-     */
-    @CheckReturnValue
-    public int getColumnNr( final @Nonnull String name)
-    {
-        Column column;
-        try
-        {
-            column = findColumnData(name);
-
-            return column.getNumber();
-        }
-        catch( RuntimeException rt)
-        {
-            return -1;
-        }
-    }
-
-    /**
      *
      * @param key the column
      * @return true if we have that column
@@ -733,7 +728,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             findColumnData( key);
             return true;
         }
-        catch( RuntimeException rt)
+        catch( NoColumnException rt)
         {
             return false;
         }
@@ -1090,6 +1085,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                     catch( SQLException sqlE)
                     {
                         LOGGER.warn( "could not close connection after error", sqlE);
+                        assert false: sqlE.toString();
                     }
                 }
             }
@@ -1131,6 +1127,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
         }
     }
 
+    @Nullable @CheckReturnValue
     @SuppressWarnings({"ThrowableResultIgnored", "ConvertToStringSwitch"})
     private SQLException convertException( final Throwable e)
     {
@@ -1144,11 +1141,11 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 {
                     if( "61000".equals(sqlException.getSQLState()))
                     {
-                        return new DeadLockException( e.getMessage());
+                        return new DeadLockException( e.getMessage(), e);
                     }
                     else if( sqlException.getErrorCode() == 17081)
                     {
-                        return new DeadLockException( e.getMessage());
+                        return new DeadLockException( e.getMessage(),e );
                     }
 
                     sqlException = sqlException.getNextException();
@@ -1157,7 +1154,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 return (SQLException)e;
             }
 
-            return new SQLException( e.getMessage());
+            return new SQLException( e.getMessage(),e);
         }
         else if( type.equals( DataBase.TYPE_POSTGRESQL) || type.equals( DataBase.TYPE_MSSQL))
         {
@@ -1170,7 +1167,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
                     String msg = e.getMessage();
                     if( msg != null && msg.toLowerCase().contains("deadlock"))
                     {
-                        return new DeadLockException( msg);
+                        return new DeadLockException( msg,e);
                     }
 
                     sqlException = sqlException.getNextException();
@@ -1186,7 +1183,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             {
                 msg = e.toString();
             }
-            return new SQLException( msg);
+            return new SQLException( msg,e);
         }
         else if( type.equals(DataBase.TYPE_SYBASE))
         {
@@ -1245,14 +1242,21 @@ public final class CSQL extends SResultSet implements ResultsLoader
             {
                 if( (e instanceof SQLException) == false)
                 {
-                    return new SQLException( e.getMessage());
+                    return new SQLException( e.getMessage(), e);
                 }
 
                 return (SQLException)e;
             }
             else if( deadlockError)
             {
-                return new DeadLockException( e.getMessage());
+                String tmpMsg;
+
+                tmpMsg = e.getMessage();
+                if( StringUtilities.isBlank(tmpMsg))
+                {
+                    tmpMsg = e.toString();
+                }
+                return new DeadLockException( tmpMsg, e);
             }
             else
             {
@@ -1265,7 +1269,14 @@ public final class CSQL extends SResultSet implements ResultsLoader
             return (SQLException)e;
         }
 
-        return new SQLException( e.getMessage());
+        String tmpMsg;
+
+        tmpMsg = e.getMessage();
+        if( StringUtilities.isBlank(tmpMsg))
+        {
+            tmpMsg = e.toString();
+        }
+        return new SQLException( tmpMsg, e);
     }
 
     private void initBachStatement() throws SQLException
@@ -1322,7 +1333,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
     }
 
     /**
-     * Batch batchStatement
+     * add prepared statement
      * @param statement SQL batchStatement
      * @param args the arguments to use.
      * @return this
@@ -1346,7 +1357,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             initBachStatement();
             Connection conn = batchStatement.getConnection();
             PreparedStatement ps=conn.prepareStatement(statement);
-            holder = new PreparedStatementHolder(ps, statement);
+            holder = new PreparedStatementHolder(ps, statement, args);
 
             preparedStatementMap.put( statement, holder);
             if( DEBUG_LOG_BATCH_VALUES)
@@ -1354,7 +1365,11 @@ public final class CSQL extends SResultSet implements ResultsLoader
                 holder.logText=new StringBuilder();
             }
         }
-
+        holder.checkArguments(args);
+//        if( holder.argumentCount!=args.length)
+//        {
+//            throw new SQLException("Expected argument count: " + holder.argumentCount + " was: " + args.length + " for: " + statement);
+//        }
         PreparedStatement pstmt=holder.preparedStatement;
         holder.calls++;
         if( holder.logText != null) holder.logText.append( "\n");
@@ -1394,7 +1409,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
             }
             else
             {
-                throw new RuntimeException( "unknow type " + value);
+                throw new RuntimeException( "unknown type " + value + " for: " + statement);
             }
 
             if( holder.logText != null)
@@ -1432,7 +1447,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
 
         initBachStatement();
 
-        String currentStatement="UNKNOW";
+        String currentStatement="UNKNOWN";
         PreparedStatementHolder tmpHolder=null;
         try
         {
@@ -1757,13 +1772,13 @@ public final class CSQL extends SResultSet implements ResultsLoader
         buffer.append( " ");
         buffer.append( TimeUtil.format("yyyyMMMdd-HH:mm:ss.SSS", now, TimeZone.getDefault()));
         buffer.append( "\n| ");
-        increamentHitCount();
+        incrementHitCount();
         if( rows >= 0)
         {
             buffer.append( rows);
             if( rows > 1000)
             {
-                increamentLargeHitCount();
+                incrementLargeHitCount();
                 buffer.append( " <LARGE> ");
             }
             HIT_ROW_COUNT.addAndGet(rows);
@@ -1965,6 +1980,10 @@ public final class CSQL extends SResultSet implements ResultsLoader
 
                     String cName;
                     cName = metaData.getColumnName( i);
+                    if( cName==null)
+                    {
+                        cName="";
+                    }
                     column = new Column(
                         this,
                         cName,
@@ -2159,10 +2178,12 @@ public final class CSQL extends SResultSet implements ResultsLoader
         catch( SQLException e)
         {
             LOGGER.debug( "Error - closing Statment", e);
+            assert false: e.toString();
         }
         catch( Throwable e)
         {
             LOGGER.warn( "Error - closing Statment", e);
+            assert false: e.toString();
         }
     }
 
@@ -2239,11 +2260,11 @@ public final class CSQL extends SResultSet implements ResultsLoader
     }
 
     /**
-     * increment hit count
-     * @return The incremented hit count
+     * Increment hit count
+     * @return The increment hit count
      */
     @Nonnegative
-    public static long increamentHitCount()
+    public static long incrementHitCount()
     {
         AtomicLong threadHitCounter = THREAD_HIT_COUNTER.get();
         if( threadHitCounter != null)
@@ -2274,11 +2295,11 @@ public final class CSQL extends SResultSet implements ResultsLoader
     }
 
     /**
-     * increment hit count
+     * Increment hit count
      * @return The incremented hit count
      */
     @Nonnegative
-    public static long increamentLargeHitCount()
+    public static long incrementLargeHitCount()
     {
         AtomicLong threadLargeHitCounter = THREAD_LARGE_HIT_COUNTER.get();
         if( threadLargeHitCounter != null)
@@ -2459,13 +2480,45 @@ public final class CSQL extends SResultSet implements ResultsLoader
         final PreparedStatement preparedStatement;
         final String statement;
         long calls;
+        final int argumentCount;
         StringBuilder logText;
+        private final Class[] argumentClasses;
 
-        PreparedStatementHolder(final PreparedStatement ps, final String statement) {
+        PreparedStatementHolder(final PreparedStatement ps, final String statement, final Object... args) {
             this.preparedStatement = ps;
             this.statement = statement;
+
+            this.argumentCount=args.length;
+            this.argumentClasses=new Class[argumentCount];
+            for( int c=0;c<argumentCount;c++)
+            {
+                Object obj=args[c];
+                if( obj!=null)
+                {
+                    argumentClasses[c]=obj.getClass();
+                }
+            }
         }
 
+        void checkArguments( final Object... args) throws SQLException
+        {
+            if( argumentCount != args.length)
+            {
+                throw new SQLException("Parameter count wrong was: " + args.length + " expected: " + argumentCount);
+            }
+
+//            for( int c=0;c<args.length;c++)
+//            {
+//                Object obj=args[c];
+//                if( obj!=null){
+//                    Class expectedClass=argumentClasses[c];
+//                    if( expectedClass.isInstance(obj)==false)
+//                    {
+//                        throw new SQLException( "Parameter: " + c + " not an instanceof of " + expectedClass + " was: " + obj.getClass() + " for: " + obj);
+//                    }
+//                }
+//            }
+        }
     }
 
     static

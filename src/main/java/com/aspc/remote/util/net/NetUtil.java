@@ -105,7 +105,11 @@ public final class NetUtil
      */
     public static void sendData( final @Nonnull File rawFile, final @Nonnull String URLs, final @Nonnull String path) throws Exception
     {
-        assert URLs.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(URLs);
+        if( URLs.contains("://")==false && URLs.startsWith("/")==false)
+        {
+            throw new Exception( "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(URLs));
+        }
+        
         StringTokenizer st= new StringTokenizer( URLs, ",");
 
         boolean success = false;
@@ -519,7 +523,7 @@ public final class NetUtil
     @CheckReturnValue
     public static NetClient borrowClient( final @Nonnull String url) throws Exception
     {
-        assert url.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(url);
+//        assert url.contains("://"): "Invalid URLs: " + StringUtilities.stripPasswordFromURLs(url);
 
         int maxAttempts=RETRY_ATTEMPTS.get();
         for( int attempt=0; true; attempt++)

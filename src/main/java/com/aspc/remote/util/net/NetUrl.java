@@ -71,10 +71,10 @@ public class NetUrl
     /** Default URL */
     private static final String DEFUALT_URL = "http://localhost";
     private static final Log LOGGER = CLogger.getLog( "com.aspc.remote.util.net.NetUrl");//#LOGGER-NOPMD
-    
+    private static final String VALID_PATTERN="((file|ftp|sftp|http|https|s3):/|)/.+";
                
     public static final boolean asserValidURL( final @Nonnull String url)
-    {
+    {        
         String msg = validateCharactersInURL( url);
 
         if( msg!=null) 
@@ -83,6 +83,11 @@ public class NetUrl
             return false;
         }
 
+        if( url.matches(VALID_PATTERN)==false)
+        {
+            assert false: "should match " + VALID_PATTERN +" was: "+ StringUtilities.stripPasswordFromURL(url);
+            return false;
+        }
         return true;
     }
     

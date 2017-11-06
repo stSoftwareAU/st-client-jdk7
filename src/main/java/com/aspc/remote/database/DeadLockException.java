@@ -45,12 +45,17 @@ import java.sql.*;
  */
 public class DeadLockException extends SQLException
 {
-    /**
-     *
-     * @param text the message
-     */
-    public DeadLockException( final String text)
+//    /**
+//     *
+//     * @param text the message
+//     */
+//    public DeadLockException( final String text)
+//    {
+//        super(text);
+//    }
+    
+    public DeadLockException( final String text, final Throwable cause)
     {
-        super(text);
+        super(text, cause);
     }
 }

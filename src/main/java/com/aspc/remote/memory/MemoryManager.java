@@ -2065,15 +2065,12 @@ public final class MemoryManager
             long tenuredUsed  = tenuredUsage.getUsed();
             long tenuredUsedAdjusted  = tenuredUsed-paddingMemory;
             if( tenuredUsedAdjusted < 0) tenuredUsedAdjusted = 0;
-//            long tenuredMax = tenuredUsage.getMax();
-//            long tenuredCommitted = tenuredUsage.getCommitted();
-//            tenuredMax=(tenuredMax>tenuredCommitted?tenuredMax:tenuredCommitted);
-//            long tenuredMax = getTenuredTotalMemory(tenuredUsage);
+
             long tenuredFreeAdjusted =  tenuredMax- tenuredUsedAdjusted ;
             if( tenuredFreeAdjusted<0) tenuredFreeAdjusted=0;
             
             long cleared = 0;
-            String type = "unknow";
+            String type = "unknown";
 
             long totalUsed=getTotalUsed();
             

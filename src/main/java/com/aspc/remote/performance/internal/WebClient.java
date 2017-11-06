@@ -33,10 +33,9 @@
  */
 package com.aspc.remote.performance.internal;
 
+import com.aspc.remote.rest.ReST;
 import com.aspc.remote.soap.LoginContext;
 import com.aspc.remote.util.misc.CLogger;
-import com.aspc.remote.util.misc.HttpUtil;
-import com.aspc.remote.util.misc.HttpUtilException;
 import com.aspc.remote.util.misc.StringUtilities;
 import com.aspc.remote.util.misc.internal.HttpCookieMgr;
 import com.aspc.remote.util.net.NetUrl;
@@ -129,9 +128,10 @@ public class WebClient
      * @return List of URL
      * @throws com.aspc.remote.util.misc.HttpUtilException 
      */
-    public String getResponse( String url) throws HttpUtilException
+    public String getResponse( String url) throws Exception
     {
-        return HttpUtil.get( url, null, cookieMgr);
+        return ReST.builder(url).getResponseAndCheck().getContentAsString();
+//        return HttpUtil.get( url, null, cookieMgr);
     }
     
     /** Log handler */

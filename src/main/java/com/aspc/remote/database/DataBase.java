@@ -833,7 +833,7 @@ public class DataBase
             }
 
             props.putAll(connectionProps);
-            DriverManager.setLoginTimeout( 60);
+            DriverManager.setLoginTimeout( 120);
             if( driver.acceptsURL(jdbcURL) ==false)
             {
                 throw new SQLException( displayDriverInfo() + " does not accept " + StringUtilities.stripPasswordFromURL(jdbcURL));
@@ -1297,7 +1297,7 @@ public class DataBase
                     if( System.currentTimeMillis() - startTime > 60 * 1000)
                     {
                         throw new Exception(
-                            "Waited " + TimeUtil.getDiff( startTime) + " for a free connection to " + key
+                            "Waited " + TimeUtil.getDiff( startTime) + " for a free connection (" +count +" of " +max +") to " + key
                         );
                     }
                 }

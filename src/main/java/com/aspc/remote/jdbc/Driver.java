@@ -120,7 +120,7 @@ public class Driver implements java.sql.Driver
 
             return new SoapConnection( tempURL, u, p);
         }
-        catch( Throwable e)
+        catch( Exception e)
         {
             String msg = "Connect error: " + url + " user: " + u + " caused: " + e.getMessage();
             LOGGER.error( msg, e);

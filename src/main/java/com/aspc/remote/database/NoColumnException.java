@@ -31,27 +31,27 @@
  *  Frenchs Forest 2086
  *  Australia.
  */
-package com.aspc.remote.util.misc;
+package com.aspc.remote.database;
+
+import java.sql.SQLException;
 
 /**
- *  HTTPUtil validation exception
- * 
- * @version: $Revision: 1.6 $
- *  <br>
- *  <i>THREAD MODE: SINGLE-THREADED</i>
+ *  There is no such column
  *
- * @author Jason McGrath
- * @since 16 August 2006
+ *  <br>
+ *  <i>THREAD MODE: READONLY</i>
+ *
+ *  @author      Nigel Leck
+ *  @since       3 Nov 2017
  */
-public final class HttpUtilException extends Exception
+public class NoColumnException extends SQLException
 {
     /**
-     *
-     * @param message the message
-     * @param cause
+     * 
+     * @param text the message
      */
-    public HttpUtilException( final String message, Throwable cause)
-    {        
-        super( message, cause);
+    public NoColumnException(final String text)
+    {
+        super( text);
     }
 }

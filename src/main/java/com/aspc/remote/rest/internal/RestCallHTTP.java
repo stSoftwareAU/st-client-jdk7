@@ -449,6 +449,9 @@ public class RestCallHTTP extends RestCall
                             }
                             os.write( array, 0, len );
                         }
+                        
+                        os.flush();
+                        os.close();
                     }
                 }
                 else
@@ -498,6 +501,9 @@ public class RestCallHTTP extends RestCall
                         pw.append(LINE_FEED);
                         pw.append(TWO_HYPHENS).append(boundary).append(TWO_HYPHENS).append(LINE_FEED);
                         pw.flush();
+                        
+                        os.flush();
+                        os.close();
                     }
                 }
             }

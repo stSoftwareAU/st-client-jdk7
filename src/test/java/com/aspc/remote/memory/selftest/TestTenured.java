@@ -222,15 +222,6 @@ public class TestTenured extends TestCase
         {
             fail( "When calculating the tenured size MUST be less than MAX tenured pool max of " + NumUtil.convertMemoryToHumanReadable(tenuredMax) + " but was " + NumUtil.convertMemoryToHumanReadable(tempMax));
         }
-        /*
-        long startCount = MemoryManager.getCountGC();
-        MemoryManager.gc();
-        long endCount = MemoryManager.getCountGC();
-
-        if( startCount == endCount )
-        {
-            fail( "we didn't increament the GC count");
-        }*/
     }
 
 

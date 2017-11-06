@@ -181,6 +181,7 @@ public class TestHashLongMapThreading extends TestCase
 
         final Throwable e[]=new Throwable[1];
         final AtomicLong readyCount = new AtomicLong();
+        @SuppressWarnings("ResultOfMethodCallIgnored")
         Runnable r = () -> {
             try
             {
@@ -202,53 +203,46 @@ public class TestHashLongMapThreading extends TestCase
                     readyCount.incrementAndGet();
                     lm.wait( 120000);
                 }
-                if( "getKeyArray".equals(method))
+                if( null == method)
                 {
-                    lm.getKeyArray();
+                    throw new Exception( "unknown method " + method);
                 }
-                else if( "containsKey".equals(method))
-                {
-                    lm.containsKey(5);
-                }
-                else if( "containsValue".equals(method))
-                {
-                    if(lm.containsValue("ABC") == false)
-                    {
-                        throw new Exception( "doesn't contain ABC");
-                    }
-                    if(lm.containsValue("XYZ") == true)
-                    {
-                        throw new Exception( "should not contain XYZ");
-                    }
-                }
-                else if( "clone".equals(method))
-                {
-                    HashLongMap lm2 = (HashLongMap) lm.clone();
-
-                    if( lm2.containsKey(-1) == false)
-                    {
-                        lm2.containsKey(-1);
-                        throw new Exception( "could not find -1");
-                    }
-                    if( lm2.containsKey(1234) == false)
-                    {
-                        throw new Exception( "could not find 1234");
-                    }
-                    if(lm2.containsValue("ABC") == false)
-                    {
-                        throw new Exception( "doesn't contain ABC");
-                    }
-                    if(lm2.containsValue("XYZ") == true)
-                    {
-                        throw new Exception( "should not contain XYZ");
-                    }
-                }
-                else
-                {
-                    throw new Exception( "unknow method " + method);
+                else switch (method) {
+                    case "getKeyArray":
+                        lm.getKeyArray();
+                        break;
+                    case "containsKey":
+                        lm.containsKey(5);
+                        break;
+                    case "containsValue":
+                        if(lm.containsValue("ABC") == false)
+                        {
+                            throw new Exception( "doesn't contain ABC");
+                        }   if(lm.containsValue("XYZ") == true)
+                        {
+                            throw new Exception( "should not contain XYZ");
+                        }   break;
+                    case "clone":
+                        HashLongMap lm2 = (HashLongMap) lm.clone();
+                        if( lm2.containsKey(-1) == false)
+                        {
+                            lm2.containsKey(-1);
+                            throw new Exception( "could not find -1");
+                        }   if( lm2.containsKey(1234) == false)
+                        {
+                            throw new Exception( "could not find 1234");
+                        }   if(lm2.containsValue("ABC") == false)
+                        {
+                            throw new Exception( "doesn't contain ABC");
+                        }   if(lm2.containsValue("XYZ") == true)
+                        {
+                            throw new Exception( "should not contain XYZ");
+                        }   break;
+                    default:
+                        throw new Exception( "unknown method " + method);
                 }
             }
-            catch( Throwable t2)
+            catch( Exception t2)
             {
                 LOGGER.warn( "problem", t2);
                 e[0]=t2;

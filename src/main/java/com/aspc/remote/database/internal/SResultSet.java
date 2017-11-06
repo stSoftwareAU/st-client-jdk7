@@ -33,6 +33,7 @@
  */
 package com.aspc.remote.database.internal;
 
+import com.aspc.remote.database.NoColumnException;
 import com.aspc.remote.jdbc.SoapSQLException;
 import com.aspc.remote.memory.HashMapFactory;
 import com.aspc.remote.util.misc.CLogger;
@@ -826,6 +827,17 @@ public class SResultSet implements ResultSet
         throw new SoapSQLException("not supported");
     }
 
+    @CheckReturnValue
+    protected int sqlColumnNr( final @Nonnull String name) throws NoColumnException
+    {
+        Column column;
+
+        column = findColumnData(name);
+
+        return column.getNumber() + 1;
+    }
+
+    /**
 
     // Methods for accessing results by column name
     /**
@@ -838,7 +850,7 @@ public class SResultSet implements ResultSet
     @Override @CheckReturnValue @Nullable
     public String getString( final @Nonnull String columnName) throws SQLException
     {
-        return getString(findColumnData(columnName).getNumber() + 1);
+        return getString( sqlColumnNr(columnName) );
     }
 
     /**
@@ -851,7 +863,7 @@ public class SResultSet implements ResultSet
     @Override  @CheckReturnValue
     public boolean getBoolean(final @Nonnull String columnName) throws SQLException
     {
-        return getBoolean(findColumnData(columnName).getNumber() + 1);
+        return getBoolean(sqlColumnNr(columnName));
     }
 
     /**
@@ -956,7 +968,13 @@ public class SResultSet implements ResultSet
     {
         validToGet();
 
-        return currentData.getObject(findColumnData(columnName));
+        try{
+            return currentData.getObject(findColumnData(columnName));
+        }
+        catch( NoColumnException nce)
+        {
+            throw new RuntimeException(columnName,nce);
+        }
     }
 
     /**
@@ -1274,9 +1292,10 @@ public class SResultSet implements ResultSet
      *
      * @param name
      * @return the value
+     * @throws com.aspc.remote.database.NoColumnException
      */
     @CheckReturnValue
-    public boolean isNull(final @Nonnull String name)
+    public boolean isNull(final @Nonnull String name) throws NoColumnException
     {
         validToGet();
 
@@ -1284,10 +1303,10 @@ public class SResultSet implements ResultSet
 
         column = findColumnData(name);
 
-        if (column == null)
-        {
-            throw (new RuntimeException("No Column '" + name + "' FOUND"));
-        }
+//        if (column == null)
+//        {
+//            throw (new RuntimeException("No Column '" + name + "' FOUND"));
+//        }
 
         return currentData.isNull(column);
     }
@@ -1310,9 +1329,10 @@ public class SResultSet implements ResultSet
      *
      * @param oKey
      * @return the value
+     * @throws NoColumnException no column
      */
     @CheckReturnValue
-    protected final Column findColumnData(final @Nonnull String oKey)
+    protected final Column findColumnData(final @Nonnull String oKey) throws NoColumnException
     {
         Column column;
 
@@ -1328,7 +1348,7 @@ public class SResultSet implements ResultSet
 
             if (column == null)
             {
-                throw new RuntimeException("No Column '" + key + "' FOUND");
+                throw new NoColumnException("No Column '" + key + "' FOUND");
             }
 
             columnKeys.put(oKey, column);
