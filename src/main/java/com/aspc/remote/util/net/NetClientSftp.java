@@ -428,7 +428,7 @@ public class NetClientSftp implements NetClient, SftpProgressMonitor
                 {
                     fullPath = path;
                 }
-
+                
                 fullPath = fullPath.replace( "//", "/");
                 
                 /** 
@@ -830,4 +830,68 @@ public class NetClientSftp implements NetClient, SftpProgressMonitor
     {
         return sftp;
     }
+
+    @Override
+    public void make(String url, String SOCKSProxyURL, String keyPath, int serverPort) throws Exception
+    {
+        // make sure we are not already connected
+        destroy();
+                      
+        LOGGER.info("Inside the make method for SFTP connection using keys....");
+        
+        URLParser parser = new URLParser(url);
+
+        String userName = parser.getUserName();
+        String password = parser.getPassword();
+        if( NetUtil.KNOWN_INVALID_PASSWORD.equals(password))
+        {
+            throw new Exception( "Known invalid password for: " + url);
+        }
+        String server = parser.getHostName();
+
+        String baseDir = parser.getURI();
+        
+        LOGGER.info("userName:" + userName +":password:" + password+":server:"+server+":keyPath:"+keyPath+":SOCKSProxyURL:" + SOCKSProxyURL+":port:" + serverPort);
+        JSch j = new JSch();
+        
+        Properties conf = new Properties();
+        conf.put("StrictHostKeyChecking", "no");
+//        conf.put("ConnectTimeout", "120");
+        session = j.getSession(userName, server);
+        if (!StringUtilities.isBlank(password)){
+            session.setPassword(password);
+        }else{
+            j.addIdentity(keyPath);
+        }
+        session.setPort(serverPort);
+        session.setConfig(conf);
+        LOGGER.info("Setting the configuration completed...");
+        if (!StringUtilities.isBlank(SOCKSProxyURL))
+        {
+            assert SOCKSProxyURL!=null;
+            String proxy_host=SOCKSProxyURL.substring(0, SOCKSProxyURL.indexOf(':'));
+            int proxy_port=Integer.parseInt(SOCKSProxyURL.substring(SOCKSProxyURL.indexOf(':')+1));              
+            session.setProxy(new ProxySOCKS5(proxy_host, proxy_port));        
+        }
+        session.connect(CONNECTION_TIMEOUT_MS);
+        LOGGER.info("Session is connected ..... waiting to open SFTP channel....");
+        sftp = (ChannelSftp)session.openChannel("sftp");
+        sftp.connect(CONNECTION_TIMEOUT_MS);
+        
+        
+        if(baseDir.length() > 0 )
+        {
+            LOGGER.info("Length of base directory is not null....");
+            if( !changeDirectory( baseDir, true ) )
+            {
+                deadConnection=true;
+                String msg;
+                msg = "failed to change to base "+baseDir+" on server "+server;
+                throw new IOException( msg );
+            }
+        }
+        
+        rootDir = sftp.pwd();
+    }
+
 }

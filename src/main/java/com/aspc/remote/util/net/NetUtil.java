@@ -246,7 +246,7 @@ public final class NetUtil
         {
             String volume = fileStores.nextToken().trim();
 
-            LOGGER.info( "Trying... " + StringUtilities.stripPasswordFromURL( volume));
+            LOGGER.debug( "Trying... " + StringUtilities.stripPasswordFromURL( volume));
 
             try
             {

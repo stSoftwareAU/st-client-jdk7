@@ -149,6 +149,16 @@ public interface NetClient
     public void make( final @Nonnull String url ) throws Exception;
     
     /**
+     * Makes a new client, also used by pooling
+     * @param url the client url
+     * @param SOCKSProxyURL the SOCKSProxyURL
+     * @param keyPath the keyPath 
+     * @param serverPort the port
+     * @throws Exception a serious problem
+     */
+    public void make( final String url, final String SOCKSProxyURL, final String keyPath, final int serverPort ) throws Exception;
+
+    /**
      * Validates a client, also used by pooling
      * @return boolean true if the client is valid, false otherwise
      */

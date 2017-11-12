@@ -200,5 +200,9 @@ public class NetClientS3 implements NetClient
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-
+    @Override
+    public void make(String url, String SOCKSProxyURL, String keyPath, int serverPort) throws Exception
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

@@ -752,4 +752,9 @@ public class NetClientFtp implements NetClient, CopyStreamListener
         return ftp;
     }
     
+    @Override
+    public void make(String url, String SOCKSProxyURL, String keyPath, int serverPort) throws Exception
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
