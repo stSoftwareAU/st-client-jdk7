@@ -42,7 +42,6 @@ import com.aspc.remote.util.net.NetUtil;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.TimeZone;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -121,7 +120,7 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
 
     private static final long MAX_LIVE_MS;
 
-    private long lastPendingWarningMS;
+//    private long lastPendingWarningMS;
     private static final long JMS_PENDING_COUNT;
     /**
      * the last time we connected to the JMS server
@@ -539,19 +538,9 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
 
                 try
                 {
-                    Hashtable props = new Hashtable();
-
-                    props.put(
-                        Context.INITIAL_CONTEXT_FACTORY,
-                        jmsContext
-                    );
-
-                    props.put(
-                        Context.PROVIDER_URL,
-                        jmsProviderURL
-                    );
-
-                    Context context = new InitialContext(props);
+                    Context context = new InitialContext();
+                    context.addToEnvironment(Context.INITIAL_CONTEXT_FACTORY, jmsContext);
+                    context.addToEnvironment(Context.PROVIDER_URL, jmsProviderURL);
 
                     // lookup the connection factory from the context
                     TopicConnectionFactory factory = null;
@@ -856,7 +845,7 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
             {
                 tempMS = Long.parseLong( temp);
             }
-            catch( Exception e)
+            catch( NumberFormatException e)
             {
                 LOGGER.error( "Invalid " + ENV_JMS_MAX_LIVE_MS + "='" + temp + "'", e );
             }
@@ -878,7 +867,7 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
             {
                 tempMS = Long.parseLong( temp);
             }
-            catch( Exception e)
+            catch( NumberFormatException e)
             {
                 LOGGER.error( "Invalid " + ENV_JMS_TIMEOUT + "='" + temp + "'", e );
             }
@@ -896,7 +885,7 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
             {
                 tempPendingCount = Integer.parseInt( temp);
             }
-            catch( Exception e)
+            catch( NumberFormatException e)
             {
                 LOGGER.error( "Invalid " + ENV_JMS_PENDING_COUNT + "='" + temp + "'", e );
             }
