@@ -27,7 +27,7 @@
 
         <dependency org="com.lowagie" name="itext" rev="2.1.7" conf="runtime->master"/>
         <dependency org="org.codehaus.groovy" name="groovy-all" rev="2.4.4" conf="runtime->master"/>
-        <dependency org="org.apache.activemq" name="activemq-client" rev="5.13.1"/>
+        <dependency org="org.apache.activemq" name="activemq-client" rev="5.15.2"/>
         <dependency org="org.slf4j" name="slf4j-api" rev="1.7.12" conf="runtime->master"/>
         <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.7.12" conf="runtime->master"/>
         <dependency org="commons-logging" name="commons-logging" rev="1.2" conf="runtime->master"/>

@@ -538,9 +538,20 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
 
                 try
                 {
-                    Context context = new InitialContext();
-                    context.addToEnvironment(Context.INITIAL_CONTEXT_FACTORY, jmsContext);
-                    context.addToEnvironment(Context.PROVIDER_URL, jmsProviderURL);
+                    @SuppressWarnings("UseOfObsoleteCollectionType")
+                    java.util.Hashtable props = new java.util.Hashtable();
+
+                    props.put(
+                        Context.INITIAL_CONTEXT_FACTORY,
+                        jmsContext
+                    );
+
+                    props.put(
+                        Context.PROVIDER_URL,
+                        jmsProviderURL
+                    );
+
+                    Context context = new InitialContext(props);
 
                     // lookup the connection factory from the context
                     TopicConnectionFactory factory = null;
@@ -559,7 +570,7 @@ public abstract class Client implements ExceptionListener,ShutdownListener//, Tr
                     // if we can't find the factory then throw an exception
                     if (factory == null)
                     {
-                        throw new Exception("Failed to locate connection factory");
+                        throw new Exception("Failed to locate connection factory: " + jmsContext);
                     }
 
                     if( factory instanceof ActiveMQConnectionFactory )
