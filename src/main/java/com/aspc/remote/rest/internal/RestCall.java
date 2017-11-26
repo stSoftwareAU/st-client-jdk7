@@ -137,7 +137,7 @@ public abstract class RestCall implements Callable<Response>
         Thread ct=Thread.currentThread();
         String tn=ct.getName();
         try{
-            ct.setName(method.label + ": " + url);
+            ct.setName(method.name() + ": " + url);
             return doCall();
         }
         finally{

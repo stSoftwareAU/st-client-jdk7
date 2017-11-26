@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -1506,11 +1507,25 @@ public final class ReST
                 );
                 return r.call();
             }
+            catch( ConnectException ce)
+            {
+                LOGGER.warn( realURL.toString(), ce);
+                String msg=ce.getMessage();
+                if( StringUtilities.isBlank(msg))
+                {
+                    msg=ce.toString();
+                }
+                return Response.builder( Status.C503_SERVICE_UNAVAILABLE, "text/plan", msg ).make();
+            }
             catch( TimeoutException to)
             {
                 LOGGER.warn( realURL.toString(), to);
-
-                return Response.builder( Status.C504_TIMED_OUT_GATEWAY, "text/plan", to.toString() ).make();
+                String msg=to.getMessage();
+                if( StringUtilities.isBlank(msg))
+                {
+                    msg=to.toString();
+                }
+                return Response.builder( Status.C504_TIMED_OUT_GATEWAY, "text/plan", msg ).make();
             }
             catch( Exception e)
             {
