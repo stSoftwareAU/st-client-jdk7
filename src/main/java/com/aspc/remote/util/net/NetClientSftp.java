@@ -642,7 +642,17 @@ public class NetClientSftp implements NetClient, SftpProgressMonitor
         Properties conf = new Properties();
         conf.put("StrictHostKeyChecking", "no");
 //        conf.put("ConnectTimeout", "120");
-        session = j.getSession(userName, server);
+        String port = parser.getPort();
+        if(StringUtilities.notBlank(port))
+        {
+            int portNum = Integer.parseInt(port);
+            session = j.getSession(userName, server, portNum);
+        }
+        else
+        {
+            session = j.getSession(userName, server);   
+        }
+    
         session.setPassword(password);
         session.setConfig(conf);
         if (!StringUtilities.isBlank(SOCKSProxyURL))
