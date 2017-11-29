@@ -14,15 +14,8 @@ package com.aspc.remote.memory.internal;
 import org.apache.commons.logging.Log;
 import com.aspc.remote.memory.MemoryManager;
 import com.aspc.remote.util.misc.*;
-import static java.lang.Thread.sleep;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import static java.lang.Thread.sleep;
-import static java.lang.Thread.sleep;
-import static java.lang.Thread.sleep;
-import static java.lang.Thread.sleep;
-import static java.lang.Thread.sleep;
-import static java.lang.Thread.sleep;
 import static java.lang.Thread.sleep;
 
 /**
@@ -54,12 +47,29 @@ public final class MemoryManagerRunner
         nonStopThread.setName(name);
     }    
     
+    @SuppressWarnings("UseSpecificCatch")
     private long check(final long nextTS)
     {        
         long tmpNextTS=nextTS+1000L;
         try
         {
-            MemoryManager.checkZone();
+            for( int attempts=0;true;attempts++)
+            {
+                try{
+                    MemoryManager.checkZone();
+                    break;
+                }
+                catch( InternalError ie)
+                {
+                    if( attempts>3 ) throw ie;
+                    String msg="Memory Manager - open issue https://bugs.openjdk.java.net/browse/JDK-8154458";
+                    MemoryManager.lastError(msg, ie);
+                    LOGGER.warn(
+                        msg,
+                        ie
+                    );
+                }
+            }
             
             MemoryManager.makeRainyDay( );
 

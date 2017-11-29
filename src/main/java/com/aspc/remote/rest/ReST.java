@@ -156,6 +156,7 @@ public final class ReST
         private boolean disableGZIP = false;
         private ContentType contentType;
         private DispositionType dispositionType;
+        private File cacheDirectory;
         
         private ReSTAuthorizationInterface auth;
         private Builder(final @Nonnull URL url, final @Nonnull RestTransport transport) throws InvalidDataException
@@ -1208,6 +1209,41 @@ public final class ReST
             return null;
         }
         
+        /**
+         * Set the cache path to use
+         * @param cachePath the new cache path
+         * @return this
+         */
+        @Nonnull
+        public Builder setCachePath( final @Nonnull File cachePath)
+        {
+            if( cachePath.exists()==false) throw new IllegalArgumentException("cache path doesn't exist: " + cachePath);
+            if( cachePath.isDirectory()==false) throw new IllegalArgumentException("cache path not a directory: " + cachePath);
+            return this;
+        }
+        
+        /**
+         * What directory should be used for the cache.
+         * @return the file.
+         */
+        @Nonnull @CheckReturnValue
+        public File getCachePath()
+        {
+            File dir=cacheDirectory;
+            if( dir==null)
+            {
+                String path=FileUtil.getCachePath()+ "/rest/";
+
+                dir=new File( path);
+
+                dir.mkdirs();
+            }
+            
+            assert dir.exists(): "cache path doesn't exist: " + dir;
+            assert dir.isDirectory(): "cache path not a directory: " + dir;
+            return dir;
+        }
+        
         @SuppressWarnings("ThrowableResultIgnored") @CheckReturnValue @Nonnull
         private Response readResponse()
         {
@@ -1232,7 +1268,7 @@ public final class ReST
                     return Response.builder(Status.C414_REQUEST_URI_TOO_LARGE,"text/plan", "URL over the safe limit of " + ReSTUtil.MAX_SAFE_URL_LENGTH + " was " + urlLen ).make();                
                 }
             }
-            String feedPath = FileUtil.getCachePath() + "/rest/" + transport.getRootFolderName();
+            String feedPath = getCachePath() + transport.getRootFolderName();
             String fileName = ReSTUtil.makeFileName( realURL, auth, agent);
             int pos = fileName.lastIndexOf('.');
             File propertiesFile = new File(feedPath + fileName.substring(0, pos) + ".properties");
