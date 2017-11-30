@@ -1761,7 +1761,7 @@ public final class CSQL extends SResultSet implements ResultsLoader
         }
 
         buffer.append( "/*------------------------------------------------------------------------------\n| ");
-        buffer.append( Thread.currentThread().getName());
+        buffer.append( Thread.currentThread().getName().trim());
         if( conn != null)
         {
             buffer.append( " [");

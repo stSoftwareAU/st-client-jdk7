@@ -62,6 +62,7 @@ public final class MemoryManagerRunner
                 catch( InternalError ie)
                 {
                     if( attempts>3 ) throw ie;
+                    
                     String msg="Memory Manager - open issue https://bugs.openjdk.java.net/browse/JDK-8154458";
                     MemoryManager.lastError(msg, ie);
                     LOGGER.warn(
