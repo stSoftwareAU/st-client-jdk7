@@ -35,6 +35,7 @@ package com.aspc.remote.rest.selftest;
 import com.aspc.remote.rest.ReST;
 import com.aspc.remote.rest.Response;
 import com.aspc.remote.rest.Status;
+import com.aspc.remote.rest.errors.RequestTimeoutException;
 import org.apache.commons.logging.Log;
 import com.aspc.remote.util.misc.CLogger;
 import java.io.File;
@@ -98,7 +99,20 @@ public class TestNotModified extends TestCase
 
         ReST.Builder call = ReST.builder(url);
 
-        Response rr=call.getResponseAndCheck();
+        Response rr=null;
+        
+        for( int loops=0;loops<3; loops++)
+        {
+            try{
+                rr=call.getResponseAndCheck();
+                break;
+            }
+            catch( RequestTimeoutException rte)
+            {
+                LOGGER.warn( call, rte);
+            }
+        }
+        assert rr!=null;
         String data = rr.getContentAsString();
         String mimeType = rr.mimeType;
         assertTrue( "check mime: " + mimeType, mimeType.matches("application/javascript.*"));

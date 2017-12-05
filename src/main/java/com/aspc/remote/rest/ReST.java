@@ -601,7 +601,7 @@ public final class ReST
          * 
          * If there is no cache avaliable for the request then a response with C504_TIMED_OUT_GATEWAY will be returned.
          * 
-         * @param staleBlockPeriod the maximum time to block.
+         * @param staleBlockPeriod the maximum time to block. eg 4 min 30 seconds
          * @return this builder
          * @throws InvalidDataException the duration is not valid
          */

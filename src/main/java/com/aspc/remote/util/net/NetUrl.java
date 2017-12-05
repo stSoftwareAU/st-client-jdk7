@@ -35,19 +35,16 @@ package com.aspc.remote.util.net;
 
 import com.aspc.remote.util.misc.CLogger;
 import com.aspc.remote.util.misc.StringUtilities;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import org.apache.commons.logging.Log;
@@ -239,37 +236,37 @@ public class NetUrl
         }
     }
 
-
-    private static void httpsCert(final HttpsURLConnection con) {
-
-        if (con != null) {
-
-            try {
-
-                LOGGER.info("Response Code : " + con.getResponseCode());
-                LOGGER.info("Cipher Suite : " + con.getCipherSuite());
-                LOGGER.info("");
-
-                Certificate[] certs = con.getServerCertificates();
-                for (Certificate cert : certs) {
-                    LOGGER.info("Cert Type : " + cert.getType());
-                    LOGGER.info("Cert Hash Code : " + cert.hashCode());
-                    LOGGER.info("Cert Public Key Algorithm : "
-                            + cert.getPublicKey().getAlgorithm());
-                    LOGGER.info("Cert Public Key Format : "
-                            + cert.getPublicKey().getFormat());
-                    LOGGER.info("");
-                }
-
-            } catch (SSLPeerUnverifiedException e) {
-                LOGGER.warn(con.getURL(), e);
-            } catch (IOException e) {
-                LOGGER.warn(con.getURL(), e);
-            }
-
-        }
-
-    }
+//
+//    private static void httpsCert(final HttpsURLConnection con) {
+//
+//        if (con != null) {
+//
+//            try {
+//
+//                LOGGER.info("Response Code : " + con.getResponseCode());
+//                LOGGER.info("Cipher Suite : " + con.getCipherSuite());
+//                LOGGER.info("");
+//
+//                Certificate[] certs = con.getServerCertificates();
+//                for (Certificate cert : certs) {
+//                    LOGGER.info("Cert Type : " + cert.getType());
+//                    LOGGER.info("Cert Hash Code : " + cert.hashCode());
+//                    LOGGER.info("Cert Public Key Algorithm : "
+//                            + cert.getPublicKey().getAlgorithm());
+//                    LOGGER.info("Cert Public Key Format : "
+//                            + cert.getPublicKey().getFormat());
+//                    LOGGER.info("");
+//                }
+//
+//            } catch (SSLPeerUnverifiedException e) {
+//                LOGGER.warn(con.getURL(), e);
+//            } catch (IOException e) {
+//                LOGGER.warn(con.getURL(), e);
+//            }
+//
+//        }
+//
+//    }
 
     /**
      * to string

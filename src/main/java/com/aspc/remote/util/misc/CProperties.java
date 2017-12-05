@@ -308,6 +308,20 @@ public final class CProperties
                         System.getProperties().load(in);
                     }
                 }
+                
+                String appName=System.getProperty(CUtilities.PROPERTY_APP_NAME);
+                
+                if( StringUtilities.notBlank(appName))
+                {
+                    File appProperties = new File(confDIR, appName + ".properties");
+                    if( appProperties.exists())
+                    {
+                        try(FileInputStream in=new FileInputStream(appProperties))
+                        {
+                            System.getProperties().load(in);
+                        }
+                    }
+                }
             }
 //            else 
 //            {
