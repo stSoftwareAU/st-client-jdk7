@@ -240,14 +240,7 @@ public abstract class ExecutorConnection implements Connection
     @Override
     public void setTransactionIsolation(int level) throws SQLException
     {
-        if( level == TRANSACTION_READ_COMMITTED)
-        {
-            throw new SoapSQLException( "This Level is not supported by DBMS");
-        }
-        else
-        {
-            transactionIsolationLevel = level;
-        }
+
     }
 
     /** {@inheritDoc} */
