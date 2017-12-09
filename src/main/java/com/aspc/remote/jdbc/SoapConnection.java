@@ -62,10 +62,15 @@ public class SoapConnection extends ExecutorConnection
      * @param pass the password
      * @throws Exception a serious problem
      */
-    public SoapConnection(final String url, final String user, final String pass) throws Exception
+    public SoapConnection(final @Nonnull String url, final @Nonnull String user, final @Nonnull String pass) throws Exception
     {
         String host;
-        int pos = url.indexOf( "/");
+        int hostNamePos=0;
+        if( url.contains("://"))
+        {
+            hostNamePos=url.indexOf("://") + 4;
+        }
+        int pos = url.indexOf( "/", hostNamePos);
         String layer = null;
 
         if( pos != -1)
