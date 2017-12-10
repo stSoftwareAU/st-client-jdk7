@@ -98,10 +98,12 @@ public final class ReST
 {
     private static final Log LOGGER = CLogger.getLog( "com.aspc.remote.rest.ReST");//#LOGGER-NOPMD
     private static final ConcurrentHashMap<File, com.aspc.remote.rest.internal.RestCall>PREFETCH=new ConcurrentHashMap();
-    private static final Friend FRIEND=(File propertiesFile, RestCall call) -> {
-        PREFETCH.remove(propertiesFile, call );        
-    };
-    
+       private static final Friend FRIEND=new Friend() {
+        @Override
+        public void cleanUp(File propertiesFile, RestCall call) {
+            PREFETCH.remove(propertiesFile, call );        
+        }
+    }; 
     private static final long DEFAULT_BLOCK_TIMEOUT=60L*60L*1000L;
     
     /**

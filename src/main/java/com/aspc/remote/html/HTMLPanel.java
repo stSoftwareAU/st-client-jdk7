@@ -66,42 +66,48 @@ public class HTMLPanel extends HTMLContainer
      */
     public synchronized String generateRTF()
     {
-        final String pars[] = new String[2];
+   final String pars[] = new String[2];
 
         String html = generate();
 
         pars[0] = html;
         pars[1] = null;
 
-        Runnable r = () -> {
-            try
+        Runnable r = new Runnable()
+        {
+            @Override
+            public void run()
             {
-                javax.swing.JTextPane pane;
-                pane = new javax.swing.JTextPane();
-                
-                pane.setEditorKit(new javax.swing.text.html.HTMLEditorKit());
-                
-                pane.read(
+                try
+                {
+                    javax.swing.JTextPane pane;
+                    pane = new javax.swing.JTextPane();
+
+                    pane.setEditorKit(new javax.swing.text.html.HTMLEditorKit());
+
+                    pane.read(
                         new java.io.StringReader(pars[0]),
                         "a.html"
-                );
-                
-                javax.swing.text.rtf.RTFEditorKit rtf = new javax.swing.text.rtf.RTFEditorKit();
-                
-                java.io.ByteArrayOutputStream out;
-                out = new java.io.ByteArrayOutputStream();
-                
-                javax.swing.text.Document doc;
-                doc = pane.getDocument();
-                
-                rtf.write(out, doc, 0, doc.getLength());
-                
-                pars[1] = new String( out.toByteArray());
+                    );
+
+                    javax.swing.text.rtf.RTFEditorKit rtf = new javax.swing.text.rtf.RTFEditorKit();
+
+                    java.io.ByteArrayOutputStream out;
+                    out = new java.io.ByteArrayOutputStream();
+
+                    javax.swing.text.Document doc;
+                    doc = pane.getDocument();
+
+                    rtf.write(out, doc, 0, doc.getLength());
+
+                    pars[1] = new String( out.toByteArray());
+                }
+                catch( IOException | BadLocationException e)
+                {
+                    pars[1] = e.toString();
+                }
             }
-            catch( IOException | BadLocationException e)
-            {
-                pars[1] = e.toString();
-            }
+
         };
 
         com.aspc.remote.application.CApp.swingInvokeAndWait(r);

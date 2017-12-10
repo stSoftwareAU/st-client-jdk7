@@ -357,14 +357,14 @@ public final class StringUtilities
 
         StringBuilder sb=new StringBuilder(words.length());
 
-        list.values().stream().forEach((w) -> {
+        for( String w: list.values())
+        {
             if( sb.length() != 0)
             {
                 sb.append(delimator);
             }
             sb.append( w);
-        });
-
+        }
         return sb.toString();
     }
 
@@ -4571,12 +4571,13 @@ public final class StringUtilities
     @CheckReturnValue
     public static String join(final String fieldDelim, List list)
     {
-        StringBuilder sb=new StringBuilder();
-        list.stream().forEach((v) -> {
+StringBuilder sb=new StringBuilder();
+        for( Object v: list)
+        {
             if( sb.length() != 0) sb.append( fieldDelim);
 
             sb.append(v);
-        });
+        }
         return sb.toString();
     }
 

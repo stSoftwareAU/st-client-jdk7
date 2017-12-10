@@ -983,6 +983,7 @@ public abstract class HTMLComponent
         assert ThreadCop.read(monitorPage());
         if( events != null)
         {
+/*
             ArrayList<HTMLEvent> tmpEvents=(ArrayList<HTMLEvent>) events.clone();
             Collections.sort(tmpEvents, (HTMLEvent e1, HTMLEvent e2) -> {
                 assert e1 != null && e2!=null: "containts null events" + tmpEvents.toString();
@@ -1042,6 +1043,7 @@ public abstract class HTMLComponent
                
                 buffer.append( "\"");
             }
+*/
         }
     }
 

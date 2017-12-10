@@ -581,7 +581,8 @@ public final class CSQL extends SResultSet implements ResultsLoader
             {
                 try
                 {
-                    preparedStatementMap.values().stream().forEach((holder) -> {
+                    for( PreparedStatementHolder holder: preparedStatementMap.values())
+                    {
                         try
                         {
                             holder.preparedStatement.close();
@@ -589,9 +590,8 @@ public final class CSQL extends SResultSet implements ResultsLoader
                         catch( SQLException sqlE)
                         {
                             LOGGER.warn( "close of prepared statement", sqlE);
-                            assert false: sqlE.toString();
                         }
-                    });
+                    }
                 }
                 finally
                 {

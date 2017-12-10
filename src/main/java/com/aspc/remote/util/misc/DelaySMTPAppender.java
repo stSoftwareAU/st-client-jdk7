@@ -152,9 +152,9 @@ public final class DelaySMTPAppender extends AppenderSkeleton
     public DelaySMTPAppender()
     {
         final DelaySMTPAppender current=this;
-        Shutdown.addListener(() -> {
-            current.sendBuffer();
-        });
+        //Shutdown.addListener(() -> {
+        //    current.sendBuffer();
+        //});
     }
 
     /**

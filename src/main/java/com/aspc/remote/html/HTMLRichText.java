@@ -77,7 +77,8 @@ public class HTMLRichText extends HTMLComponent
         pars[1] = null;
         pars[2] = browser;
 
-        Runnable r = () -> {
+        Runnable r = new Runnable() {
+public void run(){
             try
             {
                 doConvert( pars, (ClientBrowser)pars[2]);
@@ -87,7 +88,8 @@ public class HTMLRichText extends HTMLComponent
                 LOGGER.error("RTFText convert", e);
                 pars[1] = e.toString();
             }
-        };
+        }
+};
 
         CApp.swingInvokeAndWait(r);
 
@@ -127,7 +129,8 @@ public class HTMLRichText extends HTMLComponent
         pars[0] = richText;
         pars[1] = null;
 
-        Runnable r = () -> {
+        Runnable r = new Runnable(){
+public void run(){
             try
             {
                 doConvert2( pars);
@@ -137,6 +140,7 @@ public class HTMLRichText extends HTMLComponent
                 LOGGER.error( "Error", e);
                 pars[1] = e.toString();
             }
+}
         };
 
         CApp.swingInvokeAndWait(r);

@@ -361,8 +361,16 @@ public final class EmailUtil
         }
 
         // sort the MX RRs by RR value (lower is preferred)
-        Arrays.sort(pvhn, (String[] o1, String[] o2) -> (Integer.parseInt(o1[0]) - Integer.parseInt(o2[0])));
+          /*      Arrays.sort(pvhn, new Comparator<String[]>()
+            {
+                @Override
+                public int compare(String[] o1, String[] o2)
+                {
+                    return (Integer.parseInt(o1[0]) - Integer.parseInt(o2[0]));
+                }
+            });
 
+*/
         // put sorted host names in an array, get rid of any trailing '.'
         String[] sortedHostNames = new String[pvhn.length];
         for (int i = 0; i < pvhn.length; i++)
@@ -508,8 +516,18 @@ public final class EmailUtil
         KNOWN_GOOD_HOSTS.add( "godaddy.com");// no need to check
         KNOWN_GOOD_HOSTS.add( "hostmonster.com");// no need to check
         KNOWN_GOOD_HOSTS.add( "ixwebhosting.com");// no need to check
-
-        ThreadPool.addPurifier(DISABLE_MX_LOOPUP::remove);
+/*
+                ThreadPool.addPurifier(
+            new ThreadPurifier()
+            {
+                @Override
+                public void purifyThread()
+                {
+                    DISABLE_MX_LOOPUP.remove();
+                }
+            }
+        );
+*/
     }
     
     private static class PasswordAuthenticator extends Authenticator

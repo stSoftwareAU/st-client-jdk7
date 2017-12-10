@@ -593,11 +593,12 @@ public final class LinkManager
 
         for( String key: TYPES.keySet())
         {
+            final String tmpKey=key;
             @SuppressWarnings("Convert2Lambda")
             ForkJoinTask<Void> task = pool.submit(new Callable<Void>(){
                 @Override
                 public Void call() throws Exception {
-                    killType( key);
+                    killType( tmpKey);
                     return null;
                 }
             });

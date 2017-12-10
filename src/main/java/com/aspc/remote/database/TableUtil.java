@@ -150,9 +150,10 @@ public final class TableUtil
      */
     public static void clearCacheAll()
     {
-        DATABASE_MAP.keySet().stream().forEach((dBase) -> {
+        for( DataBase dBase: DATABASE_MAP.keySet())
+        {
             find( dBase).clearCache();
-        });
+        }
     }
 
     /**
