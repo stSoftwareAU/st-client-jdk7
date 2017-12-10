@@ -38,6 +38,7 @@ import com.aspc.remote.soap.Client;
 import com.aspc.remote.util.misc.CLogger;
 import com.aspc.remote.util.misc.StringUtilities;
 import java.sql.SQLException;
+import javax.annotation.Nonnull;
 import org.apache.commons.logging.Log;
 
 /**
