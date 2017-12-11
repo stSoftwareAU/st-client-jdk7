@@ -120,7 +120,8 @@ public class ExecutorStatement implements Statement
 
             if(resultSet.isUpdateResult())
             {
-                throw new SoapSQLException("Non-resultset query");
+//                throw new SoapSQLException("Non-resultset query");
+                return resultSet;
             }
             resultSet.setFetchDirection(fetchDirection);
             resultSet.setFetchSize(fetchSize);
